@@ -4,7 +4,7 @@ export const SOCIAL = {
   linkedin: "https://www.linkedin.com/",
   instagram: "https://www.instagram.com/",
   tiktok: "https://www.tiktok.com/",
-  facebook: "https://www.facebook.com/",
+  facebook: "https://www.facebook.com/thomaspalmier15",
 } as const;
 
 export type SocialId = keyof typeof SOCIAL;
