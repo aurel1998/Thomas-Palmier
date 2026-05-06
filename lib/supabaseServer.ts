@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
  * Priorite des cles :
  *  1. SUPABASE_SERVICE_ROLE_KEY  -> bypass RLS (ecriture admin)
  *  2. SUPABASE_ANON_KEY          -> respecte RLS
- *  3. NEXT_PUBLIC_SUPABASE_ANON_KEY (dev)
+ *  3. NEXT_PUBLIC_SUPABASE_ANON_KEY / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (dev)
  *
  * Utilise `getServerSupabaseOrResponse` dans une API route :
  *
@@ -24,7 +24,8 @@ export function getServerSupabaseOrResponse(): ServerSupabaseResult {
   const supabaseKey =
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
     process.env.SUPABASE_ANON_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     return {
@@ -32,7 +33,7 @@ export function getServerSupabaseOrResponse(): ServerSupabaseResult {
       response: NextResponse.json(
         {
           error:
-            "Configuration Supabase manquante. Definis SUPABASE_URL et SUPABASE_ANON_KEY (ou SUPABASE_SERVICE_ROLE_KEY).",
+            "Configuration Supabase manquante. Definis SUPABASE_URL et SUPABASE_ANON_KEY (ou SUPABASE_SERVICE_ROLE_KEY). NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY est aussi accepte en fallback.",
         },
         { status: 500 }
       ),
