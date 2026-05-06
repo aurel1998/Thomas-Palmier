@@ -1128,15 +1128,16 @@ main li > a:not([class]):hover,
   pointer-events: none;
   z-index: 0;
   opacity: 0;
-  background: linear-gradient(
-    90deg,
-    rgb(255 255 255 / 0.45),
-    rgb(255 242 188 / 0.95) 42%,
-    rgb(255 255 255 / 1)
-  );
+  background:
+    repeating-linear-gradient(
+      115deg,
+      rgb(255 255 255 / 0.36) 0 6px,
+      rgb(255 255 255 / 0.06) 6px 12px
+    ),
+    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.25), rgb(var(--accent-rgb) / 0.96));
   box-shadow:
-    0 0 22px rgb(178 230 255 / 0.68),
-    0 0 1px rgb(255 255 255 / 0.95);
+    0 0 14px rgb(var(--accent-rgb) / 0.44),
+    0 0 1px rgb(var(--accent-rgb) / 0.88);
   will-change: transform, width, opacity;
 }
 
@@ -1197,26 +1198,21 @@ main li > a:not([class]):hover,
 .site-header__link.is-active .site-header__linkLabel::after {
   content: "";
   position: absolute;
-  left: -4px;
-  right: -3px;
-  bottom: -0.36em;
-  height: 0.56em;
-  border-radius: 12px 16px 10px 18px;
+  left: -2px;
+  right: -2px;
+  bottom: -0.22em;
+  height: 0.34em;
+  border-radius: 999px;
   z-index: -1;
-  transform: rotate(-1.15deg) skewX(-2deg);
+  transform: none;
   background:
-    radial-gradient(55% 90% at 12% 50%, rgb(255 243 168 / 0.85) 0%, transparent 72%),
-    radial-gradient(58% 90% at 86% 48%, rgb(255 220 110 / 0.75) 0%, transparent 74%),
-    linear-gradient(
-      92deg,
-      rgb(255 230 118 / 0.9) 0%,
-      rgb(255 247 188 / 0.96) 44%,
-      rgb(255 216 92 / 0.84) 100%
-    );
-  clip-path: polygon(0% 40%, 5% 18%, 16% 26%, 32% 12%, 54% 24%, 74% 14%, 92% 22%, 100% 42%, 98% 80%, 88% 92%, 68% 84%, 44% 94%, 24% 82%, 8% 90%, 0% 72%);
-  box-shadow:
-    0 0 18px rgb(255 232 124 / 0.5),
-    0 3px 0 rgb(0 0 0 / 0.1);
+    repeating-linear-gradient(
+      120deg,
+      rgb(255 255 255 / 0.22) 0 5px,
+      rgb(255 255 255 / 0.03) 5px 10px
+    ),
+    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.34), rgb(var(--accent-cool-rgb) / 0.46));
+  box-shadow: 0 0 12px rgb(var(--accent-rgb) / 0.28);
 }
 
 .site-header__link.is-active:hover .site-header__linkLabel,
