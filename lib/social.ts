@@ -2,7 +2,7 @@
 export const SOCIAL = {
   youtube: "https://www.youtube.com/@thomaspalmiertv",
   linkedin: "https://linkedin.com/in/thomas-palmier-7b18311a6",
-  instagram: "https://www.instagram.com/",
+  instagram: "https://www.instagram.com/thomas__palmier/",
   tiktok: "https://www.tiktok.com/",
   facebook: "https://www.facebook.com/thomaspalmier15",
 } as const;
