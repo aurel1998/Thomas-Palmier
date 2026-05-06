@@ -1128,13 +1128,7 @@ main li > a:not([class]):hover,
   pointer-events: none;
   z-index: 0;
   opacity: 0;
-  background:
-    repeating-linear-gradient(
-      115deg,
-      rgb(255 255 255 / 0.36) 0 6px,
-      rgb(255 255 255 / 0.06) 6px 12px
-    ),
-    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.25), rgb(var(--accent-rgb) / 0.96));
+  background: rgb(var(--accent-rgb) / 0.92);
   box-shadow:
     0 0 14px rgb(var(--accent-rgb) / 0.44),
     0 0 1px rgb(var(--accent-rgb) / 0.88);
@@ -1205,13 +1199,7 @@ main li > a:not([class]):hover,
   border-radius: 999px;
   z-index: -1;
   transform: none;
-  background:
-    repeating-linear-gradient(
-      120deg,
-      rgb(255 255 255 / 0.22) 0 5px,
-      rgb(255 255 255 / 0.03) 5px 10px
-    ),
-    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.34), rgb(var(--accent-cool-rgb) / 0.46));
+  background: rgb(var(--accent-rgb) / 0.34);
   box-shadow: 0 0 12px rgb(var(--accent-rgb) / 0.28);
 }
 
