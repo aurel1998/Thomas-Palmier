@@ -1,7 +1,7 @@
 /** URLs — remplacer par les profils réels. */
 export const SOCIAL = {
   youtube: "https://www.youtube.com/@thomaspalmiertv",
-  linkedin: "https://www.linkedin.com/",
+  linkedin: "https://www.linkedin.com/in/thomas-palmier-7b18311a6/",
   instagram: "https://www.instagram.com/",
   tiktok: "https://www.tiktok.com/",
   facebook: "https://www.facebook.com/thomaspalmier15",
