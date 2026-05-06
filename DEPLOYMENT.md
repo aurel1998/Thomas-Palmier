@@ -9,7 +9,7 @@ Ce guide met le projet en production avec Vercel (frontend/API Next) et Supabase
 3. Creez le bucket Storage `media` (public si vous servez des visuels publics).
 4. Recuperez les cles:
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (ou `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`)
    - `SUPABASE_URL` (meme valeur que `NEXT_PUBLIC_SUPABASE_URL`)
    - `SUPABASE_ANON_KEY` (meme valeur que `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
    - `SUPABASE_SERVICE_ROLE_KEY` (serveur uniquement)
@@ -19,7 +19,7 @@ Ce guide met le projet en production avec Vercel (frontend/API Next) et Supabase
 Copiez les variables de `.env.example` dans Vercel:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` (ou `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`)
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
