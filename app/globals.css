@@ -6887,7 +6887,9 @@ main li > a:not([class]):hover,
   .home-hero__title--name {
     font-size: clamp(1.7rem, 10.5vw, 2.7rem);
     max-width: none;
-    white-space: nowrap;
+    white-space: normal;
+    flex-wrap: wrap;
+    line-height: 1.04;
   }
 
   .home-hero__actions {
@@ -6920,6 +6922,10 @@ main li > a:not([class]):hover,
     font-size: 10.5px;
   }
 
+  .home-hero__lead {
+    max-width: 100%;
+  }
+
   .mes-hub__head {
     margin-bottom: 22px;
   }
@@ -6930,6 +6936,10 @@ main li > a:not([class]):hover,
 
   .collab-biz__heroKpis {
     grid-template-columns: 1fr;
+  }
+
+  .collab-biz__cta h2 {
+    max-width: 100%;
   }
 }
 
@@ -6970,6 +6980,15 @@ main li > a:not([class]):hover,
 }
 
 @media (max-width: 460px) {
+  .site-header__navActions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .theme-toggle {
+    justify-self: start;
+  }
+
   .contact-card {
     padding: 20px 14px;
   }
@@ -6986,6 +7005,17 @@ main li > a:not([class]):hover,
   .hybrid-content__resume {
     width: 100%;
     text-align: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .contact-requestType__options label {
+    flex: 1 1 100%;
+  }
+
+  .video-responsive__play {
+    width: 56px;
+    height: 56px;
   }
 }
 
