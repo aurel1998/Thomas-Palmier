@@ -1,9 +1,9 @@
 /** Vidéo sportive immersive locale (ancienne version, plus nette). */
 export const HERO_VIDEO_MP4_DEFAULT = "/video2.mp4";
 
-/** Secours si la source principale échoue (ex. CDN). */
+/** Secours : on garde la meme source nette (video2). */
 export const HERO_VIDEO_MP4_FALLBACK =
-  "/videos/hero-fallback.mp4";
+  "/video2.mp4";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";
