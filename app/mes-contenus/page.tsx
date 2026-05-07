@@ -254,6 +254,31 @@ export default function MesContenusPage() {
     return () => observer.disconnect();
   }, [hasMore, isLoading, usingFallback, loadMore]);
 
+  const availableTypeFilters = useMemo(
+    () => TYPE_FILTERS.filter((f) => items.some((item) => matchTypeFilter(item, f))),
+    [items]
+  );
+  const availableThemeFilters = useMemo(
+    () => THEME_FILTERS.filter((f) => items.some((item) => matchThemeFilter(item, f))),
+    [items]
+  );
+  const availableFormatFilters = useMemo(
+    () => FORMAT_FILTERS.filter((f) => items.some((item) => matchFormatFilter(item, f))),
+    [items]
+  );
+
+  useEffect(() => {
+    setSelectedTypes((prev) => prev.filter((f) => availableTypeFilters.includes(f)));
+  }, [availableTypeFilters]);
+
+  useEffect(() => {
+    setSelectedThemes((prev) => prev.filter((f) => availableThemeFilters.includes(f)));
+  }, [availableThemeFilters]);
+
+  useEffect(() => {
+    setSelectedFormats((prev) => prev.filter((f) => availableFormatFilters.includes(f)));
+  }, [availableFormatFilters]);
+
   const filteredItems = useMemo(() => {
     const hasType = selectedTypes.length > 0;
     const hasTheme = selectedThemes.length > 0;
@@ -581,7 +606,7 @@ export default function MesContenusPage() {
             <div className="mes-hub__filterGroup">
               <span className="mes-hub__filterLabel">Type</span>
               <div className="contenus-filters">
-                {TYPE_FILTERS.map((f) => {
+                {availableTypeFilters.map((f) => {
                   const active = selectedTypes.includes(f);
                   return (
                     <button
@@ -600,7 +625,7 @@ export default function MesContenusPage() {
             <div className="mes-hub__filterGroup">
               <span className="mes-hub__filterLabel">Thème</span>
               <div className="contenus-filters">
-                {THEME_FILTERS.map((f) => {
+                {availableThemeFilters.map((f) => {
                   const active = selectedThemes.includes(f);
                   return (
                     <button
@@ -619,7 +644,7 @@ export default function MesContenusPage() {
             <div className="mes-hub__filterGroup">
               <span className="mes-hub__filterLabel">Format</span>
               <div className="contenus-filters">
-                {FORMAT_FILTERS.map((f) => {
+                {availableFormatFilters.map((f) => {
                   const active = selectedFormats.includes(f);
                   return (
                     <button

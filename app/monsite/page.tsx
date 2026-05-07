@@ -3,7 +3,7 @@
 import gsap from "gsap";
 import { isReducedMotion, motion } from "../../lib/gsapMotion";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import type { Content, ContentType } from "../../types/content";
 import type { Category } from "../../types/category";
@@ -641,6 +641,29 @@ export default function MonSitePage() {
     }
   }
 
+  const existingTagSuggestions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of contents) {
+      for (const tag of item.tags ?? []) {
+        const trimmed = tag.trim();
+        if (!trimmed) continue;
+        const key = trimmed.toLowerCase();
+        if (!map.has(key)) map.set(key, trimmed);
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b, "fr")).slice(0, 18);
+  }, [contents]);
+
+  function onToggleTagSuggestion(tag: string) {
+    const current = tagsInput
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    const exists = current.some((t) => t.toLowerCase() === tag.toLowerCase());
+    const next = exists ? current.filter((t) => t.toLowerCase() !== tag.toLowerCase()) : [...current, tag];
+    setTagsInput(next.join(", "));
+  }
+
   async function runAssistant(action: "summary" | "tags" | "seo") {
     if (!content.trim()) {
       pushToast("info", "Ajoute d'abord un contenu pour lancer l'assistance.");
@@ -838,6 +861,26 @@ export default function MonSitePage() {
             onChange={(e) => setTagsInput(e.target.value)}
           />
           <p className="admin-field__hint">Saisie rapide: separe les tags par des virgules.</p>
+          {existingTagSuggestions.length > 0 ? (
+            <div className="admin-tagSuggestions" aria-label="Tags déjà utilisés">
+              {existingTagSuggestions.map((tag) => {
+                const active = tagsInput
+                  .split(",")
+                  .map((t) => t.trim().toLowerCase())
+                  .includes(tag.toLowerCase());
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={`admin-tagSuggestion${active ? " is-active" : ""}`}
+                    onClick={() => onToggleTagSuggestion(tag)}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
 
         <div className="admin-field">
