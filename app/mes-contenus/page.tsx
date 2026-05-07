@@ -569,7 +569,7 @@ export default function MesContenusPage() {
         </nav>
 
         {showEmptyGlobal ? (
-          <p className="contenus-empty muted">Aucun récit publié pour le moment.</p>
+          <p className="contenus-empty muted">Les premiers contenus arrivent bientôt.</p>
         ) : null}
 
         {!showEmptyGlobal ? (
@@ -666,7 +666,7 @@ export default function MesContenusPage() {
         ) : null}
 
         {showEmptyFiltered ? (
-          <p className="contenus-empty muted">Aucun contenu ne correspond à cette combinaison de filtres.</p>
+          <p className="contenus-empty muted">Aucun contenu ne correspond à vos filtres.</p>
         ) : null}
 
         {!showEmptyGlobal && !showEmptyFiltered ? (
@@ -678,14 +678,14 @@ export default function MesContenusPage() {
             >
             <SectionHeader
               eyebrow="Ouverture"
-              title="Featured"
-              subtitle="Les contenus qui portent la ligne éditoriale du moment."
+              title="À la une"
+              subtitle="Les contenus qui incarnent la ligne éditoriale du moment."
               titleId="mes-contenus-featured-title"
             />
 
             {isLoading ? (
               <p className="contenus-pending muted" role="status">
-                Chargement du hub éditorial…
+                Chargement des contenus…
               </p>
             ) : (
               <>
@@ -721,7 +721,7 @@ export default function MesContenusPage() {
                 <SectionHeader
                   eyebrow="Suite"
                   title="Histoires récentes"
-                  subtitle="Chaque publication devient un chapitre immersif dans un récit continu."
+                  subtitle="Les dernières publications du flux éditorial."
                   titleId="mes-contenus-recent-title"
                 />
                 <div className="mes-storyline" role="list">

@@ -59,8 +59,7 @@ export function EditorialSelectionSection({
               Sélection éditoriale
             </h2>
             <p className="muted editorial-selection__lede">
-              Les contenus sont regroupés par catégorie éditoriale (Analyses, Enquêtes, Coulisses...)
-              dans des rails horizontaux fluides.
+              Les contenus sont réunis par thématiques pour une lecture claire.
             </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
@@ -68,7 +67,7 @@ export function EditorialSelectionSection({
 
         {showCategoryHint ? (
           <p className="muted editorial-selection__hint" role="status">
-            La sélection par catégories arrive avec les prochaines publications.
+            Les prochaines publications alimenteront cette sélection.
           </p>
         ) : null}
 

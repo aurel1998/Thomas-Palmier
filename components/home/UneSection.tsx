@@ -63,7 +63,7 @@ export function UneSection({ initialContents }: UneSectionProps) {
             <div className="home-sectionEyebrow">Mise en avant</div>
             <h2 className="home-sectionTitle">À la une</h2>
             <p className="muted home-une__lede">
-              Le deuxième temps fort du flux — après le récit principal ci-dessus.
+              Une sélection courte des contenus à retenir.
             </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
