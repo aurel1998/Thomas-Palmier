@@ -830,12 +830,6 @@ export default function MesContenusPage() {
               </p>
             ) : null}
 
-            {!hasMore && !isLoadingMore ? (
-              <p className="contenus-flux__end muted">
-                Vous avez tout vu.
-              </p>
-            ) : null}
-
             <div ref={sentinelRef} className="contenus-flux__sentinel" aria-hidden="true" />
           </div>
         ) : null}
