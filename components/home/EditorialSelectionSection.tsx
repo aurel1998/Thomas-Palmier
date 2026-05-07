@@ -68,8 +68,7 @@ export function EditorialSelectionSection({
 
         {showCategoryHint ? (
           <p className="muted editorial-selection__hint" role="status">
-            Aucun contenu catégorisé pour le moment. Associez une catégorie à vos publications dans
-            l’admin pour les faire apparaître ici.
+            La sélection par catégories arrive avec les prochaines publications.
           </p>
         ) : null}
 
