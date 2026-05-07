@@ -8665,6 +8665,10 @@ main li > a:not([class]):hover,
   background: var(--video-shell);
 }
 
+.video-responsive__native--youtubeAmbient {
+  pointer-events: none;
+}
+
 /* Poster statique avant chargement MP4 (lazy viewport) : meme cadrage. */
 .video-responsive__native--poster {
   object-fit: cover;
