@@ -12,7 +12,6 @@ import {
 } from "../../lib/youtube";
 import { normalizeMediaSource } from "../../lib/mediaSource";
 import { ContentImage } from "./ContentImage";
-import { VideoModal } from "./VideoModal";
 
 type AmbientInlineVideoProps = {
   src: string;
@@ -31,12 +30,33 @@ type AmbientInlineYouTubeProps = {
 function AmbientInlineVideo({ src, poster, className }: AmbientInlineVideoProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const inView = useInViewOnce(wrapRef, "120px", 0.02);
+  const [inView, setInView] = useState(false);
+  const desktop = typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches;
 
   useEffect(() => {
-    if (!inView) return;
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setInView(Boolean(entry?.isIntersecting));
+      },
+      { root: null, threshold: 0.28, rootMargin: "120px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    if (!inView) {
+      v.pause();
+      return;
+    }
     v.load();
     void v.play().catch(() => {});
   }, [inView]);
@@ -50,7 +70,7 @@ function AmbientInlineVideo({ src, poster, className }: AmbientInlineVideoProps)
           src={src}
           poster={poster}
           muted
-          loop
+          loop={desktop}
           playsInline
           preload="none"
           autoPlay
@@ -73,12 +93,30 @@ function AmbientInlineVideo({ src, poster, className }: AmbientInlineVideoProps)
 /** YouTube ambiance inline : iframe chargée seulement en viewport, autoplay mute/loop. */
 function AmbientInlineYouTube({ ytId, poster, className, title }: AmbientInlineYouTubeProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const inView = useInViewOnce(wrapRef, "120px", 0.02);
+  const [inView, setInView] = useState(false);
+  const desktop = typeof window !== "undefined" && window.matchMedia("(min-width: 901px)").matches;
   const embedSrc = getYouTubeEmbedUrl(ytId, {
-    autoplay: true,
+    autoplay: desktop,
     mute: true,
-    loop: true,
+    loop: desktop,
   });
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        setInView(Boolean(entry?.isIntersecting));
+      },
+      { root: null, threshold: 0.28, rootMargin: "120px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div ref={wrapRef} className={className}>
@@ -128,7 +166,7 @@ type VideoPlayerProps = {
  * VideoPlayer premium :
  * - Affiche une thumbnail (poster ou vignette YouTube auto)
  * - Bouton play custom au centre, avec halo anime
- * - Clic -> ouvre une modal plein ecran avec l'iframe YouTube (ou <video>)
+ * - Clic -> lecture inline dans le meme bloc (pas de modale)
  *
  * Perf : MP4 inline charge seulement en viewport ; vignettes via next/image ;
  * pulse play seulement quand le bouton est visible.
@@ -144,14 +182,14 @@ export function VideoPlayer({
   const mediaSrc = normalizeMediaSource(src);
   const ytId = extractYouTubeId(mediaSrc);
   const thumb = poster || (ytId ? getYouTubeThumbnail(ytId, "max") : undefined);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [playingInline, setPlayingInline] = useState(false);
   const [displayThumb, setDisplayThumb] = useState<string | undefined>(thumb);
   const pulseRef = useRef<HTMLSpanElement | null>(null);
   const playBtnRef = useRef<HTMLButtonElement | null>(null);
   const btnInView = useInViewOnce(playBtnRef, "100px", 0.02);
 
   useEffect(() => {
-    if (modalOpen || !btnInView) return;
+    if (playingInline || !btnInView) return;
     const el = pulseRef.current;
     if (!el) return;
     if (isReducedMotion()) return;
@@ -167,7 +205,7 @@ export function VideoPlayer({
     return () => {
       tl.kill();
     };
-  }, [modalOpen, btnInView]);
+  }, [playingInline, btnInView]);
 
   useEffect(() => {
     setDisplayThumb(thumb);
@@ -183,59 +221,74 @@ export function VideoPlayer({
     return <AmbientInlineYouTube ytId={ytId} poster={displayThumb} className={rootClass} title={title} />;
   }
 
-  // --- Mode click-to-play avec modal ----------------------------------
+  // --- Mode click-to-play inline ----------------------------------
   const labelTitle = title && title.length ? title : "la video";
 
   return (
-    <>
-      <button
-        ref={playBtnRef}
-        type="button"
-        className={`${rootClass} video-responsive--clickable`}
-        onClick={() => setModalOpen(true)}
-        aria-label={`Lire ${labelTitle}`}
-        aria-haspopup="dialog"
-      >
-        {displayThumb ? (
-          <Image
-            src={displayThumb}
-            alt={title ?? ""}
-            fill
-            sizes="(max-width: 900px) 100vw, 50vw"
-            className="video-responsive__poster"
+    <div className={rootClass}>
+      {playingInline ? (
+        ytId ? (
+          <iframe
+            className="video-responsive__iframe"
+            src={getYouTubeEmbedUrl(ytId, { autoplay: true })}
+            title={labelTitle}
             loading="lazy"
-            draggable={false}
-            onError={() => {
-              if (!ytId) return;
-              const fallback = getYouTubeThumbnail(ytId, "hq");
-              setDisplayThumb((cur) => (cur !== fallback ? fallback : cur));
-            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
           />
         ) : (
-          <span className="video-responsive__placeholder" aria-hidden="true" />
-        )}
+          <video
+            className="video-responsive__native"
+            src={mediaSrc}
+            poster={poster}
+            controls
+            autoPlay
+            playsInline
+            preload="metadata"
+          />
+        )
+      ) : (
+        <button
+          ref={playBtnRef}
+          type="button"
+          className="video-responsive__launch video-responsive--clickable"
+          onClick={() => setPlayingInline(true)}
+          aria-label={`Lire ${labelTitle}`}
+        >
+          {displayThumb ? (
+            <Image
+              src={displayThumb}
+              alt={title ?? ""}
+              fill
+              sizes="(max-width: 900px) 100vw, 50vw"
+              className="video-responsive__poster"
+              loading="lazy"
+              draggable={false}
+              onError={() => {
+                if (!ytId) return;
+                const fallback = getYouTubeThumbnail(ytId, "hq");
+                setDisplayThumb((cur) => (cur !== fallback ? fallback : cur));
+              }}
+            />
+          ) : (
+            <span className="video-responsive__placeholder" aria-hidden="true" />
+          )}
 
-        <span className="video-responsive__gradient" aria-hidden="true" />
+          <span className="video-responsive__gradient" aria-hidden="true" />
 
-        {hidePlayButton ? null : (
-          <span className="video-responsive__playWrap" aria-hidden="true">
-            <span ref={pulseRef} className="video-responsive__pulse" />
-            <span className="video-responsive__play">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M8 5.14v13.72L19 12 8 5.14z" />
-              </svg>
+          {hidePlayButton ? null : (
+            <span className="video-responsive__playWrap" aria-hidden="true">
+              <span ref={pulseRef} className="video-responsive__pulse" />
+              <span className="video-responsive__play">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                  <path d="M8 5.14v13.72L19 12 8 5.14z" />
+                </svg>
+              </span>
             </span>
-          </span>
-        )}
-      </button>
-
-      <VideoModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        src={mediaSrc}
-        title={title}
-        poster={poster}
-      />
-    </>
+          )}
+        </button>
+      )}
+    </div>
   );
 }
