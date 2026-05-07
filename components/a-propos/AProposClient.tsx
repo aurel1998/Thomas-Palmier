@@ -82,6 +82,16 @@ export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) 
       <div className="container apropos-story__container">
         <header className="apropos-story__intro">
           <p className="home-sectionEyebrow">À propos</p>
+          <div className="apropos-story__introAvatar" aria-hidden="true">
+            <ContentImage
+              src={profileImageUrl}
+              alt=""
+              fill
+              priority
+              sizes="120px"
+              className="apropos-story__introAvatarImg"
+            />
+          </div>
           <h1 className="apropos-story__title">Thomas Palmier, journaliste sportif</h1>
           <p className="apropos-story__lead">
             Journaliste de terrain et de décryptage, Thomas construit des récits qui rendent le sport

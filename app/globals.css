@@ -5864,6 +5864,23 @@ main li > a:not([class]):hover,
   max-width: 72ch;
 }
 
+.apropos-story__introAvatar {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin-top: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--text-rgb) / 0.2);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.26);
+}
+
+.apropos-story__introAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .apropos-story__title {
   margin: 10px 0 0;
   color: var(--text);
@@ -6179,6 +6196,10 @@ main li > a:not([class]):hover,
 }
 
 @media (min-width: 980px) {
+  .apropos-story__introAvatar {
+    display: none;
+  }
+
   .apropos-story__layout {
     grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
     align-items: start;
