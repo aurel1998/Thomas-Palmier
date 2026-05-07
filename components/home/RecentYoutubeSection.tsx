@@ -30,7 +30,7 @@ export function RecentYoutubeSection({ items }: RecentYoutubeSectionProps) {
           <div className="home-sectionRule" aria-hidden="true" />
         </div>
 
-        <div className="recent-yt__viewport" tabIndex={0}>
+        <div className="recent-yt__viewport">
           <ul className="recent-yt__track" role="list">
             {items.map((item) => (
               <li key={item.id} className="recent-yt__cell">
