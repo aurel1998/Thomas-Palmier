@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import gsap from "gsap";
-import { isReducedMotion, motion } from "../../lib/gsapMotion";
+import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
 
 /**
  * MicroInteractions : moteur unique (monte 1x dans le layout racine) qui
@@ -164,6 +164,42 @@ export function MicroInteractions() {
       document.removeEventListener("pointerdown", pressDown);
       document.removeEventListener("pointerup", pressUp);
       document.removeEventListener("pointercancel", pressUp);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (isReducedMotion()) return;
+
+    ensureScrollTrigger();
+
+    const sections = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".home-une, .home-recent, .contact-wrap, .collab-biz__hero, .apropos-page .story-section"
+      )
+    );
+    if (!sections.length) return;
+
+    const tweens = sections.map((section) =>
+      gsap.fromTo(
+        section,
+        { autoAlpha: 0, y: 36 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: motion.duration.reveal,
+          ease: motion.ease.out,
+          scrollTrigger: {
+            trigger: section,
+            start: motion.scroll.startReveal,
+            toggleActions: motion.scroll.toggleOnce,
+          },
+        }
+      )
+    );
+
+    return () => {
+      tweens.forEach((tw) => tw.kill());
     };
   }, []);
 

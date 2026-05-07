@@ -264,6 +264,8 @@ export function HeroSection({
     if (isReducedMotion()) return;
     const section = sectionRef.current;
     const media = mediaRef.current;
+    const overlay = overlayRef.current;
+    const float = floatRef.current;
     if (!section || !media) return;
 
     ensureScrollTrigger();
@@ -284,6 +286,37 @@ export function HeroSection({
           },
         }
       );
+
+      if (float) {
+        gsap.to(float, {
+          y: -22,
+          opacity: 0.84,
+          ease: motion.ease.none,
+          scrollTrigger: {
+            trigger: section,
+            start: "top top",
+            end: "bottom top",
+            scrub: motion.parallax.scrub,
+          },
+        });
+      }
+
+      if (overlay) {
+        gsap.fromTo(
+          overlay,
+          { opacity: 1 },
+          {
+            opacity: 0.8,
+            ease: motion.ease.none,
+            scrollTrigger: {
+              trigger: section,
+              start: "top top",
+              end: "bottom top",
+              scrub: motion.parallax.scrub,
+            },
+          }
+        );
+      }
 
       if (charsRef.current.length) {
         gsap.fromTo(

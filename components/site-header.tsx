@@ -181,6 +181,19 @@ export function SiteHeader() {
   }, [pathname]);
 
   useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.classList.toggle("mobile-menu-open", menuOpen);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.classList.remove("mobile-menu-open");
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
     for (const href of PREFETCH_HREFS) {
       router.prefetch(href);
     }
