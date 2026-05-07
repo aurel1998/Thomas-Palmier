@@ -61,7 +61,7 @@ export function getStoryChapters(item: Content): { lead: string; chapters: strin
 export function formatStoryLabel(type: ContentType): string {
   switch (type) {
     case "video":
-      return "Récit visuel";
+      return "Focus vidéo";
     case "audio":
       return "Récit audio";
     default:
