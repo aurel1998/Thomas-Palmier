@@ -183,6 +183,23 @@ export default function ThreeBackdrop() {
     const pointsFar = new THREE.Points(geoFar, matFar);
     group.add(pointsFar);
 
+    const haloGeo = new THREE.RingGeometry(2.9, 3.45, 96);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: lite ? 0.06 : 0.09,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.rotation.x = Math.PI / 2;
+    halo.position.z = -0.5;
+    group.add(halo);
+
+    let haloOpacityDark = lite ? 0.06 : 0.095;
+    let haloOpacityLight = lite ? 0.028 : 0.042;
+
     const icoGeo = new THREE.IcosahedronGeometry(3.2, 0);
     const icoMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
@@ -222,6 +239,9 @@ export default function ThreeBackdrop() {
         icoMat.opacity = lite ? 0.048 : 0.07;
         ringMat.color.copy(accent).lerp(blue, 0.5);
         ringMat.opacity = lite ? 0.028 : 0.042;
+        haloMat.color.copy(accent).lerp(blue, 0.42);
+        haloOpacityDark = lite ? 0.06 : 0.095;
+        haloMat.opacity = haloOpacityDark;
         auroraUniforms.uTheme.value = 0;
       } else {
         matNear.color.setRGB(0.22, 0.2, 0.18);
@@ -234,6 +254,9 @@ export default function ThreeBackdrop() {
         icoMat.opacity = lite ? 0.032 : 0.044;
         ringMat.color.setRGB(0.24, 0.22, 0.2);
         ringMat.opacity = lite ? 0.02 : 0.03;
+        haloMat.color.copy(accent).multiplyScalar(0.6);
+        haloOpacityLight = lite ? 0.028 : 0.042;
+        haloMat.opacity = haloOpacityLight;
         auroraUniforms.uTheme.value = 1;
       }
       auroraUniforms.uAccent.value.copy(accent);
@@ -295,6 +318,11 @@ export default function ThreeBackdrop() {
       ico.rotation.y = t * 0.05 + mx * 0.12;
       ring.rotation.x = -t * 0.06 + my * 0.12;
       ring.rotation.y = t * 0.08 + mx * 0.16;
+      const pulse = 1 + Math.sin(t * 0.72) * 0.06;
+      halo.scale.setScalar(pulse);
+      halo.rotation.z = t * 0.24;
+      const baseHalo = theme === "dark" ? haloOpacityDark : haloOpacityLight;
+      haloMat.opacity = baseHalo * (0.92 + 0.08 * (0.5 + 0.5 * Math.sin(t * 1.15)));
       auroraUniforms.uTime.value = t;
 
       renderer.render(scene, camera);
@@ -320,10 +348,12 @@ export default function ThreeBackdrop() {
       geoFar.dispose();
       icoGeo.dispose();
       ringGeo.dispose();
+      haloGeo.dispose();
       matNear.dispose();
       matFar.dispose();
       icoMat.dispose();
       ringMat.dispose();
+      haloMat.dispose();
       auroraMat.dispose();
       tex.dispose();
       renderer.dispose();
