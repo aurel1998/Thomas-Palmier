@@ -1042,30 +1042,41 @@ main li > a:not([class]):hover,
   display: none;
   width: 44px;
   height: 44px;
+  position: relative;
   border-radius: 12px;
   border: 1px solid rgb(255 255 255 / 0.42);
   background: rgb(0 0 0 / 0.2);
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  flex-direction: column;
 }
 
 .site-header__menuToggle span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   display: block;
   width: 18px;
   height: 2px;
   border-radius: 999px;
   background: rgb(255 255 255 / 0.96);
   transition: transform 0.22s ease, opacity 0.22s ease;
+  transform-origin: center;
+}
+
+.site-header__menuToggle span:first-child {
+  transform: translate(-50%, -5px);
+}
+
+.site-header__menuToggle span:last-child {
+  transform: translate(-50%, 5px);
 }
 
 .site-header__menuToggle.is-open span:first-child {
-  transform: translateY(3.5px) rotate(45deg);
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 
 .site-header__menuToggle.is-open span:last-child {
-  transform: translateY(-3.5px) rotate(-45deg);
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 /* Liens principaux + barre d’indicateur (GSAP : position / largeur glissante) */
@@ -7227,16 +7238,22 @@ main li > a:not([class]):hover,
   .site-header__inner {
     min-height: 88px;
     gap: 14px;
-    align-items: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
     padding-block: 10px;
   }
 
   .site-header__nav {
+    order: 3;
     width: 100%;
     display: none;
     grid-template-columns: 1fr;
     gap: 10px;
-    padding-bottom: 10px;
+    padding: 10px 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgb(var(--accent-rgb) / 0.26);
+    background: color-mix(in srgb, var(--header-surface) 88%, transparent);
+    backdrop-filter: blur(14px);
   }
 
   .site-header__nav.is-open {
@@ -7260,10 +7277,14 @@ main li > a:not([class]):hover,
   .site-header__menuToggle {
     display: inline-flex;
     margin-left: auto;
+    flex: 0 0 auto;
+    align-self: center;
+    z-index: 5;
   }
 
   .site-header__start {
     flex: 1 1 auto;
+    min-width: 0;
   }
 
   .site-header__start .social-links--header {
@@ -7299,6 +7320,12 @@ main li > a:not([class]):hover,
 
   .hybrid-content__toc {
     position: static;
+  }
+}
+
+@media (max-width: 860px) {
+  body.mobile-menu-open {
+    overflow: hidden;
   }
 }
 
