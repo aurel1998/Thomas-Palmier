@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { Content } from "../../types/content";
-import { isReducedMotion } from "../../lib/gsapMotion";
-import { extractYouTubeId } from "../../lib/youtube";
 import { VideoPlayer } from "../media/VideoPlayer";
 
 type RecentYoutubeSectionProps = {
@@ -11,8 +8,8 @@ type RecentYoutubeSectionProps = {
 };
 
 /**
- * Bande « Vidéos récentes » : uniquement YouTube, défilement horizontal,
- * prévisualisation embed au survol (pointeur fin), lecture plein écran via modale.
+ * Bande « Vidéos récentes » : cartes YouTube en défilement horizontal,
+ * lecture inline au clic sans bloquer le scroll de page.
  */
 export function RecentYoutubeSection({ items }: RecentYoutubeSectionProps) {
   if (!items.length) return null;
@@ -48,33 +45,14 @@ export function RecentYoutubeSection({ items }: RecentYoutubeSectionProps) {
 }
 
 function YoutubeHoverCard({ item }: { item: Content }) {
-  const ytId = extractYouTubeId(item.content);
-  const [hover, setHover] = useState(false);
-  const [fineHover, setFineHover] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const apply = () => setFineHover(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-
-  const reduced = isReducedMotion();
-  const autoplayAmbient = Boolean(ytId && fineHover && !reduced && hover);
-
   return (
-    <article
-      className="recent-yt-card"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
+    <article className="recent-yt-card">
       <div className="recent-yt-card__media">
         <VideoPlayer
           src={item.content}
           poster={item.image_url}
           title={item.title}
-          autoplay={autoplayAmbient}
+          autoplay={false}
           className="recent-yt-card__video"
         />
         <div className="recent-yt-card__shade" aria-hidden="true" />
