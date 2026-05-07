@@ -125,29 +125,33 @@ export default function HybridContentPage() {
     <section className="hybrid-content">
       <div className="container hybrid-content__container">
         <header className="hybrid-content__head">
-          <div className="hybrid-content__progress" aria-hidden="true">
-            <span style={{ transform: `scaleX(${Math.max(0.03, progress / 100)})` }} />
-          </div>
+          {!loading && item ? (
+            <div className="hybrid-content__progress" aria-hidden="true">
+              <span style={{ transform: `scaleX(${Math.max(0.03, progress / 100)})` }} />
+            </div>
+          ) : null}
           <Link href="/mes-contenus" className="hybrid-content__back">
             Retour aux contenus
           </Link>
           {item ? <p className="home-sectionEyebrow">{item.tags[0] ?? "Édition"}</p> : null}
           <h1 className="hybrid-content__title">
-            {loading ? "Chargement..." : item?.title ?? "Contenu hybride"}
+            {loading ? "Ouverture du contenu..." : item?.title ?? "Contenu"}
           </h1>
-          <div className="hybrid-content__metaRow">
-            <span className="hybrid-content__progressLabel">Progression: {Math.round(progress)}%</span>
-            {resumeReady ? (
-              <button type="button" className="hybrid-content__resume" onClick={resumeReading}>
-                Reprendre la lecture
-              </button>
-            ) : null}
-          </div>
+          {!loading && item ? (
+            <div className="hybrid-content__metaRow">
+              <span className="hybrid-content__progressLabel">Progression: {Math.round(progress)}%</span>
+              {resumeReady ? (
+                <button type="button" className="hybrid-content__resume" onClick={resumeReading}>
+                  Reprendre la lecture
+                </button>
+              ) : null}
+            </div>
+          ) : null}
         </header>
 
-        {error ? (
+        {error && !loading ? (
           <p className="hybrid-content__state muted" role="status">
-            {error}
+            Ce contenu n’est plus disponible.
           </p>
         ) : null}
 
@@ -158,7 +162,7 @@ export default function HybridContentPage() {
         ) : null}
 
         {!loading && !error && blocks.length > 0 ? (
-          <article className="hybrid-content__storyLayout">
+          <article className={`hybrid-content__storyLayout${textChapters.length === 0 ? " hybrid-content__storyLayout--noToc" : ""}`}>
             {textChapters.length > 0 ? (
               <aside className="hybrid-content__toc" aria-label="Table des chapitres">
                 <p className="hybrid-content__tocTitle">Chapitres</p>
