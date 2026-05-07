@@ -96,9 +96,11 @@ export const FeatureContentCard = forwardRef<HTMLElement, FeatureContentCardProp
           </div>
           <h3 className="contenus-feature__title">{item.title}</h3>
           {videoTeaser ? <p className="contenus-feature__videoTeaser">{videoTeaser}</p> : null}
-          <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
-            Lire le récit
-          </Link>
+          {item.type !== "video" ? (
+            <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
+              Ouvrir le contenu
+            </Link>
+          ) : null}
           {item.type === "audio" ? (
             <div className="contenus-feature__audioDock">
               <AudioPlayer src={item.content} title={item.title} variant="default" />

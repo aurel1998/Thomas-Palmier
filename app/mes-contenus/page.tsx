@@ -832,13 +832,7 @@ export default function MesContenusPage() {
 
             {!hasMore && !isLoadingMore ? (
               <p className="contenus-flux__end muted">
-                Fin du fil
-                {typeof total === "number" && total > 0 ? (
-                  <>
-                    {" · "}
-                    <strong>{total}</strong> {total > 1 ? "passages" : "passage"}
-                  </>
-                ) : null}
+                Vous avez tout vu.
               </p>
             ) : null}
 

@@ -3167,6 +3167,11 @@ main li > a:not([class]):hover,
   box-shadow: none;
 }
 
+.feature-story__player.video-responsive .video-responsive__poster,
+.feature-story__player.video-responsive .video-responsive__native {
+  object-position: center center;
+}
+
 .feature-story__player.video-responsive .video-responsive__gradient {
   opacity: 0.65;
 }
@@ -3500,6 +3505,8 @@ main li > a:not([class]):hover,
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--accent-rgb) / 0.35) transparent;
@@ -5912,12 +5919,12 @@ main li > a:not([class]):hover,
 
 /* /a-propos page */
 .apropos-page {
-  padding: clamp(72px, 10vw, 96px) 0 clamp(104px, 13vw, 128px);
+  padding: clamp(30px, 5.6vw, 52px) 0 clamp(90px, 12vw, 124px);
 }
 
 .apropos-story__container {
   display: grid;
-  gap: clamp(24px, 3.8vw, 36px);
+  gap: clamp(12px, 2.2vw, 20px);
 }
 
 .apropos-story__layout {

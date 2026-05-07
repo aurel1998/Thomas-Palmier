@@ -1,7 +1,6 @@
 "use client";
 
 import gsap from "gsap";
-import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import type { Content } from "../../types/content";
 import { extractYouTubeId } from "../../lib/youtube";
@@ -121,15 +120,15 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
   }, [story?.id]);
 
   if (!story) return null;
-
-  const videoAmbient = story.type === "video";
+  const isVideoStory = story.type === "video";
 
   return (
     <section
       ref={sectionRef}
       className="feature-story"
       id="recit"
-      aria-labelledby="feature-story-heading"
+      aria-label={isVideoStory ? "Vidéo à la une" : undefined}
+      aria-labelledby={isVideoStory ? undefined : "feature-story-heading"}
     >
       <div className="feature-story__mediaStage">
         <div ref={mediaInnerRef} className="feature-story__mediaInner">
@@ -139,8 +138,8 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
                 src={story.content}
                 poster={story.image_url}
                 title={story.title}
-                autoplay={videoAmbient}
-                hidePlayButton={videoAmbient}
+                autoplay={false}
+                hidePlayButton={false}
                 className="feature-story__player"
               />
               <div className="feature-story__mediaGrain" aria-hidden="true" />
@@ -165,42 +164,38 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
         </div>
       </div>
 
-      <div className="feature-story__scroll">
-        <div className="container feature-story__container">
-          <header className="feature-story__header">
-            <span className="feature-story__eyebrow">{formatStoryLabel(story.type)}</span>
-            <h2 id="feature-story-heading" className="feature-story__title">
-              {story.title}
-            </h2>
-            <p className="feature-story__lead">{lead}</p>
-            {story.type === "article" ? (
-              <p className="feature-story__progressMeta">Chapitres: {Math.max(chapters.length, 1)} · Lecture immersive</p>
+      {!isVideoStory ? (
+        <div className="feature-story__scroll">
+          <div className="container feature-story__container">
+            <header className="feature-story__header">
+              <span className="feature-story__eyebrow">{formatStoryLabel(story.type)}</span>
+              <h2 id="feature-story-heading" className="feature-story__title">
+                {story.title}
+              </h2>
+              <p className="feature-story__lead">{lead}</p>
+              {story.type === "article" ? (
+                <p className="feature-story__progressMeta">Chapitres: {Math.max(chapters.length, 1)} · Lecture immersive</p>
+              ) : null}
+            </header>
+
+            {story.type === "audio" ? (
+              <div className="feature-story__audioBlock" data-story-reveal>
+                <AudioPlayer src={story.content} title={story.title} variant="default" />
+              </div>
             ) : null}
-          </header>
 
-          {story.type === "audio" ? (
-            <div className="feature-story__audioBlock" data-story-reveal>
-              <AudioPlayer src={story.content} title={story.title} variant="default" />
-            </div>
-          ) : null}
-
-          {chapters.length > 0 ? (
-            <div className="feature-story__chapters">
-              {chapters.map((text, i) => (
-                <p key={`${story.id}-ch-${i}`} className="feature-story__chapter">
-                  {text}
-                </p>
-              ))}
-            </div>
-          ) : null}
-
-          <div className="feature-story__cta" data-story-reveal>
-            <Link href={`/mes-contenus/${story.id}`} className="btn btn-secondary feature-story__link">
-              Voir le contenu
-            </Link>
+            {chapters.length > 0 ? (
+              <div className="feature-story__chapters">
+                {chapters.map((text, i) => (
+                  <p key={`${story.id}-ch-${i}`} className="feature-story__chapter">
+                    {text}
+                  </p>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
