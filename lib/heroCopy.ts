@@ -1,9 +1,9 @@
 /** Vidéo de fond du hero (version locale stable). */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4";
+export const HERO_VIDEO_MP4_DEFAULT = "/src/video/video2.mp4";
 
 /** Secours si la source principale n'est pas lisible. */
 export const HERO_VIDEO_MP4_FALLBACK =
-  "/videos/hero-fallback.mp4";
+  "/src/video/video2.mp4";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";
