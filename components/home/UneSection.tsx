@@ -7,7 +7,7 @@ import { FeatureContentCard } from "../contenus/FeatureContentCard";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
 
 type UneSectionProps = {
-  /** Contenus du serveur : la une = 2ᵉ publication (la 1ʳᵉ est le Feature Story). */
+  /** Contenus du serveur : priorité au contenu marqué "à la une". */
   initialContents?: Content[];
 };
 
@@ -17,7 +17,7 @@ export function UneSection({ initialContents }: UneSectionProps) {
 
   const featured = useMemo<Content | null>(() => {
     if (!initialContents?.length) return null;
-    return initialContents[1] ?? null;
+    return initialContents.find((item) => item.is_featured) ?? initialContents[0] ?? null;
   }, [initialContents]);
 
   useEffect(() => {
