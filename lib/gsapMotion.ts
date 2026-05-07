@@ -30,24 +30,24 @@ export const motion = {
     none: "none",
   },
   duration: {
-    reveal: 0.92,
-    revealMed: 0.72,
-    revealFast: 0.52,
+    reveal: 0.84,
+    revealMed: 0.64,
+    revealFast: 0.46,
     /** Signatures "storytelling premium" */
-    heroMedia: 1.14,
-    heroChars: 0.6,
+    heroMedia: 1.02,
+    heroChars: 0.54,
     heroStagger: 0.021,
-    sectionParallax: 0.86,
+    sectionParallax: 0.72,
     /** Indicateur nav / micro-mouvements UI */
-    route: 0.52,
+    route: 0.44,
     /** Changement de page : très court — le menu doit réagir vite (overlay léger) */
     routeNav: 0.14,
-    micro: 0.28,
+    micro: 0.24,
     /** UI ponctuelle : magnetic, press, hovers « vivants » */
-    uiSnap: 0.2,
-    uiPress: 0.12,
-    stagger: 0.082,
-    staggerTight: 0.058,
+    uiSnap: 0.16,
+    uiPress: 0.1,
+    stagger: 0.074,
+    staggerTight: 0.05,
   },
   scroll: {
     startReveal: "top 88%",
@@ -60,9 +60,9 @@ export const motion = {
   },
   parallax: {
     /** Compromis scroll fluide / coût GPU */
-    scrub: 1.35,
-    scrubSmooth: 1.56,
-    yPercent: 7,
+    scrub: 1.12,
+    scrubSmooth: 1.28,
+    yPercent: 6,
   },
 } as const;
 
