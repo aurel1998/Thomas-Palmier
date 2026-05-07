@@ -1267,6 +1267,28 @@ main li > a:not([class]):hover,
   box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.45), var(--btn-primary-shadow);
 }
 
+.site-header__aboutAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--text-rgb) / 0.22);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.22);
+  flex: 0 0 auto;
+}
+
+.site-header__aboutAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.site-header__aboutAvatar.is-active {
+  border-color: rgb(var(--accent-rgb) / 0.75);
+  box-shadow: 0 0 0 2px rgb(var(--accent-rgb) / 0.26), 0 10px 26px rgb(var(--accent-rgb) / 0.24);
+}
+
 /* Shared interactions (no Tailwind utilities here) */
 .interactive {
   transition: transform 0.36s var(--ease-premium), box-shadow 0.36s var(--ease-premium), opacity 0.3s ease,
@@ -6996,6 +7018,11 @@ main li > a:not([class]):hover,
     gap: 10px;
   }
 
+  .site-header__aboutAvatar {
+    width: 34px;
+    height: 34px;
+  }
+
   .theme-toggle {
     justify-self: start;
   }
@@ -7339,6 +7366,10 @@ main li > a:not([class]):hover,
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     width: 100%;
+  }
+
+  .site-header__aboutAvatar {
+    justify-self: start;
   }
 
   .site-header__cta {

@@ -7,6 +7,7 @@ import { isReducedMotion, motion } from "../../lib/gsapMotion";
 import { useInViewOnce } from "../../hooks/useInViewOnce";
 import {
   extractYouTubeId,
+  getYouTubeEmbedUrl,
   getYouTubeThumbnail,
 } from "../../lib/youtube";
 import { normalizeMediaSource } from "../../lib/mediaSource";
@@ -17,6 +18,13 @@ type AmbientInlineVideoProps = {
   src: string;
   poster?: string;
   className: string;
+};
+
+type AmbientInlineYouTubeProps = {
+  ytId: string;
+  poster?: string;
+  className: string;
+  title?: string;
 };
 
 /** MP4 ambiance : poster jusqu’au viewport, puis `preload="none"` + `load()` pour limiter le réseau. */
@@ -46,6 +54,43 @@ function AmbientInlineVideo({ src, poster, className }: AmbientInlineVideoProps)
           playsInline
           preload="none"
           autoPlay
+        />
+      ) : poster ? (
+        <ContentImage
+          src={poster}
+          alt=""
+          fill
+          sizes="(max-width: 900px) 100vw, 60vw"
+          className="video-responsive__native video-responsive__native--poster"
+        />
+      ) : (
+        <span className="video-responsive__placeholder" aria-hidden="true" />
+      )}
+    </div>
+  );
+}
+
+/** YouTube ambiance inline : iframe chargée seulement en viewport, autoplay mute/loop. */
+function AmbientInlineYouTube({ ytId, poster, className, title }: AmbientInlineYouTubeProps) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const inView = useInViewOnce(wrapRef, "120px", 0.02);
+  const embedSrc = getYouTubeEmbedUrl(ytId, {
+    autoplay: true,
+    mute: true,
+    loop: true,
+  });
+
+  return (
+    <div ref={wrapRef} className={className}>
+      {inView ? (
+        <iframe
+          className="video-responsive__native video-responsive__native--youtubeAmbient"
+          src={embedSrc}
+          title={title ?? "Video"}
+          loading="lazy"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allowFullScreen
         />
       ) : poster ? (
         <ContentImage
@@ -133,6 +178,9 @@ export function VideoPlayer({
   // --- Mode ambiance inline (MP4 atmosphérique, ex. sections catalogue) ---
   if (autoplay && !ytId) {
     return <AmbientInlineVideo src={mediaSrc} poster={poster} className={rootClass} />;
+  }
+  if (autoplay && ytId) {
+    return <AmbientInlineYouTube ytId={ytId} poster={displayThumb} className={rootClass} title={title} />;
   }
 
   // --- Mode click-to-play avec modal ----------------------------------
