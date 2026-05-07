@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import type { Content, ContentType } from "../../types/content";
 import type { Category } from "../../types/category";
+import { extractYouTubeId, getYouTubeThumbnail } from "../../lib/youtube";
 
 type AdminTab = "dashboard" | "publier" | "contenus" | "categories" | "profil";
 type ToastKind = "success" | "error" | "info";
@@ -362,6 +363,15 @@ export default function MonSitePage() {
   useEffect(() => {
     if (titleError && title.trim()) setTitleError(false);
   }, [title, titleError]);
+
+  // Video YouTube : si aucune image fournie, on pre-remplit avec la miniature.
+  useEffect(() => {
+    if (type !== "video") return;
+    if (imageUrl.trim()) return;
+    const ytId = extractYouTubeId(content.trim());
+    if (!ytId) return;
+    setImageUrl(getYouTubeThumbnail(ytId, "max"));
+  }, [type, content, imageUrl]);
 
   // Raccourci Ctrl/Cmd + Enter pour publier quand l'onglet Publier est actif
   useEffect(() => {
@@ -784,7 +794,7 @@ export default function MonSitePage() {
           </div>
         ) : null}
         <div className="admin-field">
-          <label htmlFor="imageUrl">Image (URL)</label>
+          <label htmlFor="imageUrl">Image (URL, optionnel)</label>
           <input
             id="imageUrl"
             name="imageUrl"
@@ -794,7 +804,7 @@ export default function MonSitePage() {
           />
         </div>
         <div className="admin-field">
-          <label htmlFor="imageUpload">Image (upload)</label>
+          <label htmlFor="imageUpload">Image (upload, optionnel)</label>
           <input
             id="imageUpload"
             name="imageUpload"

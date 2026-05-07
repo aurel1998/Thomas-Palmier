@@ -122,8 +122,7 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
 
   if (!story) return null;
 
-  const videoYt = story.type === "video" ? extractYouTubeId(story.content) : null;
-  const videoMp4Ambient = story.type === "video" && !videoYt;
+  const videoAmbient = story.type === "video";
 
   return (
     <section
@@ -140,8 +139,8 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
                 src={story.content}
                 poster={story.image_url}
                 title={story.title}
-                autoplay={videoMp4Ambient}
-                hidePlayButton={videoMp4Ambient}
+                autoplay={videoAmbient}
+                hidePlayButton={videoAmbient}
                 className="feature-story__player"
               />
               <div className="feature-story__mediaGrain" aria-hidden="true" />

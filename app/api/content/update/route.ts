@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { Content, ContentType } from "../../../../types/content";
 import { getServerSupabaseOrResponse } from "../../../../lib/supabaseServer";
 import { requireAdmin } from "../../../../lib/apiAuth";
+import { extractYouTubeId, getYouTubeThumbnail } from "../../../../lib/youtube";
 
 const allowedTypes: ContentType[] = ["video", "article", "audio"];
 
@@ -64,12 +65,16 @@ export async function PUT(request: Request) {
       updates.type = body.type;
     }
 
+    let incomingContent: string | null = null;
     if (body.content !== undefined) {
-      updates.content = typeof body.content === "string" ? body.content : "";
+      incomingContent = typeof body.content === "string" ? body.content : "";
+      updates.content = incomingContent;
     }
 
+    let incomingImageUrl: string | null = null;
     if (body.image_url !== undefined) {
-      updates.image_url = typeof body.image_url === "string" ? body.image_url : "";
+      incomingImageUrl = typeof body.image_url === "string" ? body.image_url.trim() : "";
+      updates.image_url = incomingImageUrl;
     }
 
     const tags = normalizeTags(body.tags);
@@ -95,6 +100,26 @@ export async function PUT(request: Request) {
 
     const srv = getServerSupabaseOrResponse();
     if (!srv.ok) return srv.response;
+
+    const nextType = (updates.type as ContentType | undefined) ?? null;
+    const shouldAutoThumb = (nextType === "video" || nextType === null) && (incomingImageUrl ?? "") === "";
+    if (shouldAutoThumb) {
+      let sourceForThumb = (incomingContent ?? "").trim();
+      if (!sourceForThumb) {
+        const { data: existingRow } = await srv.supabase
+          .from("contents")
+          .select("type, content")
+          .eq("id", id)
+          .maybeSingle();
+        if ((existingRow?.type as string | undefined) === "video") {
+          sourceForThumb = typeof existingRow?.content === "string" ? existingRow.content.trim() : "";
+        }
+      }
+      if (sourceForThumb) {
+        const ytId = extractYouTubeId(sourceForThumb);
+        if (ytId) updates.image_url = getYouTubeThumbnail(ytId, "hq");
+      }
+    }
 
     if (updates.is_featured === true) {
       const { error: resetFeaturedError } = await srv.supabase

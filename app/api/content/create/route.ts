@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { Content, ContentType } from "../../../../types/content";
 import { getServerSupabaseOrResponse } from "../../../../lib/supabaseServer";
 import { requireAdmin } from "../../../../lib/apiAuth";
+import { extractYouTubeId, getYouTubeThumbnail } from "../../../../lib/youtube";
 
 const allowedTypes: ContentType[] = ["video", "article", "audio"];
 
@@ -54,11 +55,16 @@ export async function POST(request: Request) {
     const srv = getServerSupabaseOrResponse();
     if (!srv.ok) return srv.response;
 
+    const rawContent = typeof body.content === "string" ? body.content : "";
+    const rawImageUrl = typeof body.image_url === "string" ? body.image_url.trim() : "";
+    const ytId = type === "video" ? extractYouTubeId(rawContent.trim()) : null;
+    const computedImageUrl = rawImageUrl || (ytId ? getYouTubeThumbnail(ytId, "hq") : "");
+
     const payload = {
       title,
       type: type as ContentType,
-      content: typeof body.content === "string" ? body.content : "",
-      image_url: typeof body.image_url === "string" ? body.image_url : "",
+      content: rawContent,
+      image_url: computedImageUrl,
       tags: normalizeTags(body.tags),
       category_id: typeof body.category_id === "string" ? body.category_id : null,
       is_featured: typeof body.is_featured === "boolean" ? body.is_featured : false,

@@ -31,13 +31,14 @@ const PREFETCH_HREFS = [
 ] as const;
 
 type PrimaryHref = (typeof PRIMARY_LINKS)[number]["href"];
+type SiteHeaderProps = { profileImageSrc?: string };
 
 function routeMatches(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SiteHeader() {
+export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -56,6 +57,7 @@ export function SiteHeader() {
   }, [pathname]);
 
   const contactActive = routeMatches(pathname, CONTACT_CTA.href);
+  const aboutActive = routeMatches(pathname, "/a-propos");
 
   const repositionIndicator = useCallback((targetHref: PrimaryHref | null, animate: boolean) => {
     const track = primaryNavRef.current;
@@ -272,6 +274,22 @@ export function SiteHeader() {
           </div>
 
           <div className="site-header__navActions">
+            {profileImageSrc ? (
+              <Link
+                href="/a-propos"
+                prefetch
+                className={`site-header__aboutAvatar interactive is-pressable${aboutActive ? " is-active" : ""}`}
+                aria-label="Voir la page À propos"
+              >
+                <Image
+                  src={profileImageSrc}
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="site-header__aboutAvatarImg"
+                />
+              </Link>
+            ) : null}
             <Link
               href={CONTACT_CTA.href}
               prefetch

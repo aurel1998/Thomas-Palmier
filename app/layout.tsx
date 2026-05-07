@@ -8,6 +8,7 @@ import { SiteFooter } from "../components/site-footer";
 import { SiteHeader } from "../components/site-header";
 import { ThemeProvider, THEME_PRELOAD_SCRIPT } from "../components/theme/ThemeProvider";
 import { inter, interTight, newsreader } from "../lib/fonts";
+import { getJournalistProfileImageServer } from "../lib/journalistProfileServer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export const metadata: Metadata = {
   description: "Site journaliste sportif - structure claire et professionnelle",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const profileImageUrl = await getJournalistProfileImageServer();
+
   return (
     <html lang="fr" className={`${inter.variable} ${interTight.variable} ${newsreader.variable}`} suppressHydrationWarning>
       <head>
@@ -27,7 +30,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ThreeBackdropGate />
           <GsapRegister />
           <ClientFxBundle />
-          <SiteHeader />
+          <SiteHeader profileImageSrc={profileImageUrl ?? undefined} />
           <PageTransition>{children}</PageTransition>
           <SiteFooter />
         </ThemeProvider>
