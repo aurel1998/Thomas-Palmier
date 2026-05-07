@@ -169,7 +169,7 @@ export function RecentContents({ initialContents }: RecentContentsProps) {
             <div className="home-sectionEyebrow">Dernière édition</div>
             <h2 className="home-sectionTitle">La suite du récit</h2>
             <p className="muted home-recent__lede">
-              Sons, images et textes dans le même parcours immersif que « Mes contenus ».
+              Les dernières publications en son, image et texte.
             </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
@@ -177,11 +177,11 @@ export function RecentContents({ initialContents }: RecentContentsProps) {
 
         {showSoloHint ? (
           <p className="muted home-recent__solo" role="status">
-            Les prochains contenus paraîtront ici dès leur publication.
+            Les prochains contenus apparaîtront ici.
           </p>
         ) : showPairHint ? (
           <p className="muted home-recent__solo" role="status">
-            Le flux éditorial s’enrichit progressivement avec chaque nouvelle publication.
+            De nouveaux contenus viendront enrichir cette sélection.
           </p>
         ) : recentCards.length > 0 ? (
           <div className="home-recent__grid" role="list">
