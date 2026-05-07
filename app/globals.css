@@ -3681,6 +3681,20 @@ main li > a:not([class]):hover,
   padding: clamp(72px, 10vw, var(--space-2xl)) 0 calc(var(--space-2xl) + 8px);
 }
 
+.home-une__focus {
+  border-radius: clamp(20px, 2.8vw, 28px);
+  border: 1px solid rgb(var(--text-rgb) / 0.09);
+  background: linear-gradient(160deg, rgb(var(--surface-rgb) / 0.52), rgb(var(--surface-soft-rgb) / 0.32));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 18px 44px rgb(0 0 0 / 0.16);
+  padding: clamp(10px, 1.7vw, 16px);
+}
+
+.home-une__head {
+  margin-bottom: 0;
+}
+
 .home-sectionHead {
   display: flex;
   align-items: flex-end;
@@ -3806,6 +3820,9 @@ main li > a:not([class]):hover,
   position: relative;
   height: clamp(420px, 55vh, 560px);
   min-height: clamp(420px, 55vh, 560px);
+  margin-top: clamp(-4px, -0.6vw, -2px);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
   clip-path: inset(0 100% 0 0);
   will-change: transform, clip-path, opacity;
   transition: transform 0.5s var(--ease-premium), box-shadow 0.5s var(--ease-premium);

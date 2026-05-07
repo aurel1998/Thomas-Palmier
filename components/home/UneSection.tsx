@@ -58,24 +58,26 @@ export function UneSection({ initialContents }: UneSectionProps) {
   return (
     <section ref={sectionRef} className="home-une" aria-label="À la une">
       <div className="container">
-        <div className="home-sectionHead">
-          <div>
-            <div className="home-sectionEyebrow">Mise en avant</div>
-            <h2 className="home-sectionTitle">À la une</h2>
-            <p className="muted home-une__lede">
-              Une sélection courte des contenus à retenir.
-            </p>
+        <div className="home-une__focus">
+          <div className="home-sectionHead home-une__head">
+            <div>
+              <div className="home-sectionEyebrow">Mise en avant</div>
+              <h2 className="home-sectionTitle">À la une</h2>
+              <p className="muted home-une__lede">
+                Une sélection courte des contenus à retenir.
+              </p>
+            </div>
+            <div className="home-sectionRule" aria-hidden="true" />
           </div>
-          <div className="home-sectionRule" aria-hidden="true" />
-        </div>
 
-        {featured ? (
-          <FeatureContentCard ref={cardRef} item={featured} />
-        ) : (
-          <p className="muted home-une__empty" role="status">
-            Nouveaux contenus à la une très bientôt.
-          </p>
-        )}
+          {featured ? (
+            <FeatureContentCard ref={cardRef} item={featured} />
+          ) : (
+            <p className="muted home-une__empty" role="status">
+              Nouveaux contenus à la une très bientôt.
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );
