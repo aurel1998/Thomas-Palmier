@@ -49,6 +49,7 @@ export function HeroSection({
   const floatRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const headlineRef = useRef<HTMLHeadingElement | null>(null);
+  const charsRef = useRef<HTMLElement[]>([]);
 
   const [mounted, setMounted] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
@@ -101,9 +102,11 @@ export function HeroSection({
     const rule = root.querySelector<HTMLElement>(".home-hero__rule");
     const actions = root.querySelector<HTMLElement>(".home-hero__actions");
     const scrollBlock = root.querySelector<HTMLElement>(".home-hero__scrollBlock");
+    const vignette = root.querySelector<HTMLElement>(".home-hero__vignette");
+    const grain = root.querySelectorAll<HTMLElement>(".home-hero__grain");
 
     if (isReducedMotion()) {
-      gsap.set([media, overlay, float, journal, rule, actions, scrollBlock].filter(Boolean), {
+      gsap.set([media, overlay, float, journal, rule, actions, scrollBlock, vignette, ...grain].filter(Boolean), {
         clearProps: "all",
       });
       gsap.set(headline, { clearProps: "all" });
@@ -120,6 +123,8 @@ export function HeroSection({
       filter: "brightness(0.48) saturate(1.12) contrast(1.14)",
     });
     gsap.set(overlay, { opacity: 0.28 });
+    if (vignette) gsap.set(vignette, { opacity: 0.12, scale: 1.08 });
+    if (grain.length) gsap.set(grain, { opacity: 0.001 });
     gsap.set(headline, { opacity: 0.001 });
     if (journal) gsap.set(journal, { y: 14, autoAlpha: 0 });
     if (rule) gsap.set(rule, { scaleX: 0, transformOrigin: "left center" });
@@ -141,6 +146,7 @@ export function HeroSection({
         });
 
         const chars = split.chars as HTMLElement[];
+        charsRef.current = chars;
         chars.forEach((charEl) => {
           const t = charEl.textContent ?? "";
           if (/^\s$/.test(t)) {
@@ -170,6 +176,8 @@ export function HeroSection({
           0
         )
           .to(overlay, { opacity: 1, duration: 0.95, ease: motion.ease.inOutExpo }, 0)
+          .to(vignette, { opacity: 1, scale: 1, duration: 1.05, ease: motion.ease.out }, 0.06)
+          .to(grain, { opacity: 1, duration: 0.95, stagger: 0.06, ease: motion.ease.outSoft }, 0.12)
           .to(
             journal,
             { y: 0, autoAlpha: 1, duration: motion.duration.revealMed, ease: motion.ease.out },
@@ -201,6 +209,19 @@ export function HeroSection({
             { y: 0, autoAlpha: 1, duration: motion.duration.revealMed, ease: motion.ease.out },
             "-=0.48"
           );
+
+        if (actions) {
+          gsap.fromTo(
+            actions.querySelectorAll(".btn"),
+            { boxShadow: "0 0 0 rgba(0,0,0,0)" },
+            {
+              boxShadow: "0 16px 42px rgb(var(--accent-rgb) / 0.34)",
+              duration: 1.05,
+              ease: motion.ease.outSoft,
+              delay: 0.36,
+            }
+          );
+        }
 
         if (scrollBlock && showScrollHint) {
           tl.to(
@@ -235,6 +256,7 @@ export function HeroSection({
       cancelled = true;
       tl?.kill();
       split?.revert();
+      charsRef.current = [];
     };
   }, []);
 
@@ -262,6 +284,35 @@ export function HeroSection({
           },
         }
       );
+
+      if (charsRef.current.length) {
+        gsap.fromTo(
+          charsRef.current,
+          { yPercent: 0, rotateX: 0 },
+          {
+            yPercent: -18,
+            rotateX: 8,
+            ease: motion.ease.none,
+            stagger: { each: 0.01, from: "center" },
+            scrollTrigger: {
+              trigger: section,
+              start: "top top",
+              end: "bottom top",
+              scrub: motion.parallax.scrub,
+            },
+          }
+        );
+      }
+
+      if (floatRef.current) {
+        gsap.to(floatRef.current, {
+          y: -6,
+          duration: 2.6,
+          ease: "sine.inOut",
+          repeat: -1,
+          yoyo: true,
+        });
+      }
     }, section);
 
     let qx: ReturnType<typeof gsap.quickTo> | null = null;
