@@ -24,7 +24,7 @@ export function parseArticleParagraphs(htmlOrText: string): string[] {
 }
 
 function leadForType(item: Content, paragraphs: string[]): string {
-  const { type, title, content, tags } = item;
+  const { type, title, content } = item;
 
   if (type === "article") {
     if (paragraphs.length >= 1) return paragraphs[0];
@@ -32,10 +32,7 @@ function leadForType(item: Content, paragraphs: string[]): string {
   }
 
   if (type === "video") {
-    const tag = tags[0];
-    return tag
-      ? `Une histoire ${tag.toLowerCase()} — images et rythme, comme au bord du terrain.`
-      : "Images, sons du stade et regard journalistique.";
+    return "Images, tempo du match et regard journalistique : une lecture claire du jeu, dans le rythme du terrain.";
   }
 
   return `Écoutez : chronique et ambiance, du terrain aux tribunes.`;
