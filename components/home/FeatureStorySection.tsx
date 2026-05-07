@@ -173,9 +173,9 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
               {story.title}
             </h2>
             <p className="feature-story__lead">{lead}</p>
-            <p className="feature-story__progressMeta">
-              Chapitres: {Math.max(chapters.length, 1)} · Lecture immersive
-            </p>
+            {story.type === "article" ? (
+              <p className="feature-story__progressMeta">Chapitres: {Math.max(chapters.length, 1)} · Lecture immersive</p>
+            ) : null}
           </header>
 
           {story.type === "audio" ? (
@@ -196,7 +196,7 @@ export function FeatureStorySection({ story }: FeatureStorySectionProps) {
 
           <div className="feature-story__cta" data-story-reveal>
             <Link href={`/mes-contenus/${story.id}`} className="btn btn-secondary feature-story__link">
-              Entrer dans cette histoire
+              Voir le contenu
             </Link>
           </div>
         </div>
