@@ -3516,6 +3516,13 @@ main li > a:not([class]):hover,
     0 14px 36px rgb(0 0 0 / 0.18);
 }
 
+.recent-yt-card__video.video-responsive {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-shadow: none;
+}
+
 .recent-yt-card__thumb {
   object-fit: cover;
   transition: transform 0.55s var(--ease-premium);
@@ -8531,6 +8538,18 @@ main li > a:not([class]):hover,
   color: inherit;
   border-radius: inherit;
   box-shadow: var(--video-chrome-embed);
+}
+
+.video-responsive__launch {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
 }
 
 .video-responsive--clickable {
