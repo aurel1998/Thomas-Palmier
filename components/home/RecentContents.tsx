@@ -177,11 +177,11 @@ export function RecentContents({ initialContents }: RecentContentsProps) {
 
         {showSoloHint ? (
           <p className="muted home-recent__solo" role="status">
-            Ce récit occupe aussi la section « Feature Story » ; d’autres contenus apparaîtront ici au fil des publications.
+            Les prochains contenus paraîtront ici dès leur publication.
           </p>
         ) : showPairHint ? (
           <p className="muted home-recent__solo" role="status">
-            Les deux publications récentes sont mises en avant ci-dessus ; la suite du fleuve débutera avec un troisième contenu.
+            Le flux éditorial s’enrichit progressivement avec chaque nouvelle publication.
           </p>
         ) : recentCards.length > 0 ? (
           <div className="home-recent__grid" role="list">

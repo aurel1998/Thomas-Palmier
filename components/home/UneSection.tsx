@@ -73,7 +73,7 @@ export function UneSection({ initialContents }: UneSectionProps) {
           <FeatureContentCard ref={cardRef} item={featured} />
         ) : (
           <p className="muted home-une__empty" role="status">
-            Aucun contenu pour la mise en avant pour le moment.
+            Nouveaux contenus à la une très bientôt.
           </p>
         )}
       </div>

@@ -24,7 +24,7 @@ export function RecentYoutubeSection({ items }: RecentYoutubeSectionProps) {
               Vidéos récentes
             </h2>
             <p className="muted recent-yt__lede">
-              Extraits du catalogue — la lecture démarre directement dans la carte, sans pop-up.
+              Extraits vidéo publiés récemment.
             </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
