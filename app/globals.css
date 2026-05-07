@@ -5673,6 +5673,10 @@ main li > a:not([class]):hover,
   gap: clamp(16px, 2vw, 28px);
 }
 
+.hybrid-content__storyLayout--noToc {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .hybrid-content__toc {
   position: sticky;
   top: 130px;
@@ -5704,6 +5708,7 @@ main li > a:not([class]):hover,
 }
 
 .hybrid-block--video .hybrid-block__video {
+  width: 100%;
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
