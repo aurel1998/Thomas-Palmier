@@ -1,5 +1,5 @@
-/** Vidéo sportive immersive locale (fiable en prod). */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4";
+/** Vidéo sportive immersive locale (ancienne version, plus nette). */
+export const HERO_VIDEO_MP4_DEFAULT = "/video2.mp4";
 
 /** Secours si la source principale échoue (ex. CDN). */
 export const HERO_VIDEO_MP4_FALLBACK =
