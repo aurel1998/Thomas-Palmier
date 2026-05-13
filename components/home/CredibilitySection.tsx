@@ -3,12 +3,7 @@
 import gsap from "gsap";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import {
-  CREDIBILITY_AWARDS,
-  CREDIBILITY_MEDIA,
-  CREDIBILITY_PARTNERS,
-  type CredibilityLogoItem,
-} from "../../lib/credibility";
+import { CREDIBILITY_AWARDS, CREDIBILITY_MEDIA, type CredibilityLogoItem } from "../../lib/credibility";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
 
 function LogoTile({ item }: { item: CredibilityLogoItem }) {
@@ -30,6 +25,7 @@ function LogoTile({ item }: { item: CredibilityLogoItem }) {
             fill
             className="credibility__logoImg"
             sizes="112px"
+            unoptimized
           />
         ) : (
           <span className="credibility__logoInitials">
@@ -43,7 +39,7 @@ function LogoTile({ item }: { item: CredibilityLogoItem }) {
 }
 
 /**
- * Section crédibilité : récompenses, médias, collaborations — logos + badges,
+ * Section crédibilité : récompenses + médias — logos + badges,
  * apparition fade + stagger (GSAP ScrollTrigger).
  */
 export function CredibilitySection() {
@@ -101,8 +97,8 @@ export function CredibilitySection() {
             Une plume reconnue
           </h2>
           <p className="muted credibility__intro">
-            Distinctions, visibilité médiatique et partenariats — repères pour situer le travail
-            journalistique derrière chaque contenu.
+            Distinctions et visibilité médiatique — repères pour situer le travail journalistique
+            derrière chaque contenu.
           </p>
         </header>
 
@@ -145,25 +141,6 @@ export function CredibilitySection() {
             </p>
             <div className="credibility__logoRow">
               {CREDIBILITY_MEDIA.map((item) => (
-                <LogoTile key={item.id} item={item} />
-              ))}
-            </div>
-          </div>
-
-          <div className="credibility__column">
-            <h3 className="credibility__tierTitle" data-cred-item>
-              <span className="credibility__tierIcon credibility__tierIcon--partners" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                  <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
-                </svg>
-              </span>
-              Collaborations
-            </h3>
-            <p className="credibility__tierHint muted" data-cred-item>
-              Institutions &amp; événements
-            </p>
-            <div className="credibility__logoRow">
-              {CREDIBILITY_PARTNERS.map((item) => (
                 <LogoTile key={item.id} item={item} />
               ))}
             </div>

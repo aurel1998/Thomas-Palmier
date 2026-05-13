@@ -1887,7 +1887,7 @@ main li > a:not([class]):hover,
 .home-act {
   position: relative;
   isolation: isolate;
-  padding-block-end: clamp(14px, 2.8vw, 32px);
+  padding-block-end: clamp(8px, 1.4vw, 18px);
 }
 
 /* Calques par acte narratif : chaque bloc tisse rose / turquoise / ambre différemment */
@@ -1930,7 +1930,7 @@ main li > a:not([class]):hover,
 .home-strip {
   position: relative;
   isolation: isolate;
-  margin-block: clamp(14px, 2.4vw, 30px);
+  margin-block: clamp(4px, 1vw, 12px);
 }
 
 .home-act > .home-strip:first-child {
@@ -2300,7 +2300,7 @@ main li > a:not([class]):hover,
 
 .home-page > *:not(:first-child) {
   border-top: 1px solid rgb(var(--text-rgb) / 0.07);
-  padding-top: clamp(12px, 2vw, 20px);
+  padding-top: clamp(6px, 1.2vw, 12px);
 }
 
 [data-theme="dark"] .home-page > *:not(:first-child) {
@@ -2411,7 +2411,7 @@ main li > a:not([class]):hover,
 
 /* Home: Qui est Thomas Palmier */
 .about-thomas {
-  padding-block: clamp(54px, 7.4vw, 90px);
+  padding-block: clamp(36px, 5vw, 64px);
 }
 
 .about-thomas__container {
@@ -2529,10 +2529,10 @@ main li > a:not([class]):hover,
   }
 }
 
-/* Home: Crédibilité — récompenses, médias, collaborations */
+/* Home: Crédibilité — récompenses + médias */
 .credibility {
   scroll-margin-top: var(--site-header-offset);
-  padding: clamp(52px, 8vw, var(--space-xl)) 0 clamp(44px, 7vw, var(--space-lg));
+  padding: clamp(36px, 5vw, 72px) 0 clamp(32px, 5vw, 56px);
   background: linear-gradient(
     180deg,
     rgb(var(--surface-soft-rgb) / 0.35) 0%,
@@ -2543,7 +2543,7 @@ main li > a:not([class]):hover,
 .credibility__container {
   display: flex;
   flex-direction: column;
-  gap: clamp(28px, 4.5vw, 44px);
+  gap: clamp(18px, 2.8vw, 28px);
 }
 
 .credibility__head {
@@ -2569,14 +2569,14 @@ main li > a:not([class]):hover,
 .credibility__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(36px, 5vw, 52px);
+  gap: clamp(22px, 3.2vw, 36px);
 }
 
 @media (min-width: 960px) {
   .credibility__grid {
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
     align-items: start;
-    gap: clamp(28px, 3.5vw, 40px);
+    gap: clamp(20px, 2.8vw, 32px);
   }
 }
 
@@ -2764,13 +2764,13 @@ main li > a:not([class]):hover,
 /* Home: Partenaires — grille business, CTA Collaborer */
 .home-partners {
   scroll-margin-top: var(--site-header-offset);
-  padding: clamp(44px, 7vw, var(--space-xl)) 0 clamp(48px, 7vw, var(--space-lg));
+  padding: clamp(32px, 4.5vw, 64px) 0 clamp(36px, 5vw, 56px);
 }
 
 .home-partners__inner {
   display: flex;
   flex-direction: column;
-  gap: clamp(28px, 4vw, 40px);
+  gap: clamp(18px, 2.6vw, 28px);
 }
 
 .home-partners__head {
@@ -2922,13 +2922,13 @@ main li > a:not([class]):hover,
 /* Home: Proposer un sujet — conversion plateforme */
 .pitch-subject {
   scroll-margin-top: var(--site-header-offset);
-  padding: clamp(44px, 7vw, var(--space-xl)) 0 clamp(52px, 7.5vw, var(--space-2xl));
+  padding: clamp(32px, 4.5vw, 64px) 0 clamp(40px, 5vw, 80px);
 }
 
 .pitch-subject__inner {
   display: flex;
   flex-direction: column;
-  gap: clamp(24px, 4vw, 36px);
+  gap: clamp(18px, 2.8vw, 28px);
 }
 
 .pitch-subject__head {
@@ -3055,7 +3055,7 @@ main li > a:not([class]):hover,
 /* Home: Newsletter — minimal et centré */
 .home-newsletter {
   scroll-margin-top: var(--site-header-offset);
-  padding: clamp(36px, 6vw, var(--space-lg)) 0 clamp(48px, 7vw, var(--space-xl));
+  padding: clamp(28px, 4vw, 52px) 0 clamp(36px, 5vw, 64px);
 }
 
 .home-newsletter__inner {
@@ -3369,13 +3369,13 @@ main li > a:not([class]):hover,
 /* Home: Sélection éditoriale (intentions × rails horizontaux) */
 .editorial-selection {
   scroll-margin-top: var(--site-header-offset);
-  padding: clamp(52px, 8vw, var(--space-xl)) 0 clamp(48px, 7vw, var(--space-2xl));
+  padding: clamp(32px, 5vw, 72px) 0 clamp(36px, 5vw, 80px);
 }
 
 .editorial-selection__container {
   display: flex;
   flex-direction: column;
-  gap: clamp(36px, 5.5vw, 52px);
+  gap: clamp(22px, 3.2vw, 36px);
 }
 
 .editorial-selection__intro {
@@ -3478,13 +3478,13 @@ main li > a:not([class]):hover,
 /* Home: Vidéos récentes (YouTube, rail horizontal + preview hover) */
 .recent-yt {
   scroll-margin-top: var(--site-header-offset);
-  padding: clamp(44px, 7vw, var(--space-xl)) 0 clamp(40px, 6vw, var(--space-lg));
+  padding: clamp(32px, 4.5vw, 64px) 0 clamp(28px, 4vw, 52px);
 }
 
 .recent-yt__container {
   display: flex;
   flex-direction: column;
-  gap: clamp(26px, 4vw, 38px);
+  gap: clamp(18px, 2.8vw, 28px);
 }
 
 .recent-yt__intro {
@@ -3681,9 +3681,9 @@ main li > a:not([class]):hover,
   }
 }
 
-/* Home: À la une */
+/* Home: bandeau une (souvent rail ; padding renforcé via .home-une--rail si besoin) */
 .home-une {
-  padding: clamp(72px, 10vw, var(--space-2xl)) 0 calc(var(--space-2xl) + 8px);
+  padding: clamp(40px, 6vw, 88px) 0 clamp(32px, 5vw, 72px);
 }
 
 .home-une__focus {
@@ -4326,7 +4326,7 @@ main li > a:not([class]):hover,
 }
 
 .home-recent {
-  padding: clamp(24px, 4vw, 48px) 0 clamp(36px, 5.5vw, 72px);
+  padding: clamp(18px, 2.8vw, 36px) 0 clamp(28px, 4vw, 56px);
 }
 
 #acte-immersion .recent-yt {

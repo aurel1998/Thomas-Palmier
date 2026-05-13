@@ -21,6 +21,7 @@ function PartnerTile({ item }: { item: (typeof HOME_PARTNER_LOGOS)[number] }) {
             fill
             className="home-partners__logoImg"
             sizes="140px"
+            unoptimized
           />
         ) : (
           <span className="home-partners__initials">
