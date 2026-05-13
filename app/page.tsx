@@ -63,7 +63,7 @@ export default async function HomePage() {
   ]);
   const featuredContent = contents.find((item) => item.is_featured) ?? contents[0] ?? null;
   const featuredId = featuredContent?.id;
-  const heroBackdrop = "/src/stade/stade4.jpg";
+  const heroBackdrop = "/src/stade/stade1.jpg";
   const youtubeRecent = pickRecentYoutubeContents(contents, {
     limit: 14,
     excludeIds: featuredId ? [featuredId] : [],
