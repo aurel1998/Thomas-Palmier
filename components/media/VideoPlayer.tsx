@@ -126,7 +126,7 @@ function AmbientInlineYouTube({ ytId, poster, className, title }: AmbientInlineY
           src={embedSrc}
           title={title ?? "Video"}
           loading="lazy"
-          allow="autoplay; encrypted-media; picture-in-picture"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"
           allowFullScreen
         />
@@ -230,10 +230,10 @@ export function VideoPlayer({
         ytId ? (
           <iframe
             className="video-responsive__iframe"
-            src={getYouTubeEmbedUrl(ytId, { autoplay: true })}
+            src={getYouTubeEmbedUrl(ytId, { autoplay: true, mute: true })}
             title={labelTitle}
             loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
