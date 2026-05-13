@@ -42,7 +42,7 @@ export const CREDIBILITY_MEDIA: CredibilityLogoItem[] = [
   { id: "med-rmc", name: "RMC Sport", logoSrc: "/logos/media-rmc.svg", initials: "RMC" },
 ];
 
-/** Institutions, ligues, clubs partenaires sur des dossiers */
+/** Institutions / ligues — utilisé hors accueil (ex. bandeau social proof). */
 export const CREDIBILITY_PARTNERS: CredibilityLogoItem[] = [
   { id: "part-lfp", name: "LFP", logoSrc: "/logos/collab-lfp.svg", initials: "LFP" },
   { id: "part-fff", name: "FFF", logoSrc: "/logos/collab-fff.svg", initials: "FFF" },
