@@ -20,7 +20,7 @@ const HeroParticles = dynamic(
   { ssr: false, loading: () => null }
 );
 
-const defaultPosterSrc = "/src/stade/stade4.jpg";
+const defaultPosterSrc = "/src/stade/stade1.jpg";
 
 const heroNameParts = HERO_HEADLINE.trim().split(/\s+/);
 const heroFirstName = heroNameParts[0] ?? HERO_HEADLINE;
@@ -169,7 +169,7 @@ export function HeroSection({
           {
             scale: 1,
             y: 0,
-            filter: "brightness(1) saturate(1.1) contrast(1.06)",
+            filter: "brightness(1) saturate(1.08) contrast(1.05)",
             duration: motionPresets.hero.reveal,
             ease: motion.ease.outExpo,
           },
