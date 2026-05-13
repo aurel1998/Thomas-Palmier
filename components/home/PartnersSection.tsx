@@ -28,7 +28,7 @@ function PartnerTile({ item }: { item: (typeof HOME_PARTNER_LOGOS)[number] }) {
           </span>
         )}
       </div>
-      <span className="home-partners__brand">{item.name}</span>
+        <span className={`home-partners__brand${hasLogo ? " u-visuallyHidden" : ""}`}>{item.name}</span>
     </div>
   );
 }

@@ -4512,6 +4512,158 @@ main li > a:not([class]):hover,
   }
 }
 
+/* --------------------------------------------------------------------------
+ * Page Contenus — hub type streaming (rail catégories + catalogue)
+ * -------------------------------------------------------------------------- */
+.u-visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mes-canal-page .mes-canal__container {
+  max-width: min(1320px, 100vw - var(--layout-gutter));
+}
+
+.mes-canal__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: clamp(20px, 3vw, 32px);
+  padding-bottom: clamp(12px, 2vw, 18px);
+  border-bottom: 1px solid rgb(var(--text-rgb) / 0.1);
+}
+
+.mes-canal__title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.mes-canal__count {
+  margin: 0;
+  font-size: 13px;
+}
+
+.mes-canal__layout {
+  display: grid;
+  gap: clamp(18px, 2.8vw, 28px);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .mes-canal__layout:not(.mes-canal__layout--solo) {
+    grid-template-columns: minmax(200px, 220px) minmax(0, 1fr);
+  }
+}
+
+.mes-canal__sidebar {
+  position: sticky;
+  top: clamp(88px, 12vh, 120px);
+  z-index: 3;
+}
+
+.mes-canal__sidebarLabel {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--muted-rgb) / 0.95);
+}
+
+.mes-canal__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 899px) {
+  .mes-canal__sidebar {
+    position: relative;
+    top: auto;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgb(var(--text-rgb) / 0.08);
+    margin-bottom: 4px;
+  }
+
+  .mes-canal__chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+
+.mes-canal__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgb(var(--text-rgb) / 0.12);
+  background: rgb(var(--surface-rgb) / 0.45);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+@media (max-width: 899px) {
+  .mes-canal__chip {
+    width: auto;
+    flex: 0 1 auto;
+  }
+}
+
+.mes-canal__chip:hover {
+  border-color: rgb(var(--ftv-blue-rgb) / 0.45);
+  background: rgb(var(--ftv-blue-rgb) / 0.08);
+}
+
+.mes-canal__chip.is-active {
+  border-color: rgb(var(--ftv-blue-rgb) / 0.65);
+  background: rgb(var(--ftv-blue-rgb) / 0.16);
+  color: rgb(var(--text-rgb) / 0.98);
+}
+
+.mes-canal__chipName {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mes-canal__chipCount {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
+}
+
+.mes-canal__main {
+  min-width: 0;
+}
+
+.mes-canal__catalog.contenus-section {
+  margin-top: 0;
+}
+
 [data-theme="dark"] .broadcast-hub .contenus-card--tilt .contenus-card__tiltInner {
   background: rgb(14 16 26);
   border-color: rgb(255 255 255 / 0.06);
@@ -6471,6 +6623,23 @@ main li > a:not([class]):hover,
   margin-top: 6px;
   font-size: 11px;
   color: rgb(var(--text-rgb) / 0.64);
+}
+
+.collab-biz__logo--mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+}
+
+.collab-biz__logoVisual {
+  position: relative;
+  width: 100%;
+  height: 48px;
+}
+
+.collab-biz__logoImg {
+  object-fit: contain;
 }
 
 .collab-biz__ctaWrap {

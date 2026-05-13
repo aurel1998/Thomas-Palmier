@@ -36,16 +36,16 @@ export const CREDIBILITY_AWARDS: CredibilityAward[] = [
 
 /** Médias où le travail a été vu / cité */
 export const CREDIBILITY_MEDIA: CredibilityLogoItem[] = [
-  { id: "med-ftv", name: "France Télévisions", initials: "FTV" },
-  { id: "med-canal", name: "Canal+", initials: "C+" },
-  { id: "med-lequipe", name: "L’Équipe", initials: "EQ" },
-  { id: "med-rmc", name: "RMC Sport", initials: "RMC" },
+  { id: "med-ftv", name: "France Télévisions", logoSrc: "/logos/media-france-tv.svg", initials: "FTV" },
+  { id: "med-canal", name: "Canal+", logoSrc: "/logos/media-canal.svg", initials: "C+" },
+  { id: "med-lequipe", name: "L’Équipe", logoSrc: "/logos/media-lequipe.svg", initials: "EQ" },
+  { id: "med-rmc", name: "RMC Sport", logoSrc: "/logos/media-rmc.svg", initials: "RMC" },
 ];
 
 /** Institutions, ligues, clubs partenaires sur des dossiers */
 export const CREDIBILITY_PARTNERS: CredibilityLogoItem[] = [
-  { id: "part-lfp", name: "LFP", initials: "LFP" },
-  { id: "part-fff", name: "FFF", initials: "FFF" },
-  { id: "part-insep", name: "INSEP", initials: "IN" },
-  { id: "part-cnosf", name: "CNOSF", initials: "CN" },
+  { id: "part-lfp", name: "LFP", logoSrc: "/logos/collab-lfp.svg", initials: "LFP" },
+  { id: "part-fff", name: "FFF", logoSrc: "/logos/collab-fff.svg", initials: "FFF" },
+  { id: "part-insep", name: "INSEP", logoSrc: "/logos/collab-insep.svg", initials: "IN" },
+  { id: "part-cnosf", name: "CNOSF", logoSrc: "/logos/collab-cnosf.svg", initials: "CN" },
 ];

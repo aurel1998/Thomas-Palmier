@@ -37,7 +37,7 @@ function LogoTile({ item }: { item: CredibilityLogoItem }) {
           </span>
         )}
       </div>
-      <span className="credibility__logoName">{item.name}</span>
+      <span className={`credibility__logoName${hasLogo ? " u-visuallyHidden" : ""}`}>{item.name}</span>
     </div>
   );
 }

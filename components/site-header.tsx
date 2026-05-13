@@ -16,7 +16,7 @@ import { ThemeToggle } from "./theme/ThemeToggle";
  */
 const PRIMARY_LINKS = [
   { href: "/", label: "Accueil" },
-  { href: "/mes-contenus", label: "Mes contenus" },
+  { href: "/mes-contenus", label: "Contenus" },
   { href: "/a-propos", label: "À propos" },
   { href: "/collaborer", label: "Collaborer" },
 ] as const;

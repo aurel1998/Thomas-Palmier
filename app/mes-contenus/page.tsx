@@ -1,11 +1,8 @@
 "use client";
 
 import gsap from "gsap";
-import Link from "next/link";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
-import { editionRiverSlotClass } from "../../lib/editionRiverLayout";
-import { EDITORIAL_SERIES, groupByEditorialSeries, type EditorialSeriesId } from "../../lib/editorialSeries";
 import {
   useCallback,
   useEffect,
@@ -17,6 +14,7 @@ import {
 import type { Content } from "../../types/content";
 import { FeatureContentCard } from "../../components/contenus/FeatureContentCard";
 import { ContenuCard } from "../../components/contenus/ContenuCard";
+
 const fallbackItems: Content[] = [
   {
     id: "v1",
@@ -70,61 +68,6 @@ type ContentApiResponse = {
   error?: string;
 };
 
-type EditorialTypeFilter = "Analyse" | "Reportage" | "Interview";
-type EditorialThemeFilter = "Football" | "Culture sport" | "Business";
-type EditorialFormatFilter = "Vidéo" | "Article" | "Audio";
-
-const TYPE_FILTERS: readonly EditorialTypeFilter[] = ["Analyse", "Reportage", "Interview"];
-const THEME_FILTERS: readonly EditorialThemeFilter[] = ["Football", "Culture sport", "Business"];
-const FORMAT_FILTERS: readonly EditorialFormatFilter[] = ["Vidéo", "Article", "Audio"];
-
-function normalizeToken(v: string): string {
-  return v
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .trim();
-}
-
-function textIncludesAny(text: string, needles: readonly string[]): boolean {
-  const n = normalizeToken(text);
-  return needles.some((needle) => n.includes(normalizeToken(needle)));
-}
-
-function matchTypeFilter(item: Content, f: EditorialTypeFilter): boolean {
-  const blob = `${item.title} ${(item.tags ?? []).join(" ")} ${item.content}`;
-  switch (f) {
-    case "Analyse":
-      return textIncludesAny(blob, ["analyse", "decryptage", "décryptage", "tactique", "opinion"]);
-    case "Reportage":
-      return textIncludesAny(blob, ["reportage", "terrain", "immersion", "chronique", "coulisses"]);
-    case "Interview":
-      return textIncludesAny(blob, ["interview", "entretien", "portrait", "temoignage", "témoignage"]);
-    default:
-      return false;
-  }
-}
-
-function matchThemeFilter(item: Content, f: EditorialThemeFilter): boolean {
-  const blob = `${item.title} ${(item.tags ?? []).join(" ")} ${item.content}`;
-  switch (f) {
-    case "Football":
-      return textIncludesAny(blob, ["football", "ligue", "match", "stade", "ballon"]);
-    case "Culture sport":
-      return textIncludesAny(blob, ["culture sport", "tribune", "supporter", "histoire", "rituel", "ambiance"]);
-    case "Business":
-      return textIncludesAny(blob, ["business", "economie", "économie", "sponsoring", "droits tv", "marketing"]);
-    default:
-      return false;
-  }
-}
-
-function matchFormatFilter(item: Content, f: EditorialFormatFilter): boolean {
-  if (f === "Vidéo") return item.type === "video";
-  if (f === "Article") return item.type === "article";
-  return item.type === "audio";
-}
-
 function buildContentQuery(offset: number, stats: boolean): string {
   const params = new URLSearchParams();
   params.set("limit", String(PAGE_SIZE));
@@ -141,10 +84,8 @@ export default function MesContenusPage() {
   const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState<number | null>(null);
   const [usingFallback, setUsingFallback] = useState(true);
-  const [selectedTypes, setSelectedTypes] = useState<EditorialTypeFilter[]>([]);
-  const [selectedThemes, setSelectedThemes] = useState<EditorialThemeFilter[]>([]);
-  const [selectedFormats, setSelectedFormats] = useState<EditorialFormatFilter[]>([]);
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  /** `null` = tous les contenus ; sinon filtre une catégorie (comportement type hub streaming). */
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const pageRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -254,63 +195,31 @@ export default function MesContenusPage() {
     return () => observer.disconnect();
   }, [hasMore, isLoading, usingFallback, loadMore]);
 
-  const availableTypeFilters = useMemo(
-    () => TYPE_FILTERS.filter((f) => items.some((item) => matchTypeFilter(item, f))),
-    [items]
-  );
-  const availableThemeFilters = useMemo(
-    () => THEME_FILTERS.filter((f) => items.some((item) => matchThemeFilter(item, f))),
-    [items]
-  );
-  const availableFormatFilters = useMemo(
-    () => FORMAT_FILTERS.filter((f) => items.some((item) => matchFormatFilter(item, f))),
-    [items]
-  );
-
-  useEffect(() => {
-    setSelectedTypes((prev) => prev.filter((f) => availableTypeFilters.includes(f)));
-  }, [availableTypeFilters]);
-
-  useEffect(() => {
-    setSelectedThemes((prev) => prev.filter((f) => availableThemeFilters.includes(f)));
-  }, [availableThemeFilters]);
-
-  useEffect(() => {
-    setSelectedFormats((prev) => prev.filter((f) => availableFormatFilters.includes(f)));
-  }, [availableFormatFilters]);
-
   const filteredItems = useMemo(() => {
-    const hasType = selectedTypes.length > 0;
-    const hasTheme = selectedThemes.length > 0;
-    const hasFormat = selectedFormats.length > 0;
-    const hasCategory = selectedCategoryIds.length > 0;
+    if (!selectedCategoryId) return items;
+    return items.filter((item) => item.category_id === selectedCategoryId);
+  }, [items, selectedCategoryId]);
 
-    return items.filter((item) => {
-      if (hasType && !selectedTypes.some((f) => matchTypeFilter(item, f))) return false;
-      if (hasTheme && !selectedThemes.some((f) => matchThemeFilter(item, f))) return false;
-      if (hasFormat && !selectedFormats.some((f) => matchFormatFilter(item, f))) return false;
-      if (hasCategory && (!item.category_id || !selectedCategoryIds.includes(item.category_id))) return false;
-      return true;
+  const sortedCatalogItems = useMemo(() => {
+    return [...filteredItems].sort((a, b) => {
+      const fa = a.is_featured ? 1 : 0;
+      const fb = b.is_featured ? 1 : 0;
+      if (fb !== fa) return fb - fa;
+      const tb = new Date(b.created_at).getTime();
+      const ta = new Date(a.created_at).getTime();
+      return tb - ta;
     });
-  }, [items, selectedTypes, selectedThemes, selectedFormats, selectedCategoryIds]);
+  }, [filteredItems]);
 
-  const featuredLead = useMemo(() => filteredItems[0] ?? null, [filteredItems]);
-  const featuredDeck = useMemo(
-    () => (featuredLead ? filteredItems.slice(1, 3) : filteredItems.slice(0, 2)),
-    [filteredItems, featuredLead]
+  const catalogHero = useMemo(
+    () => sortedCatalogItems.find((item) => item.is_featured) ?? null,
+    [sortedCatalogItems]
   );
-  const recentItems = useMemo(
-    () =>
-      featuredLead
-        ? filteredItems.slice(1 + featuredDeck.length)
-        : filteredItems.slice(featuredDeck.length),
-    [filteredItems, featuredLead, featuredDeck.length]
-  );
-  const groupedSeries = useMemo(() => groupByEditorialSeries(filteredItems), [filteredItems]);
-  const hasSeries = useMemo(
-    () => EDITORIAL_SERIES.some((serie) => groupedSeries[serie.id].length > 0),
-    [groupedSeries]
-  );
+
+  const catalogGridItems = useMemo(() => {
+    if (!catalogHero) return sortedCatalogItems;
+    return sortedCatalogItems.filter((item) => item.id !== catalogHero.id);
+  }, [sortedCatalogItems, catalogHero]);
 
   const categoryCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -320,20 +229,6 @@ export default function MesContenusPage() {
     }
     return counts;
   }, [items]);
-
-  const popularItems = useMemo(() => {
-    const base = featuredLead ? filteredItems.filter((i) => i.id !== featuredLead.id) : filteredItems;
-    return [...base]
-      .map((item, index) => {
-        const tagScore = Math.min((item.tags ?? []).length, 5) * 10;
-        const featuredScore = item.is_featured ? 1000 : 0;
-        const freshnessScore = Math.max(0, 200 - index * 8);
-        return { item, score: featuredScore + tagScore + freshnessScore };
-      })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 6)
-      .map((x) => x.item);
-  }, [filteredItems, featuredLead]);
 
   const initialRevealDoneRef = useRef(false);
   const prevItemCountRef = useRef(0);
@@ -430,26 +325,8 @@ export default function MesContenusPage() {
       );
 
       gsap.utils.toArray<HTMLElement>(".mes-contenus-section").forEach((section) => {
-        const head = section.querySelector(".contenus-sectionHead");
-        if (head) {
-          gsap.fromTo(
-            head,
-            { autoAlpha: 0, y: 28 },
-            {
-              autoAlpha: 1,
-              y: 0,
-              duration: motion.duration.revealMed,
-              ease: motion.ease.out,
-              scrollTrigger: {
-                trigger: section,
-                start: motion.scroll.startRevealTight,
-                toggleActions: motion.scroll.toggleOnce,
-              },
-            }
-          );
-        }
         const cards = section.querySelectorAll(
-          ".edition-slot .contenus-card, .contenus-feature, .mes-hub__popularRail .contenus-card"
+          ".contenus-feature, .mes-hub__catalogGrid .contenus-card"
         );
         if (cards.length) {
           gsap.fromTo(
@@ -459,26 +336,6 @@ export default function MesContenusPage() {
               autoAlpha: 1,
               y: 0,
               scale: 1,
-              duration: motion.duration.revealMed,
-              ease: motion.ease.out,
-              stagger: motion.duration.stagger,
-              scrollTrigger: {
-                trigger: section,
-                start: motion.scroll.startCards,
-                toggleActions: motion.scroll.toggleOnce,
-              },
-            }
-          );
-        }
-
-        const chapters = section.querySelectorAll(".mes-story__chapter");
-        if (chapters.length) {
-          gsap.fromTo(
-            chapters,
-            { autoAlpha: 0, y: 38 },
-            {
-              autoAlpha: 1,
-              y: 0,
               duration: motion.duration.revealMed,
               ease: motion.ease.out,
               stagger: motion.duration.stagger,
@@ -546,417 +403,118 @@ export default function MesContenusPage() {
     if (isLoading) return;
     if (isReducedMotion()) return;
     scheduleScrollTriggerRefresh();
-  }, [isLoading, items.length, recentItems.length, scheduleScrollTriggerRefresh]);
+  }, [isLoading, items.length, sortedCatalogItems.length, scheduleScrollTriggerRefresh]);
 
   const showEmptyGlobal = !isLoading && !usingFallback && items.length === 0;
   const showEmptyFiltered = !isLoading && items.length > 0 && filteredItems.length === 0;
 
-  const toggleFilter = <T extends string>(value: T, current: T[], set: (v: T[]) => void) => {
-    set(current.includes(value) ? current.filter((x) => x !== value) : [...current, value]);
-  };
-
-  const clearAllFilters = () => {
-    setSelectedTypes([]);
-    setSelectedThemes([]);
-    setSelectedFormats([]);
-    setSelectedCategoryIds([]);
-  };
-
   return (
-    <section className="mes-contenus-page contenus-page broadcast-hub" ref={pageRef}>
-      <div className="container">
-        <header className="mes-contenus-head contenus-head mes-hub__head">
-          <div className="mes-hub__headMain">
-            <div className="home-sectionEyebrow">Hub éditorial</div>
-            <h1 className="contenus-title">Mes contenus</h1>
-            <p className="muted contenus-sub mes-hub__lede">
-              Une édition pensée comme un média : ouverture forte, sélection mise en avant, puis flux
-              récent pour prolonger l’histoire.
+    <section className="mes-contenus-page contenus-page broadcast-hub mes-canal-page" ref={pageRef}>
+      <div className="container mes-canal__container">
+        <header className="mes-contenus-head mes-canal__top">
+          <h1 className="mes-canal__title">Contenus</h1>
+          {!isLoading && !showEmptyGlobal ? (
+            <p className="mes-canal__count muted" aria-live="polite">
+              {typeof total === "number" && total > 0 ? total : filteredItems.length}{" "}
+              {typeof total === "number" && total > 1 ? "titres" : "titre"}
+              {selectedCategoryId ? " dans cette catégorie" : ""}
             </p>
-          </div>
-          <div className="mes-hub__meta" aria-live="polite">
-            <span className="mes-hub__metaLabel">Édition en cours</span>
-            <strong className="mes-hub__metaValue">
-              {typeof total === "number" && total > 0 ? total : items.length}
-            </strong>
-            <span className="mes-hub__metaUnit">
-              {typeof total === "number" && total > 1 ? "contenus" : "contenu"}
-            </span>
-          </div>
+          ) : null}
         </header>
-
-        <nav className="mes-hub__storyNav" aria-label="Navigation du récit éditorial">
-          <a href="#categories">Repères</a>
-          <a href="#edition">Ouverture</a>
-          <a href="#histoires-recentes">Histoires récentes</a>
-          <a href="#histoires-populaires">Histoires populaires</a>
-          <a href="#series">Séries</a>
-        </nav>
 
         {showEmptyGlobal ? (
           <p className="contenus-empty muted">Les premiers contenus arrivent bientôt.</p>
         ) : null}
 
-        {!showEmptyGlobal ? (
-          <section
-            id="categories"
-            className="contenus-nav mes-hub__filters"
-            aria-label="Filtres combinables"
+        {showEmptyFiltered ? (
+          <p className="contenus-empty muted">Aucun contenu dans cette catégorie.</p>
+        ) : null}
+
+        {!showEmptyGlobal && !showEmptyFiltered ? (
+          <div
+            className={`mes-canal__layout${categories.length === 0 ? " mes-canal__layout--solo" : ""}`}
           >
-            <div className="mes-hub__filterGroup">
-              <span className="mes-hub__filterLabel">Type</span>
-              <div className="contenus-filters">
-                {availableTypeFilters.map((f) => {
-                  const active = selectedTypes.includes(f);
-                  return (
-                    <button
-                      key={f}
-                      type="button"
-                      className={`contenus-filter${active ? " is-active" : ""}`}
-                      onClick={() => toggleFilter(f, selectedTypes, setSelectedTypes)}
-                    >
-                      <span className="contenus-filter__label">{f}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mes-hub__filterGroup">
-              <span className="mes-hub__filterLabel">Thème</span>
-              <div className="contenus-filters">
-                {availableThemeFilters.map((f) => {
-                  const active = selectedThemes.includes(f);
-                  return (
-                    <button
-                      key={f}
-                      type="button"
-                      className={`contenus-filter${active ? " is-active" : ""}`}
-                      onClick={() => toggleFilter(f, selectedThemes, setSelectedThemes)}
-                    >
-                      <span className="contenus-filter__label">{f}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mes-hub__filterGroup">
-              <span className="mes-hub__filterLabel">Format</span>
-              <div className="contenus-filters">
-                {availableFormatFilters.map((f) => {
-                  const active = selectedFormats.includes(f);
-                  return (
-                    <button
-                      key={f}
-                      type="button"
-                      className={`contenus-filter${active ? " is-active" : ""}`}
-                      onClick={() => toggleFilter(f, selectedFormats, setSelectedFormats)}
-                    >
-                      <span className="contenus-filter__label">{f}</span>
-                    </button>
-                  );
-                })}
-                <button type="button" className="contenus-filter" onClick={clearAllFilters}>
-                  <span className="contenus-filter__label">Réinitialiser</span>
-                </button>
-              </div>
-            </div>
-
             {categories.length > 0 ? (
-              <div className="mes-hub__filterGroup">
-                <span className="mes-hub__filterLabel">Catégories</span>
-                <div className="contenus-filters">
+              <aside className="mes-canal__sidebar" aria-label="Filtrer par catégorie">
+                <p className="mes-canal__sidebarLabel">Catégories</p>
+                <div className="mes-canal__chips" role="tablist" aria-orientation="vertical">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedCategoryId === null}
+                    className={`mes-canal__chip${selectedCategoryId === null ? " is-active" : ""}`}
+                    onClick={() => setSelectedCategoryId(null)}
+                  >
+                    Tous
+                  </button>
                   {categories.map((c) => {
-                    const active = selectedCategoryIds.includes(c.id);
+                    const active = selectedCategoryId === c.id;
                     const count = categoryCounts.get(c.id) ?? 0;
                     return (
                       <button
                         key={c.id}
                         type="button"
-                        className={`contenus-filter${active ? " is-active" : ""}`}
-                        onClick={() => toggleFilter(c.id, selectedCategoryIds, setSelectedCategoryIds)}
+                        role="tab"
+                        aria-selected={active}
+                        className={`mes-canal__chip${active ? " is-active" : ""}`}
+                        onClick={() => setSelectedCategoryId(c.id)}
                       >
-                        <span className="contenus-filter__label">
-                          {c.name}
-                          {count > 0 ? ` (${count})` : ""}
-                        </span>
+                        <span className="mes-canal__chipName">{c.name}</span>
+                        {count > 0 ? <span className="mes-canal__chipCount">{count}</span> : null}
                       </button>
                     );
                   })}
                 </div>
-              </div>
+              </aside>
             ) : null}
-          </section>
-        ) : null}
 
-        {showEmptyFiltered ? (
-          <p className="contenus-empty muted">Aucun contenu ne correspond à vos filtres.</p>
-        ) : null}
-
-        {!showEmptyGlobal && !showEmptyFiltered ? (
-          <>
-            <section
-            id="edition"
-            className="mes-contenus-section contenus-section contenus-section--catalogue mes-hub__featured"
-            aria-labelledby="mes-contenus-featured-title"
-            >
-            <SectionHeader
-              eyebrow="Ouverture"
-              title="À la une"
-              subtitle="Les contenus qui incarnent la ligne éditoriale du moment."
-              titleId="mes-contenus-featured-title"
-            />
-
-            {isLoading ? (
-              <p className="contenus-pending muted" role="status">
-                Chargement des contenus…
-              </p>
-            ) : (
-              <>
-                {featuredLead ? (
-                  <div className="contenus-catalogue__hero mes-hub__lead" data-filter-node>
-                    <FeatureContentCard item={featuredLead} />
-                  </div>
-                ) : null}
-                {featuredDeck.length > 0 ? (
-                  <div className="mes-hub__deck" role="list">
-                    {featuredDeck.map((item, index) => (
-                      <div
-                        key={item.id}
-                        className={`edition-slot ${editionRiverSlotClass(index)}`}
-                        role="listitem"
-                        data-filter-node
-                      >
-                        <ContenuCard item={item} />
+            <div className="mes-canal__main">
+              <section
+                id="catalogue"
+                className="mes-contenus-section contenus-section mes-hub__featured mes-canal__catalog"
+                aria-label="Catalogue de contenus"
+              >
+                {isLoading ? (
+                  <p className="contenus-pending muted" role="status">
+                    Chargement…
+                  </p>
+                ) : (
+                  <>
+                    {catalogHero ? (
+                      <div className="contenus-catalogue__hero mes-hub__lead" data-filter-node>
+                        <FeatureContentCard item={catalogHero} />
                       </div>
-                    ))}
-                  </div>
-                ) : null}
-              </>
-            )}
-            </section>
-
-            {!isLoading && recentItems.length > 0 ? (
-              <section
-                className="mes-contenus-section contenus-section mes-hub__recent"
-                id="histoires-recentes"
-                aria-labelledby="mes-contenus-recent-title"
-              >
-                <SectionHeader
-                  eyebrow="Suite"
-                  title="Histoires récentes"
-                  subtitle="Les dernières publications du flux éditorial."
-                  titleId="mes-contenus-recent-title"
-                />
-                <div className="mes-storyline" role="list">
-                  <span className="mes-storyline__rail" aria-hidden="true">
-                    <span className="mes-storyline__progress" />
-                  </span>
-                  {recentItems.slice(0, 6).map((item, index) => (
-                    <StoryChapter
-                      key={item.id}
-                      item={item}
-                      index={index}
-                      variant={index % 2 === 0 ? "left" : "right"}
-                    />
-                  ))}
-                </div>
+                    ) : null}
+                    {catalogGridItems.length > 0 ? (
+                      <div className="contenus-rowGrid mes-hub__catalogGrid" role="list">
+                        {catalogGridItems.map((item) => (
+                          <div key={item.id} role="listitem" data-filter-node>
+                            <ContenuCard item={item} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : !catalogHero ? (
+                      <p className="muted contenus-empty">Aucun contenu à afficher.</p>
+                    ) : null}
+                  </>
+                )}
               </section>
-            ) : null}
 
-            {!isLoading && popularItems.length > 0 ? (
-              <section
-                className="mes-contenus-section contenus-section mes-hub__popular"
-                id="histoires-populaires"
-                aria-labelledby="mes-contenus-popular-title"
-              >
-                <SectionHeader
-                  eyebrow="Impact"
-                  title="Histoires populaires"
-                  subtitle="Les narrations qui captent le plus l’attention et la mémoire."
-                  titleId="mes-contenus-popular-title"
-                />
-                <div className="mes-storyline mes-storyline--compact" role="list">
-                  <span className="mes-storyline__rail" aria-hidden="true">
-                    <span className="mes-storyline__progress" />
-                  </span>
-                  {popularItems.slice(0, 4).map((item, index) => (
-                    <StoryChapter key={item.id} item={item} index={index} variant="left" compact />
-                  ))}
+              {!isLoading && filteredItems.length > 0 ? (
+                <div className="contenus-flux" aria-live="polite">
+                  {isLoadingMore ? (
+                    <p className="contenus-flux__loading" role="status">
+                      <span className="contenus-flux__spinner" aria-hidden="true" />
+                      Chargement…
+                    </p>
+                  ) : null}
+                  <div ref={sentinelRef} className="contenus-flux__sentinel" aria-hidden="true" />
                 </div>
-              </section>
-            ) : null}
-
-            {!isLoading && hasSeries ? (
-              <section
-                className="mes-contenus-section contenus-section mes-hub__series"
-                id="series"
-                aria-labelledby="mes-contenus-series-title"
-              >
-                <SectionHeader
-                  eyebrow="Collections"
-                  title="Séries éditoriales"
-                  subtitle="Une lecture par arcs narratifs, pour retrouver les contenus dans une logique média."
-                  titleId="mes-contenus-series-title"
-                />
-
-                <div className="mes-hub__seriesGrid">
-                  {EDITORIAL_SERIES.map((serie) => {
-                    const serieItems = groupedSeries[serie.id];
-                    if (serieItems.length === 0) return null;
-                    return (
-                      <SeriesCollection
-                        key={serie.id}
-                        id={serie.id}
-                        title={serie.title}
-                        lede={serie.lede}
-                        items={serieItems}
-                      />
-                    );
-                  })}
-                </div>
-              </section>
-            ) : null}
-          </>
-        ) : null}
-
-        {!isLoading && filteredItems.length > 0 ? (
-          <div className="contenus-flux" aria-live="polite">
-            {isLoadingMore ? (
-              <p className="contenus-flux__loading" role="status">
-                <span className="contenus-flux__spinner" aria-hidden="true" />
-                Suite du parcours…
-              </p>
-            ) : null}
-
-            <div ref={sentinelRef} className="contenus-flux__sentinel" aria-hidden="true" />
+              ) : null}
+            </div>
           </div>
         ) : null}
       </div>
     </section>
-  );
-}
-
-function SectionHeader({
-  eyebrow,
-  title,
-  subtitle,
-  titleId,
-}: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  titleId: string;
-}) {
-  return (
-    <header className="contenus-sectionHead">
-      <div>
-        <p className="home-sectionEyebrow">{eyebrow}</p>
-        <h2 id={titleId} className="contenus-sectionTitle">
-          {title}
-        </h2>
-      </div>
-      <p className="contenus-sectionSub muted">{subtitle}</p>
-    </header>
-  );
-}
-
-function SeriesCollection({
-  id,
-  title,
-  lede,
-  items,
-}: {
-  id: EditorialSeriesId;
-  title: string;
-  lede: string;
-  items: Content[];
-}) {
-  return (
-    <article className="mes-hub__seriesCard" data-series-id={id} data-filter-node>
-      <header className="mes-hub__seriesHead">
-        <h3 className="mes-hub__seriesTitle">{title}</h3>
-        <p className="mes-hub__seriesLede muted">{lede}</p>
-      </header>
-      <div className="mes-hub__seriesList" role="list">
-        {items.slice(0, 4).map((item, index) => (
-          <div
-            key={`${id}-${item.id}`}
-            className={`edition-slot ${editionRiverSlotClass(index)}`}
-            role="listitem"
-            data-filter-node
-          >
-            <ContenuCard item={item} intentRail />
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
-
-function toNarrativeExcerpt(item: Content): string {
-  const source = `${item.content} ${(item.tags ?? []).join(" ")}`.replace(/\s+/g, " ").trim();
-  if (!source) return "Un nouveau chapitre éditorial a ete publie.";
-  return source.length > 180 ? `${source.slice(0, 177)}...` : source;
-}
-
-function toStoryLabel(item: Content): string {
-  if (item.type === "video") return "Chapitre video";
-  if (item.type === "audio") return "Chapitre audio";
-  return "Chapitre ecrit";
-}
-
-function formatStoryDate(dateIso: string): string {
-  const d = new Date(dateIso);
-  if (Number.isNaN(d.getTime())) return "Edition recente";
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(d);
-}
-
-function StoryChapter({
-  item,
-  index,
-  variant,
-  compact,
-}: {
-  item: Content;
-  index: number;
-  variant: "left" | "right";
-  compact?: boolean;
-}) {
-  return (
-    <article
-      className={`mes-story__chapter mes-story__chapter--${variant}${compact ? " is-compact" : ""}`}
-      role="listitem"
-      data-filter-node
-    >
-      <div className="mes-story__mediaWrap">
-        <div
-          className="mes-story__media"
-          style={{
-            backgroundImage: `linear-gradient(180deg, rgb(var(--media-scrim-rgb) / 0.22), rgb(var(--media-scrim-rgb) / 0.78)), url(${item.image_url})`,
-          }}
-          aria-hidden="true"
-        />
-      </div>
-      <div className="mes-story__body">
-        <p className="mes-story__meta">
-          <span>{toStoryLabel(item)}</span>
-          <span>·</span>
-          <span>{formatStoryDate(item.created_at)}</span>
-        </p>
-        <h3 className="mes-story__title">
-          {index + 1}. {item.title}
-        </h3>
-        <p className="mes-story__excerpt">{toNarrativeExcerpt(item)}</p>
-        <Link href={`/mes-contenus/${item.id}`} className="mes-story__link">
-          Lire l'histoire complete
-        </Link>
-      </div>
-    </article>
   );
 }
