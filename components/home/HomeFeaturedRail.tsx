@@ -30,7 +30,7 @@ function sortForRail(contents: Content[]): Content[] {
   return out;
 }
 
-function RailSlide({ item }: { item: Content }) {
+function RailSlide({ item, tone }: { item: Content; tone: number }) {
   const isVideo = item.type === "video";
   const isAudio = item.type === "audio";
   const desc = isVideo
@@ -40,7 +40,11 @@ function RailSlide({ item }: { item: Content }) {
       : articleExcerpt(item.content, 140) || "";
 
   return (
-    <article className="home-rail-slide" data-content-id={item.id}>
+    <article
+      className="home-rail-slide"
+      data-content-id={item.id}
+      data-rail-tone={String(tone % 6)}
+    >
       <div className="home-rail-slide__media">
         {isVideo ? (
           <VideoPlayer
@@ -111,7 +115,7 @@ export function HomeFeaturedRail({ items = [] }: HomeFeaturedRailProps) {
         <div className="home-rail__track">
           {loop.map((item, i) => (
             <div key={`${item.id}-${i}`} className="home-rail__cell">
-              <RailSlide item={item} />
+              <RailSlide item={item} tone={i} />
             </div>
           ))}
         </div>
