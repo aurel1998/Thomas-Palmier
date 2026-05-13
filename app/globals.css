@@ -41,6 +41,9 @@
   /* Largeur alignée hero / sections (gouttières symétriques, lisibles sur mobile) */
   --layout-max: 1180px;
   --layout-gutter: clamp(24px, 6.5vw, 112px);
+  /* Barre menu + marge ancres / sticky (hubs type listing : peu d’air sous le header). */
+  --site-header-bar: clamp(54px, 8vw, 70px);
+  --site-header-offset: calc(var(--site-header-bar) + 12px);
   --radius-sm: 12px;
   --radius-md: 18px;
   --radius-lg: 26px;
@@ -977,7 +980,7 @@ main li > a:not([class]):hover,
 }
 
 .site-header__inner {
-  min-height: 100px;
+  min-height: var(--site-header-bar);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2528,7 +2531,7 @@ main li > a:not([class]):hover,
 
 /* Home: Crédibilité — récompenses, médias, collaborations */
 .credibility {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   padding: clamp(52px, 8vw, var(--space-xl)) 0 clamp(44px, 7vw, var(--space-lg));
   background: linear-gradient(
     180deg,
@@ -2760,7 +2763,7 @@ main li > a:not([class]):hover,
 
 /* Home: Partenaires — grille business, CTA Collaborer */
 .home-partners {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   padding: clamp(44px, 7vw, var(--space-xl)) 0 clamp(48px, 7vw, var(--space-lg));
 }
 
@@ -2918,7 +2921,7 @@ main li > a:not([class]):hover,
 
 /* Home: Proposer un sujet — conversion plateforme */
 .pitch-subject {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   padding: clamp(44px, 7vw, var(--space-xl)) 0 clamp(52px, 7.5vw, var(--space-2xl));
 }
 
@@ -3051,7 +3054,7 @@ main li > a:not([class]):hover,
 
 /* Home: Newsletter — minimal et centré */
 .home-newsletter {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   padding: clamp(36px, 6vw, var(--space-lg)) 0 clamp(48px, 7vw, var(--space-xl));
 }
 
@@ -3136,7 +3139,7 @@ main li > a:not([class]):hover,
 
 /* Home: Feature Story — récit phare (média immersif + narration) */
 .feature-story {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   position: relative;
   background: var(--bg);
 }
@@ -3365,7 +3368,7 @@ main li > a:not([class]):hover,
 
 /* Home: Sélection éditoriale (intentions × rails horizontaux) */
 .editorial-selection {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   padding: clamp(52px, 8vw, var(--space-xl)) 0 clamp(48px, 7vw, var(--space-2xl));
 }
 
@@ -3474,7 +3477,7 @@ main li > a:not([class]):hover,
 
 /* Home: Vidéos récentes (YouTube, rail horizontal + preview hover) */
 .recent-yt {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
   padding: clamp(44px, 7vw, var(--space-xl)) 0 clamp(40px, 6vw, var(--space-lg));
 }
 
@@ -3834,7 +3837,7 @@ main li > a:not([class]):hover,
 
 /* --- Accueil : bandeau éditorial en défilement continu (sans libellé « À la une ») --- */
 .home-une.home-une--rail {
-  padding: clamp(52px, 7.5vw, 92px) 0 clamp(40px, 5.5vw, 72px);
+  padding: clamp(40px, 6vw, 76px) 0 clamp(36px, 5vw, 64px);
   overflow: hidden;
 }
 
@@ -4332,7 +4335,7 @@ main li > a:not([class]):hover,
 
 /* /contenus page */
 .contenus-page {
-  padding: clamp(72px, 10vw, 96px) 0 clamp(96px, 12vw, 120px);
+  padding: clamp(40px, 5vw, 56px) 0 clamp(88px, 11vw, 112px);
 }
 
 .contenus-head {
@@ -4365,7 +4368,7 @@ main li > a:not([class]):hover,
 /* /mes-contenus : hub éditorial (hiérarchie forte + storytelling) */
 .mes-hub__head {
   align-items: flex-start;
-  margin-bottom: clamp(24px, 4vw, 36px);
+  margin-bottom: clamp(16px, 2.6vw, 28px);
 }
 
 .mes-hub__headMain {
@@ -4748,7 +4751,7 @@ main li > a:not([class]):hover,
   display: block;
   height: 2px;
   width: min(100%, 1080px);
-  margin: 0 auto clamp(10px, 2vw, 18px);
+  margin: 0 auto clamp(4px, 1vw, 10px);
   border-radius: 0;
   background: linear-gradient(
     90deg,
@@ -4904,8 +4907,8 @@ main li > a:not([class]):hover,
   align-items: baseline;
   justify-content: space-between;
   gap: 12px 20px;
-  margin-bottom: clamp(20px, 3vw, 32px);
-  padding-bottom: clamp(12px, 2vw, 18px);
+  margin-bottom: clamp(14px, 2.2vw, 24px);
+  padding-bottom: clamp(10px, 1.6vw, 16px);
   border-bottom: 1px solid rgb(var(--text-rgb) / 0.1);
 }
 
@@ -5749,7 +5752,7 @@ main li > a:not([class]):hover,
 /* Filtres : sticky sous le header pour rester accessibles au scroll. */
 .contenus-nav {
   position: sticky;
-  top: 100px;
+  top: var(--site-header-bar);
   z-index: 6;
   margin: var(--space-md) -12px 0;
   padding: 12px 14px;
@@ -5759,12 +5762,12 @@ main li > a:not([class]):hover,
   border-top: 1px solid rgb(var(--text-rgb) / 0.06);
   border-bottom: 1px solid rgb(var(--text-rgb) / 0.08);
   border-radius: 14px;
-  scroll-margin-top: 108px;
+  scroll-margin-top: var(--site-header-offset);
 }
 
 @media (max-width: 720px) {
   .contenus-nav {
-    top: 92px;
+    top: var(--site-header-bar);
     margin: 18px -8px 0;
     padding: 8px 8px;
     overflow-x: auto;
@@ -5809,12 +5812,12 @@ main li > a:not([class]):hover,
 }
 
 .contenus-section {
-  margin-top: clamp(80px, 12vw, 96px);
-  scroll-margin-top: 108px;
+  margin-top: clamp(44px, 6vw, 64px);
+  scroll-margin-top: var(--site-header-offset);
 }
 
 .contenus-section:first-of-type {
-  margin-top: clamp(56px, 8vw, 72px);
+  margin-top: clamp(24px, 3.5vw, 40px);
 }
 
 .contenus-catalogue__hero {
@@ -6491,7 +6494,7 @@ main li > a:not([class]):hover,
 
 /* /a-propos page */
 .apropos-page {
-  padding: clamp(30px, 5.6vw, 52px) 0 clamp(90px, 12vw, 124px);
+  padding: clamp(22px, 3.8vw, 40px) 0 clamp(90px, 12vw, 124px);
 }
 
 .apropos-story__container {
@@ -6854,7 +6857,7 @@ main li > a:not([class]):hover,
   .apropos-story__media {
     min-height: clamp(560px, 74vh, 760px);
     position: sticky;
-    top: 108px;
+    top: var(--site-header-offset);
   }
 
   .apropos-story__mediaLogos {
@@ -6870,7 +6873,7 @@ main li > a:not([class]):hover,
   .apropos-media {
     min-height: 720px;
     position: sticky;
-    top: 108px;
+    top: var(--site-header-offset);
   }
 
   .apropos-content {
@@ -6880,7 +6883,7 @@ main li > a:not([class]):hover,
 
 /* /collaborer page */
 .collab-page {
-  padding: clamp(72px, 10vw, 96px) 0 clamp(112px, 14vw, 140px);
+  padding: clamp(40px, 5vw, 56px) 0 clamp(104px, 13vw, 132px);
 }
 
 .collab-biz {
@@ -7279,7 +7282,7 @@ main li > a:not([class]):hover,
   z-index: 2;
   width: 100%;
   max-width: 880px;
-  padding-block: 130px 86px;
+  padding-block: clamp(72px, 10vw, 96px) 80px;
 }
 
 .contact-card {
@@ -7672,14 +7675,14 @@ main li > a:not([class]):hover,
 .apropos-page,
 .collab-page,
 .contact-page {
-  scroll-margin-top: 110px;
+  scroll-margin-top: var(--site-header-offset);
 }
 
 @media (max-width: 900px) {
   .contact-wrap {
     max-width: 100%;
     padding-inline: 18px;
-    padding-block: 120px 78px;
+    padding-block: clamp(68px, 12vw, 92px) 72px;
   }
 
   .contact-card {
@@ -7987,8 +7990,13 @@ main li > a:not([class]):hover,
 }
 
 @media (max-width: 860px) {
+  :root {
+    --site-header-bar: clamp(68px, 12vw, 86px);
+    --site-header-offset: calc(var(--site-header-bar) + 10px);
+  }
+
   .site-header__inner {
-    min-height: 88px;
+    min-height: var(--site-header-bar);
     gap: 14px;
     align-items: center;
     flex-wrap: wrap;
@@ -8087,7 +8095,7 @@ main li > a:not([class]):hover,
 
 @media (max-width: 430px) {
   .site-header__inner {
-    min-height: 82px;
+    min-height: var(--site-header-bar);
     gap: 10px;
     padding-block: 8px;
   }
@@ -8871,7 +8879,7 @@ main li > a:not([class]):hover,
 
 .admin-toastStack {
   position: fixed;
-  top: 100px;
+  top: var(--site-header-offset);
   right: 24px;
   z-index: 140;
   display: flex;
