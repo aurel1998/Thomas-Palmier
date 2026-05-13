@@ -18,10 +18,7 @@ const typeLabels: Record<ContentType, string> = {
 };
 
 /**
- * Carte contenu : vidéo (preview MP4 ou bouton lecture), article (image + extrait),
- * audio (player intégré) — même socle visuel (tilt, tags, titres).
- *
- * `intentRail` : masque le badge de format technique (pour rails « intention éditoriale »).
+ * Carte catalogue : média seul (zone 16/9), texte et actions en dessous — style média premium.
  */
 export function ContenuCard({ item, intentRail }: { item: Content; intentRail?: boolean }) {
   const rootRef = useRef<HTMLElement | null>(null);
@@ -132,7 +129,11 @@ export function ContenuCard({ item, intentRail }: { item: Content; intentRail?: 
   const tiltClass = isAudio ? "" : " contenus-card--tilt";
 
   return (
-    <article ref={rootRef} className={`contenus-card${tiltClass} ${cardKindClass}`.trim()} data-content-id={item.id}>
+    <article
+      ref={rootRef}
+      className={`contenus-card contenus-card--stacked${tiltClass} ${cardKindClass}`.trim()}
+      data-content-id={item.id}
+    >
       <div ref={tiltRef} className="contenus-card__tiltInner">
         <div
           className={`contenus-card__media${isVideo ? " contenus-card__media--video" : ""}${isArticle ? " contenus-card__media--article" : ""}${isAudio ? " contenus-card__media--audio" : ""}`.trim()}
@@ -159,54 +160,45 @@ export function ContenuCard({ item, intentRail }: { item: Content; intentRail?: 
                 title={item.title}
                 className="contenus-card__player"
               />
-              <div className="contenus-card__shade" aria-hidden="true" />
             </>
           ) : isAudio ? (
-            <>
-              {item.image_url ? (
-                <ContentImage
-                  src={item.image_url}
-                  alt=""
-                  fill
-                  sizes="(max-width: 960px) 100vw, (max-width: 1200px) 33vw, 380px"
-                  className="contenus-card__img"
-                />
-              ) : (
-                <div className="contenus-card__audioFallback" aria-hidden="true" />
-              )}
-              <div className="contenus-card__audioOverlay" aria-hidden="true" />
-              <div className="contenus-card__audioBar">
-                <AudioPlayer src={item.content} title={item.title} variant="compact" />
-              </div>
-            </>
+            item.image_url ? (
+              <ContentImage
+                src={item.image_url}
+                alt=""
+                fill
+                sizes="(max-width: 960px) 100vw, (max-width: 1200px) 33vw, 380px"
+                className="contenus-card__img"
+              />
+            ) : (
+              <div className="contenus-card__audioFallback" aria-hidden="true" />
+            )
+          ) : item.image_url ? (
+            <ContentImage
+              src={item.image_url}
+              alt={item.title}
+              fill
+              sizes="(max-width: 960px) 100vw, (max-width: 1200px) 33vw, 380px"
+              className="contenus-card__img"
+            />
           ) : (
-            <>
-              {item.image_url ? (
-                <ContentImage
-                  src={item.image_url}
-                  alt={item.title}
-                  fill
-                  sizes="(max-width: 960px) 100vw, (max-width: 1200px) 33vw, 380px"
-                  className="contenus-card__img"
-                />
-              ) : (
-                <div className="contenus-card__articleFallback" aria-hidden="true" />
-              )}
-              <div className="contenus-card__articleOverlay" aria-hidden="true" />
-              <div className="contenus-card__articleDock">
-                <p className="contenus-card__articleExcerpt">{excerpt || item.title}</p>
-              </div>
-            </>
+            <div className="contenus-card__articleFallback" aria-hidden="true" />
           )}
         </div>
 
-        <div className="contenus-card__body">
+        <div className="contenus-card__bodyStack">
           <div className="contenus-card__meta">
             <span className="tag tag-muted">{item.tags[0] ?? "Récit"}</span>
             {intentRail ? null : <span className="contenus-card__format">{typeLabels[item.type]}</span>}
           </div>
           <h3 className="contenus-card__title">{item.title}</h3>
+          {isArticle && excerpt ? <p className="contenus-card__excerpt">{excerpt}</p> : null}
           {videoTeaser ? <p className="contenus-card__teaser">{videoTeaser}</p> : null}
+          {isAudio ? (
+            <div className="contenus-card__audioDock contenus-card__audioDock--stacked">
+              <AudioPlayer src={item.content} title={item.title} variant="compact" />
+            </div>
+          ) : null}
           <Link href={`/mes-contenus/${item.id}`} className="contenus-card__readLink">
             Ouvrir le contenu
           </Link>

@@ -20,8 +20,7 @@ export type FeatureContentCardProps = {
 };
 
 /**
- * Carte mise en avant (catalogue ou home) : vidéo / audio / article,
- * même rendu que l’ouverture « À la une » (accueil / Mes contenus).
+ * Carte mise en avant : média plein cadre (sans texte par-dessus), métadonnées et titre sous la vignette.
  */
 export const FeatureContentCard = forwardRef<HTMLElement, FeatureContentCardProps>(
   function FeatureContentCard({ item, className = "" }, ref) {
@@ -35,67 +34,61 @@ export const FeatureContentCard = forwardRef<HTMLElement, FeatureContentCardProp
     const articleTeaser =
       item.type === "article" ? articleExcerpt(item.content) || item.title : "";
 
-    const videoTeaser = item.type === "video" ? plainBodyTeaser(item.content, 140) : "";
+    const videoTeaser = item.type === "video" ? plainBodyTeaser(item.content, 160) : "";
 
-    const rootClass = `contenus-feature ${featureKind}${className ? ` ${className}` : ""}`.trim();
+    const rootClass = `contenus-feature contenus-feature--stacked ${featureKind}${
+      className ? ` ${className}` : ""
+    }`.trim();
 
     return (
       <article ref={ref} className={rootClass} data-content-id={item.id}>
         <div className="contenus-feature__media">
           {item.type === "video" ? (
-            <>
-              <VideoPlayer
-                src={item.content}
-                poster={item.image_url}
-                title={item.title}
-                className="contenus-feature__player"
-              />
-              <div className="contenus-feature__shade" aria-hidden="true" />
-            </>
+            <VideoPlayer
+              src={item.content}
+              poster={item.image_url}
+              title={item.title}
+              className="contenus-feature__player"
+            />
           ) : item.type === "audio" ? (
-            <>
-              {item.image_url ? (
-                <ContentImage
-                  src={item.image_url}
-                  alt={item.title}
-                  fill
-                  priority
-                  sizes="(max-width: 960px) 100vw, min(72vw, 960px)"
-                  className="contenus-feature__img"
-                />
-              ) : (
-                <div className="contenus-feature__audioFallback" aria-hidden="true" />
-              )}
-              <div className="contenus-feature__overlay" aria-hidden="true" />
-            </>
+            item.image_url ? (
+              <ContentImage
+                src={item.image_url}
+                alt={item.title}
+                fill
+                priority
+                sizes="(max-width: 960px) 100vw, min(72vw, 960px)"
+                className="contenus-feature__img"
+              />
+            ) : (
+              <div className="contenus-feature__audioFallback" aria-hidden="true" />
+            )
+          ) : item.image_url ? (
+            <ContentImage
+              src={item.image_url}
+              alt={item.title}
+              fill
+              priority
+              sizes="(max-width: 960px) 100vw, min(72vw, 960px)"
+              className="contenus-feature__img"
+            />
           ) : (
-            <>
-              {item.image_url ? (
-                <ContentImage
-                  src={item.image_url}
-                  alt={item.title}
-                  fill
-                  priority
-                  sizes="(max-width: 960px) 100vw, min(72vw, 960px)"
-                  className="contenus-feature__img"
-                />
-              ) : (
-                <div className="contenus-feature__articleFallback" aria-hidden="true" />
-              )}
-              <div className="contenus-feature__overlay contenus-feature__articleOverlay" aria-hidden="true" />
-              <div className="contenus-feature__articleDock">
-                <p className="contenus-feature__articleExcerpt">{articleTeaser}</p>
-              </div>
-            </>
+            <div className="contenus-feature__articleFallback" aria-hidden="true" />
           )}
         </div>
-        <div className="contenus-feature__body">
+
+        <div className="contenus-feature__bodyStack">
           <div className="contenus-feature__meta">
             <span className="tag tag-muted">{item.tags[0] ?? "Récit"}</span>
             <span className="contenus-feature__format">{typeLabels[item.type]}</span>
           </div>
           <h3 className="contenus-feature__title">{item.title}</h3>
-          {videoTeaser ? <p className="contenus-feature__videoTeaser">{videoTeaser}</p> : null}
+          {item.type === "video" && videoTeaser ? (
+            <p className="contenus-feature__videoTeaser">{videoTeaser}</p>
+          ) : null}
+          {item.type === "article" && articleTeaser ? (
+            <p className="contenus-feature__articleTeaser">{articleTeaser}</p>
+          ) : null}
           {item.type !== "video" ? (
             <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
               Ouvrir le contenu
