@@ -3552,6 +3552,10 @@ main li > a:not([class]):hover,
     0 14px 36px rgb(0 0 0 / 0.18);
 }
 
+.recent-yt-card__media:has(.video-responsive__iframe) {
+  overflow: visible;
+}
+
 .recent-yt-card__video.video-responsive {
   width: 100%;
   height: 100%;
@@ -4870,6 +4874,10 @@ main li > a:not([class]):hover,
     box-shadow 0.45s var(--ease-premium);
 }
 
+.contenus-card__tiltInner:has(.video-responsive__iframe) {
+  overflow: visible;
+}
+
 .contenus-card--tilt:hover .contenus-card__tiltInner {
   border-color: rgb(var(--accent-rgb) / 0.42);
   box-shadow: var(--contenus-card-inner-glow-hover);
@@ -5146,6 +5154,10 @@ main li > a:not([class]):hover,
   border-radius: inherit;
 }
 
+.contenus-card__media:has(.video-responsive__iframe) {
+  overflow: visible;
+}
+
 /* Preview MP4 sous le bouton VideoPlayer */
 .contenus-card__preview {
   position: absolute;
@@ -5280,6 +5292,7 @@ main li > a:not([class]):hover,
   border-bottom: 1px solid rgb(var(--accent-rgb) / 0.28);
   padding-bottom: 2px;
   transition: color 0.25s ease, border-color 0.25s ease;
+  pointer-events: auto;
 }
 
 .contenus-card__readLink:hover {
@@ -5549,6 +5562,10 @@ main li > a:not([class]):hover,
   box-shadow: var(--contenus-card-outer-shadow-hover);
 }
 
+.contenus-feature:has(.video-responsive__iframe) {
+  overflow: visible;
+}
+
 .contenus-feature--audio {
   min-height: clamp(300px, 46vw, 500px);
 }
@@ -5660,6 +5677,7 @@ main li > a:not([class]):hover,
   height: 100%;
   width: 100%;
   border-radius: inherit;
+  z-index: 1;
 }
 
 .contenus-feature__shade,
@@ -5700,6 +5718,13 @@ main li > a:not([class]):hover,
   flex-direction: column;
   gap: 14px;
   max-width: 880px;
+  /* Laisser passer les clics vers le VideoPlayer (lecture, plein écran YouTube). */
+  pointer-events: none;
+}
+
+.contenus-feature__audioDock,
+.contenus-feature__readLink {
+  pointer-events: auto;
 }
 
 .contenus-feature__meta {
@@ -8846,6 +8871,11 @@ main li > a:not([class]):hover,
   color: inherit;
   border-radius: inherit;
   box-shadow: var(--video-chrome-embed);
+}
+
+/* Évite de bloquer le plein écran / contrôles de l’iframe YouTube (ancêtres overflow:hidden). */
+.video-responsive:has(> .video-responsive__iframe) {
+  overflow: visible;
 }
 
 .video-responsive__launch {

@@ -171,10 +171,10 @@ export function VideoModal({ open, onClose, src, title, poster, mediaKind = "vid
             <iframe
               key={ytId}
               className="video-modal__iframe"
-              src={getYouTubeEmbedUrl(ytId, { autoplay: true })}
+              src={getYouTubeEmbedUrl(ytId, { autoplay: true, mute: true })}
               title={labelTitle}
               loading="eager"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
             />
