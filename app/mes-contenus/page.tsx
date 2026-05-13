@@ -211,10 +211,11 @@ export default function MesContenusPage() {
     });
   }, [filteredItems]);
 
-  const catalogHero = useMemo(
-    () => sortedCatalogItems.find((item) => item.is_featured) ?? null,
-    [sortedCatalogItems]
-  );
+  /** Pas de carte « héros » pleine largeur quand une catégorie est active : grille uniforme (vidéos côte à côte). */
+  const catalogHero = useMemo(() => {
+    if (selectedCategoryId != null) return null;
+    return sortedCatalogItems.find((item) => item.is_featured) ?? null;
+  }, [sortedCatalogItems, selectedCategoryId]);
 
   const catalogGridItems = useMemo(() => {
     if (!catalogHero) return sortedCatalogItems;
