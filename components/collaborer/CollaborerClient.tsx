@@ -1,12 +1,33 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
-import { CREDIBILITY_MEDIA } from "../../lib/credibility";
-import { HOME_PARTNER_LOGOS } from "../../lib/partners";
+import { CREDIBILITY_MEDIA, type CredibilityLogoItem } from "../../lib/credibility";
+import { HOME_PARTNER_LOGOS, type PartnerLogo } from "../../lib/partners";
 import { SocialProofBand } from "../social-proof-band";
+
+function CollabLogoMark({ item }: { item: CredibilityLogoItem | PartnerLogo }) {
+  const hasLogo = Boolean(item.logoSrc);
+
+  return (
+    <div className="collab-biz__logo collab-biz__logo--mark" data-collab-reveal>
+      {hasLogo && item.logoSrc ? (
+        <div className="collab-biz__logoVisual">
+          <Image src={item.logoSrc} alt="" fill className="collab-biz__logoImg" sizes="200px" />
+          <span className="u-visuallyHidden">{item.name}</span>
+        </div>
+      ) : (
+        <>
+          <span>{item.initials ?? item.name.slice(0, 2).toUpperCase()}</span>
+          <small>{item.name}</small>
+        </>
+      )}
+    </div>
+  );
+}
 
 const OFFERS = [
   {
@@ -153,16 +174,10 @@ export function CollaborerClient() {
           </header>
           <div className="collab-biz__partners">
             {CREDIBILITY_MEDIA.map((m) => (
-              <div key={m.id} className="collab-biz__logo" data-collab-reveal>
-                <span>{m.initials ?? m.name.slice(0, 2).toUpperCase()}</span>
-                <small>{m.name}</small>
-              </div>
+              <CollabLogoMark key={m.id} item={m} />
             ))}
             {HOME_PARTNER_LOGOS.slice(0, 4).map((p) => (
-              <div key={p.id} className="collab-biz__logo" data-collab-reveal>
-                <span>{p.initials ?? p.name.slice(0, 2).toUpperCase()}</span>
-                <small>{p.name}</small>
-              </div>
+              <CollabLogoMark key={p.id} item={p} />
             ))}
           </div>
         </section>

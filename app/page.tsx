@@ -12,11 +12,6 @@ const AboutThomasSection = dynamic(
   { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(180px, 24vh, 300px)" }} aria-busy /> }
 );
 
-const FeatureStorySection = dynamic(
-  () => import("../components/home/FeatureStorySection").then((m) => ({ default: m.FeatureStorySection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(220px, 32vh, 400px)" }} aria-busy /> }
-);
-
 const CredibilitySection = dynamic(
   () => import("../components/home/CredibilitySection").then((m) => ({ default: m.CredibilitySection })),
   { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(120px, 16vh, 200px)" }} aria-busy /> }
@@ -65,9 +60,13 @@ export default async function HomePage() {
   const featuredId = featuredContent?.id;
   const heroBackdrop = "/src/stade/stade1.jpg";
   const youtubeRecent = pickRecentYoutubeContents(contents, {
-    limit: 14,
+    limit: 10,
     excludeIds: featuredId ? [featuredId] : [],
   });
+  const homeSecondaryExcludeIds = [
+    ...(featuredId ? [featuredId] : []),
+    ...youtubeRecent.map((c) => c.id),
+  ];
 
   return (
     <div className="home-page">
@@ -80,9 +79,6 @@ export default async function HomePage() {
         </div>
         <div className="home-strip home-strip--about">
           <AboutThomasSection portraitSrc={profileImageUrl ?? "/src/joueurs/joueur6.jpg"} />
-        </div>
-        <div className="home-strip home-strip--feature">
-          <FeatureStorySection story={featuredContent} />
         </div>
       </section>
 
@@ -97,7 +93,7 @@ export default async function HomePage() {
           <EditorialSelectionSection
             initialContents={contents}
             categories={categories}
-            excludeIds={featuredId ? [featuredId] : []}
+            excludeIds={homeSecondaryExcludeIds}
           />
         </div>
       </section>
@@ -107,7 +103,7 @@ export default async function HomePage() {
           <RecentYoutubeSection items={youtubeRecent} />
         </div>
         <div className="home-strip home-strip--recent">
-          <RecentContents initialContents={contents} />
+          <RecentContents initialContents={contents} excludeIds={homeSecondaryExcludeIds} />
         </div>
         <div className="home-strip home-strip--pitch">
           <PitchSubjectSection />

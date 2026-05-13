@@ -66,19 +66,25 @@ const RECENT_FALLBACK: Content[] = [
 
 type RecentContentsProps = {
   initialContents?: Content[];
+  /** IDs déjà montrés ailleurs sur la page (à la une, YouTube, etc.). */
+  excludeIds?: string[];
 };
 
 /**
  * Fleuve éditorial : cartes dans un rythme visuel variable (sans répéter l’ouverture).
  */
-export function RecentContents({ initialContents }: RecentContentsProps) {
+export function RecentContents({ initialContents, excludeIds = [] }: RecentContentsProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const recentCards = useMemo<Content[]>(() => {
     if (!initialContents?.length) return RECENT_FALLBACK;
-    if (initialContents.length <= 1) return [];
-    return initialContents.slice(2, 8);
-  }, [initialContents]);
+    const exclude = new Set(excludeIds.filter(Boolean));
+    const pool = [...initialContents]
+      .filter((c) => !exclude.has(c.id))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    if (!pool.length) return [];
+    return pool.slice(0, 8);
+  }, [initialContents, excludeIds]);
 
   const usedFallback = !initialContents?.length;
 
