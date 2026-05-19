@@ -7082,48 +7082,16 @@ main li > a:not([class]):hover,
   inset: -8% 0 0;
   z-index: 0;
   will-change: transform;
+  overflow: hidden;
 }
 
-.collab-biz__heroMesh {
+.collab-biz__heroVideo {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 55% at 12% 88%, rgb(var(--accent-rgb) / 0.42), transparent 58%),
-    radial-gradient(ellipse 65% 48% at 88% 12%, rgb(var(--accent-rgb) / 0.28), transparent 52%),
-    linear-gradient(165deg, rgb(var(--bg-rgb) / 0.2) 0%, rgb(var(--bg-rgb) / 0.92) 72%),
-    rgb(var(--bg-rgb) / 0.98);
-}
-
-.collab-biz__heroGrain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.35;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-}
-
-.collab-biz__heroOrb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(72px);
-  pointer-events: none;
-}
-
-.collab-biz__heroOrb--a {
-  width: min(48vw, 420px);
-  height: min(48vw, 420px);
-  top: -12%;
-  right: 8%;
-  background: rgb(var(--accent-rgb) / 0.35);
-}
-
-.collab-biz__heroOrb--b {
-  width: min(36vw, 300px);
-  height: min(36vw, 300px);
-  bottom: 8%;
-  left: -4%;
-  background: rgb(var(--accent-rgb) / 0.22);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.62) saturate(1.05) contrast(1.05);
 }
 
 .collab-biz__heroOverlay {
@@ -7132,9 +7100,9 @@ main li > a:not([class]):hover,
   z-index: 1;
   background: linear-gradient(
     180deg,
-    rgb(var(--bg-rgb) / 0.08) 0%,
-    rgb(var(--bg-rgb) / 0.35) 42%,
-    rgb(var(--bg-rgb) / 0.88) 100%
+    rgb(var(--bg-rgb) / 0.35) 0%,
+    rgb(var(--bg-rgb) / 0.55) 40%,
+    rgb(var(--bg-rgb) / 0.92) 100%
   );
   pointer-events: none;
 }

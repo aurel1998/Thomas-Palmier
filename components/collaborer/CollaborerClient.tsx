@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import gsap from "gsap";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CREDIBILITY_AWARDS, CREDIBILITY_MEDIA } from "../../lib/credibility";
 import {
   bindParallaxYPercent,
@@ -11,8 +11,12 @@ import {
   isReducedMotion,
   motion,
 } from "../../lib/gsapMotion";
+import { prefersSaveData } from "../../lib/clientPerf";
+import { HERO_VIDEO_MP4_DEFAULT } from "../../lib/heroCopy";
 import { HOME_PARTNER_LOGOS } from "../../lib/partners";
 import { BrandLogo } from "../media/BrandLogo";
+
+const HERO_POSTER_SRC = "/src/stade/stade1.jpg";
 
 const OFFERS = [
   { title: "Brand content", tag: "Sponsorisé · éditorial" },
@@ -52,6 +56,27 @@ export function CollaborerClient() {
   const heroRef = useRef<HTMLElement | null>(null);
   const heroMediaRef = useRef<HTMLDivElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const [mounted, setMounted] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const videoAllowed = mounted && !isReducedMotion() && !prefersSaveData();
+  const showVideo = videoAllowed && !videoFailed;
+
+  useEffect(() => {
+    if (!showVideo) return;
+    const v = videoRef.current;
+    if (!v) return;
+    const p = v.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {});
+    }
+  }, [showVideo]);
 
   useLayoutEffect(() => {
     const hero = heroRef.current;
@@ -236,10 +261,29 @@ export function CollaborerClient() {
     <section ref={pageRef} className="collab-page collab-biz">
       <header ref={heroRef} className="collab-biz__heroBleed" aria-labelledby="collab-hero-title">
         <div ref={heroMediaRef} className="collab-biz__heroMedia" aria-hidden="true">
-          <div className="collab-biz__heroMesh" />
-          <div className="collab-biz__heroGrain" />
-          <div className="collab-biz__heroOrb collab-biz__heroOrb--a" />
-          <div className="collab-biz__heroOrb collab-biz__heroOrb--b" />
+          {showVideo ? (
+            <video
+              ref={videoRef}
+              className="collab-biz__heroVideo"
+              poster={HERO_POSTER_SRC}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              autoPlay
+              aria-hidden
+              onError={() => setVideoFailed(true)}
+            >
+              <source src={HERO_VIDEO_MP4_DEFAULT} type="video/mp4" />
+            </video>
+          ) : (
+            <img
+              src={HERO_POSTER_SRC}
+              alt=""
+              aria-hidden="true"
+              className="collab-biz__heroVideo collab-biz__heroVideo--static"
+            />
+          )}
         </div>
         <div className="collab-biz__heroOverlay" aria-hidden="true" />
         <div className="container collab-biz__heroInner">
