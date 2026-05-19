@@ -4,10 +4,10 @@
  * la vidéo quand on change physiquement le fichier (sinon il garde l'ancienne en cache).
  * Incrémenter la valeur à chaque fois qu'on remplace `hero.mp4` côté disque.
  */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4?v=2";
+export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4?v=3";
 
 /** Secours : même fichier — évite toute bascule visuelle vers une autre vidéo. */
-export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero.mp4?v=2";
+export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero.mp4?v=3";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";
