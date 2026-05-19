@@ -1,7 +1,7 @@
-/** Vidéo de fond du hero (asset versionné : ambiance stade / mouvement fluide). */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4";
+/** Vidéo de fond du hero — source stable (évite l’alternance hero / hero-fallback au chargement). */
+export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero-fallback.mp4";
 
-/** Secours si la source principale n'est pas lisible (fichier plus léger). */
+/** Secours : même fichier pour ne pas basculer vers l’autre MP4 à chaque erreur réseau. */
 export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero-fallback.mp4";
 
 /** Nom fort pour branding personnel immédiat. */

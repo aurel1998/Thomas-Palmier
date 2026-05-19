@@ -54,7 +54,6 @@ export function HeroSection({
   const [mounted, setMounted] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [currentVideoSrc, setCurrentVideoSrc] = useState(videoSrc);
-  const videoFallbackTried = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -62,7 +61,6 @@ export function HeroSection({
 
   useEffect(() => {
     setCurrentVideoSrc(videoSrc);
-    videoFallbackTried.current = false;
     setVideoFailed(false);
   }, [videoSrc]);
 
@@ -70,11 +68,7 @@ export function HeroSection({
   const showVideo = videoAllowed && !videoFailed;
 
   const handleVideoError = () => {
-    if (!videoFallbackTried.current && videoFallbackSrc && currentVideoSrc !== videoFallbackSrc) {
-      videoFallbackTried.current = true;
-      setCurrentVideoSrc(videoFallbackSrc);
-      return;
-    }
+    /* Une seule source MP4 : en cas d’échec, poster statique (pas de bascule vers l’autre fichier). */
     setVideoFailed(true);
   };
 

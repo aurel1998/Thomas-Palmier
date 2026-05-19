@@ -24,7 +24,7 @@ export const CREDIBILITY_AWARDS: CredibilityAward[] = [
     id: "award-micro-or",
     title: "Micro d’Or",
     subtitle: "Radio sport — meilleure chronique",
-    year: "2024",
+    year: "2026",
   },
   {
     id: "award-prix-sport",
