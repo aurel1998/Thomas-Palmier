@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { isReducedMotion, motion } from "../lib/gsapMotion";
-import logo from "../src/logo/logo21.png";
+import logo from "../src/logo/thomas.png";
 import { SocialLinks } from "./SocialLinks";
 import { ThemeToggle } from "./theme/ThemeToggle";
 
@@ -210,8 +210,8 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
               <Image
                 src={logo}
                 alt=""
-                width={62}
-                height={49}
+                width={52}
+                height={52}
                 priority
                 aria-hidden
                 className="site-header__logo"
