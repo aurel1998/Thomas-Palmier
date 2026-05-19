@@ -210,8 +210,8 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
               <Image
                 src={logo}
                 alt=""
-                width={180}
-                height={180}
+                width={1024}
+                height={374}
                 priority
                 aria-hidden
                 className="site-header__logo"

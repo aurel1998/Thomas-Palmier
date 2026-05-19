@@ -1023,7 +1023,7 @@ main li > a:not([class]):hover,
 .site-header__logo {
   display: block;
   width: auto;
-  height: 38px;
+  height: 36px;
   filter: drop-shadow(0 0 6px rgb(0 0 0 / 0.06));
 }
 
