@@ -1,8 +1,8 @@
-/** Vidéo de fond du hero — version éditoriale longue. */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4";
+/** Vidéo de fond du hero — séquence sport éditoriale. */
+export const HERO_VIDEO_MP4_DEFAULT = "/src/video/video2.mp4";
 
 /** Secours : version allégée si la principale échoue au chargement. */
-export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero-fallback.mp4";
+export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero.mp4";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";
