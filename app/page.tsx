@@ -63,7 +63,11 @@ export default async function HomePage() {
     limit: 10,
     excludeIds: featuredId ? [featuredId] : [],
   });
-  const homeSecondaryExcludeIds = [
+  /* Exclusion limitée au « À la une » : on autorise la sélection éditoriale
+     à reprendre les vidéos YouTube récentes, car la navigation thématique
+     (par catégorie) répond à un besoin différent du grid « récentes ». */
+  const editorialExcludeIds = featuredId ? [featuredId] : [];
+  const recentExcludeIds = [
     ...(featuredId ? [featuredId] : []),
     ...youtubeRecent.map((c) => c.id),
   ];
@@ -89,21 +93,21 @@ export default async function HomePage() {
         <div className="home-strip home-strip--partners">
           <PartnersSection />
         </div>
-        <div className="home-strip home-strip--editorial">
-          <EditorialSelectionSection
-            initialContents={contents}
-            categories={categories}
-            excludeIds={homeSecondaryExcludeIds}
-          />
-        </div>
       </section>
 
       <section id="acte-immersion" className="home-act home-act--immersion">
         <div className="home-strip home-strip--youtube">
           <RecentYoutubeSection items={youtubeRecent} />
         </div>
+        <div className="home-strip home-strip--editorial">
+          <EditorialSelectionSection
+            initialContents={contents}
+            categories={categories}
+            excludeIds={editorialExcludeIds}
+          />
+        </div>
         <div className="home-strip home-strip--recent">
-          <RecentContents initialContents={contents} excludeIds={homeSecondaryExcludeIds} />
+          <RecentContents initialContents={contents} excludeIds={recentExcludeIds} />
         </div>
         <div className="home-strip home-strip--pitch">
           <PitchSubjectSection />
