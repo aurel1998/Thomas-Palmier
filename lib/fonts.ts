@@ -1,6 +1,6 @@
-import { Inter, Inter_Tight, Newsreader } from "next/font/google";
+import { Geist_Mono, Instrument_Serif, Inter, Inter_Tight } from "next/font/google";
 
-/** Corps de texte : lisibilite longue, UI. */
+/** Corps de texte : lisibilité longue, UI. */
 export const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -8,7 +8,7 @@ export const inter = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-/** Titres / hero : Inter Tight (Google Fonts), proche de l'esprit Satoshi / editeur premium. */
+/** Titres techniques (UI bold) : nav, boutons, h3-h4, cartes. */
 export const interTight = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-inter-tight",
@@ -16,10 +16,27 @@ export const interTight = Inter_Tight({
   weight: ["600", "700", "800"],
 });
 
-/** Titres « magazine » sur certaines sections (alternance avec Inter Tight). */
-export const newsreader = Newsreader({
+/**
+ * Serif éditorial signature : Instrument Serif.
+ * Contraste fort, italique très expressif — donne un cachet « presse premium »
+ * sur les gros titres hero, sections principales et chiffres clés.
+ */
+export const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
-  variable: "--font-newsreader",
+  variable: "--font-instrument-serif",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+});
+
+/**
+ * Monospace technique : Geist Mono.
+ * Réservé aux libellés courts (eyebrows, étiquettes catégories, chiffres data) —
+ * différenciation visuelle immédiate, signal « studio éditorial ».
+ */
+export const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+  weight: ["400", "500", "600"],
 });

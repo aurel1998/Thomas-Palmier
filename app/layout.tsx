@@ -7,7 +7,7 @@ import { PageTransition } from "../components/page-transition";
 import { SiteFooter } from "../components/site-footer";
 import { SiteHeader } from "../components/site-header";
 import { ThemeProvider, THEME_PRELOAD_SCRIPT } from "../components/theme/ThemeProvider";
-import { inter, interTight, newsreader } from "../lib/fonts";
+import { geistMono, instrumentSerif, inter, interTight } from "../lib/fonts";
 import { getJournalistProfileImageServer } from "../lib/journalistProfileServer";
 import "./globals.css";
 
@@ -20,7 +20,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   const profileImageUrl = await getJournalistProfileImageServer();
 
   return (
-    <html lang="fr" className={`${inter.variable} ${interTight.variable} ${newsreader.variable}`} suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={`${inter.variable} ${interTight.variable} ${instrumentSerif.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Script anti-FOUC : pose data-theme AVANT hydratation React */}
         <script dangerouslySetInnerHTML={{ __html: THEME_PRELOAD_SCRIPT }} />

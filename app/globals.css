@@ -65,8 +65,10 @@
   --type-hero-size: clamp(52px, 12.5vw, 132px);
   --type-paragraph-gap: 1.05em;
   --prose-measure: 65ch;
-  /* Serif éditorial (bandeaux magazine — sections home) */
-  --font-editorial-serif: var(--font-newsreader), "Georgia", "Times New Roman", serif;
+  /* Serif éditorial signature : Instrument Serif (italique très expressif, contraste fort). */
+  --font-editorial-serif: var(--font-instrument-serif), "Times New Roman", "Georgia", serif;
+  /* Mono technique : eyebrows, étiquettes catégories, chiffres data. */
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* Transition de switch de theme : fade couleurs (navigateurs sans View Transitions) */
   --theme-transition:
@@ -1615,10 +1617,11 @@ main li > a:not([class]):hover,
 .home-hero__title {
   margin: clamp(12px, 2.5vh, 22px) 0 0;
   padding: 0 0 0 0.06em;
+  font-family: var(--font-editorial-serif);
   color: var(--text);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
   max-width: none;
   overflow: visible;
   perspective: 1100px;
@@ -1632,15 +1635,18 @@ main li > a:not([class]):hover,
   align-items: flex-end;
   gap: 0.14em 0.28em;
   max-width: 20ch;
-  font-size: clamp(2.5rem, 7.6vw, 5.15rem);
-  line-height: 1.01;
-  letter-spacing: -0.034em;
+  font-size: clamp(2.9rem, 8.4vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.018em;
   text-wrap: balance;
 }
 
 .home-hero__title--name {
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
+  font-family: var(--font-editorial-serif);
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: -0.012em;
   white-space: nowrap;
   max-width: none;
   flex-wrap: nowrap;
@@ -1984,8 +1990,8 @@ main li > a:not([class]):hover,
 
 [data-theme="light"] .home-strip--about .about-thomas__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  letter-spacing: -0.012em;
   color: rgb(42 38 34);
 }
 
@@ -2024,8 +2030,8 @@ main li > a:not([class]):hover,
 
 [data-theme="light"] .home-strip--credibility .credibility__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  letter-spacing: -0.012em;
 }
 
 [data-theme="light"] .home-strip--partners::before {
@@ -2049,8 +2055,8 @@ main li > a:not([class]):hover,
 
 [data-theme="light"] .home-strip--editorial .home-sectionTitle {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  font-weight: 400;
+  letter-spacing: -0.01em;
   color: rgb(32 36 52);
 }
 
@@ -2084,7 +2090,7 @@ main li > a:not([class]):hover,
 
 [data-theme="light"] .home-strip--pitch .pitch-subject__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 [data-theme="light"] .home-strip--newsletter::before {
@@ -2094,8 +2100,8 @@ main li > a:not([class]):hover,
 
 [data-theme="light"] .home-strip--newsletter .home-newsletter__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  letter-spacing: -0.012em;
 }
 
 /* --- Sombre --- */
@@ -2113,8 +2119,8 @@ main li > a:not([class]):hover,
 
 [data-theme="dark"] .home-strip--about .about-thomas__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 400;
+  letter-spacing: -0.012em;
 }
 
 [data-theme="dark"] .home-strip--feature::before {
@@ -2143,7 +2149,7 @@ main li > a:not([class]):hover,
 
 [data-theme="dark"] .home-strip--credibility .credibility__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 [data-theme="dark"] .home-strip--partners::before {
@@ -2158,7 +2164,7 @@ main li > a:not([class]):hover,
 
 [data-theme="dark"] .home-strip--editorial .home-sectionTitle {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 [data-theme="dark"] .home-strip--youtube::before {
@@ -2181,7 +2187,7 @@ main li > a:not([class]):hover,
 
 [data-theme="dark"] .home-strip--pitch .pitch-subject__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 [data-theme="dark"] .home-strip--newsletter::before {
@@ -2191,7 +2197,7 @@ main li > a:not([class]):hover,
 
 [data-theme="dark"] .home-strip--newsletter .home-newsletter__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 @media (max-width: 1180px) {
@@ -2453,10 +2459,12 @@ main li > a:not([class]):hover,
 .about-thomas__title {
   margin: 10px 0 0;
   color: var(--text);
-  font-size: clamp(32px, 4.5vw, 58px);
-  line-height: 1.04;
-  letter-spacing: var(--type-track-display-lg);
-  font-weight: 800;
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(36px, 5vw, 68px);
+  line-height: 0.98;
+  letter-spacing: -0.018em;
+  font-weight: 400;
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
 }
 
 .about-thomas__bio {
@@ -2547,11 +2555,13 @@ main li > a:not([class]):hover,
 
 .credibility__title {
   margin-top: 12px;
-  font-size: clamp(28px, 3.8vw, 42px);
-  font-weight: 800;
-  letter-spacing: var(--type-track-display-lg);
-  line-height: var(--type-leading-display);
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(32px, 4.2vw, 50px);
+  font-weight: 400;
+  letter-spacing: -0.016em;
+  line-height: 1;
   color: var(--text);
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
 }
 
 .credibility__intro {
@@ -3022,10 +3032,10 @@ main li > a:not([class]):hover,
 
 .pitch-subject__title {
   margin-top: 12px;
-  font-family: var(--font-inter-tight), system-ui, sans-serif;
-  font-size: clamp(26px, 3.5vw, 38px);
-  font-weight: 800;
-  letter-spacing: var(--type-track-display-lg);
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(30px, 3.8vw, 44px);
+  font-weight: 400;
+  letter-spacing: -0.016em;
   line-height: var(--type-leading-display);
   color: var(--text);
 }
@@ -3162,10 +3172,10 @@ main li > a:not([class]):hover,
 
 .home-newsletter__title {
   margin-top: 12px;
-  font-family: var(--font-inter-tight), system-ui, sans-serif;
-  font-size: clamp(24px, 3.3vw, 34px);
-  font-weight: 800;
-  letter-spacing: var(--type-track-display);
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(28px, 3.6vw, 40px);
+  font-weight: 400;
+  letter-spacing: -0.014em;
   line-height: var(--type-leading-display);
   color: var(--text);
 }
@@ -3340,9 +3350,10 @@ main li > a:not([class]):hover,
 
 .feature-story__eyebrow {
   display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: var(--type-track-eyebrow);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgb(var(--accent-rgb) / 0.95);
 }
@@ -3803,9 +3814,10 @@ main li > a:not([class]):hover,
 }
 
 .home-sectionEyebrow {
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: var(--type-track-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   /* Awwwards : libellé section en dégradé bleu → teal (lisible, signature studio) */
   background: linear-gradient(
@@ -3834,11 +3846,27 @@ main li > a:not([class]):hover,
 
 .home-sectionTitle {
   margin-top: 12px;
-  font-size: clamp(38px, 5vw, 64px);
-  font-weight: 800;
-  letter-spacing: var(--type-track-display-lg);
-  line-height: var(--type-leading-display);
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(42px, 5.6vw, 72px);
+  font-weight: 400;
+  letter-spacing: -0.018em;
+  line-height: 0.98;
   color: var(--text);
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
+}
+
+/* Mot mis en exergue dans un titre éditorial → italique signature Instrument Serif. */
+.home-sectionTitle em,
+.home-sectionTitle i,
+.contenus-title em,
+.contenus-title i,
+.about-thomas__title em,
+.about-thomas__title i,
+.credibility__title em,
+.credibility__title i {
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.012em;
 }
 
 /* Lift premium global sur les surfaces clés */
@@ -4122,11 +4150,11 @@ main li > a:not([class]):hover,
 
 .home-rail-slide__title {
   margin: 0;
-  font-family: var(--font-editorial-serif);
+  font-family: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
   font-size: clamp(15px, 1.45vw, 18px);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.22;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.012em;
   color: var(--text);
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -4362,8 +4390,9 @@ main li > a:not([class]):hover,
 .home-recent__grid .contenus-card--article .contenus-card__bodyStack .contenus-card__title,
 .home-recent__grid .contenus-card--audio .contenus-card__bodyStack .contenus-card__title {
   font-family: var(--font-editorial-serif);
-  font-weight: 600;
-  letter-spacing: 0.015em;
+  font-weight: 400;
+  letter-spacing: -0.008em;
+  font-style: italic;
 }
 
 .home-recent__grid .contenus-card__bodyStack .contenus-card__meta {
@@ -4437,10 +4466,12 @@ main li > a:not([class]):hover,
 .contenus-title {
   margin: 10px 0 0;
   color: var(--text);
-  font-size: clamp(38px, 5.8vw, 64px);
-  line-height: var(--type-leading-hero);
-  letter-spacing: calc(var(--type-track-display-lg) - 0.006em);
-  font-weight: 800;
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(44px, 6.4vw, 76px);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
 }
 
 .contenus-sub {
@@ -7177,11 +7208,19 @@ main li > a:not([class]):hover,
 .collab-biz__title {
   margin: 12px 0 0;
   color: var(--text);
-  font-size: clamp(38px, 5.6vw, 64px);
-  line-height: 1.02;
-  letter-spacing: var(--type-track-display-lg);
-  font-weight: 800;
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(44px, 6.2vw, 76px);
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
   max-width: 14ch;
+}
+
+.collab-biz__title em,
+.collab-biz__title i {
+  font-style: italic;
+  letter-spacing: -0.012em;
 }
 
 .collab-biz__title--split {
@@ -7534,9 +7573,10 @@ main li > a:not([class]):hover,
 
 .collab-biz__ctaEyebrow {
   margin: 0 0 8px;
+  font-family: var(--font-mono);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgb(var(--accent-rgb) / 0.9);
 }
@@ -7544,10 +7584,11 @@ main li > a:not([class]):hover,
 .collab-biz__cta h2 {
   margin: 0;
   color: var(--text);
-  font-size: clamp(24px, 3.1vw, 36px);
-  line-height: 1.08;
-  letter-spacing: var(--type-track-display);
-  font-weight: 800;
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(28px, 3.4vw, 42px);
+  line-height: 1;
+  letter-spacing: -0.014em;
+  font-weight: 400;
   max-width: 20ch;
 }
 
@@ -7610,10 +7651,12 @@ main li > a:not([class]):hover,
 .collab-title {
   margin: 0;
   color: var(--text);
-  font-size: clamp(32px, 5.2vw, 56px);
-  line-height: var(--type-leading-display);
-  letter-spacing: var(--type-track-display-lg);
-  font-weight: 800;
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(38px, 5.6vw, 64px);
+  line-height: 0.98;
+  letter-spacing: -0.018em;
+  font-weight: 400;
+  font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
 }
 
 .collab-sub {
@@ -7691,11 +7734,12 @@ main li > a:not([class]):hover,
 }
 
 .collab-ctaEyebrow {
+  font-family: var(--font-mono);
   text-transform: uppercase;
-  letter-spacing: var(--type-track-eyebrow);
-  font-size: 10px;
+  letter-spacing: 0.16em;
+  font-size: 10.5px;
   color: rgb(var(--accent-rgb) / 0.95);
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .collab-ctaTitle {
