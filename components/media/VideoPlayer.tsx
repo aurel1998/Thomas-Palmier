@@ -230,7 +230,7 @@ export function VideoPlayer({
         ytId ? (
           <iframe
             className="video-responsive__iframe"
-            src={getYouTubeEmbedUrl(ytId, { autoplay: true, mute: true })}
+            src={getYouTubeEmbedUrl(ytId, { autoplay: true, mute: false })}
             title={labelTitle}
             loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
@@ -244,6 +244,7 @@ export function VideoPlayer({
             poster={poster}
             controls
             autoPlay
+            muted={false}
             playsInline
             preload="metadata"
           />

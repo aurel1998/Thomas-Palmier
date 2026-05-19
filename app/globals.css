@@ -3524,6 +3524,7 @@ main li > a:not([class]):hover,
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  touch-action: pan-x;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--accent-rgb) / 0.35) transparent;
@@ -3597,7 +3598,8 @@ main li > a:not([class]):hover,
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   overscroll-behavior-y: auto;
-  touch-action: pan-y;
+  /* Rail horizontal : pan-x laisse les contrôles tactiles de l’iframe YouTube répondre (pan-y bloquait pause / son). */
+  touch-action: pan-x;
   scroll-snap-type: x proximity;
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--accent-rgb) / 0.35) transparent;
@@ -5662,6 +5664,13 @@ main li > a:not([class]):hover,
 
 .contenus-card:hover .contenus-card__preview {
   transform: scale(1.07);
+}
+
+/* Lecture YouTube inline : masquer la preview MP4 (évite tout chevauchement tactile). */
+.contenus-card__media:has(.video-responsive__iframe) .contenus-card__preview {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none;
 }
 
 .contenus-card__video,
