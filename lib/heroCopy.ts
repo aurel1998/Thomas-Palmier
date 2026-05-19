@@ -1,7 +1,7 @@
-/** Vidéo de fond du hero — source stable (évite l’alternance hero / hero-fallback au chargement). */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero-fallback.mp4";
+/** Vidéo de fond du hero — version éditoriale longue. */
+export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4";
 
-/** Secours : même fichier pour ne pas basculer vers l’autre MP4 à chaque erreur réseau. */
+/** Secours : version allégée si la principale échoue au chargement. */
 export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero-fallback.mp4";
 
 /** Nom fort pour branding personnel immédiat. */
