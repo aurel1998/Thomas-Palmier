@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { Content } from "../../types/content";
 import type { Category } from "../../types/category";
+import { categoryRailLede } from "../../lib/categoryCopy";
 import { ContenuCard } from "../contenus/ContenuCard";
 
 type EditorialSelectionSectionProps = {
@@ -76,7 +77,7 @@ export function EditorialSelectionSection({
             key={rail.category.id}
             categoryId={rail.category.id}
             label={rail.category.name}
-            lede={rail.category.description || "Sélection de contenus de cette catégorie."}
+            lede={categoryRailLede(rail.category)}
             items={rail.items}
           />
         ))}

@@ -12,8 +12,15 @@ import {
   useState,
 } from "react";
 import type { Content } from "../../types/content";
+import type { Category } from "../../types/category";
 import { FeatureContentCard } from "../../components/contenus/FeatureContentCard";
 import { ContenuCard } from "../../components/contenus/ContenuCard";
+import {
+  catalogCountLabel,
+  categoryCatalogLede,
+  categoryChipLabel,
+  categoryTabAriaLabel,
+} from "../../lib/categoryCopy";
 
 const fallbackItems: Content[] = [
   {
@@ -55,11 +62,6 @@ const fallbackItems: Content[] = [
 ];
 
 const PAGE_SIZE = 24;
-
-type Category = {
-  id: string;
-  name: string;
-};
 
 type ContentApiResponse = {
   data?: Content[];
@@ -230,6 +232,16 @@ export default function MesContenusPage() {
     }
     return counts;
   }, [items]);
+
+  const selectedCategory = useMemo(
+    () => categories.find((c) => c.id === selectedCategoryId) ?? null,
+    [categories, selectedCategoryId]
+  );
+
+  const visibleCount =
+    typeof total === "number" && total > 0 && !selectedCategoryId
+      ? total
+      : filteredItems.length;
 
   const initialRevealDoneRef = useRef(false);
   const prevItemCountRef = useRef(0);
@@ -413,14 +425,18 @@ export default function MesContenusPage() {
     <section className="mes-contenus-page contenus-page broadcast-hub mes-canal-page" ref={pageRef}>
       <div className="container mes-canal__container">
         <header className="mes-contenus-head mes-canal__top">
-          <h1 className="mes-canal__title">Contenus</h1>
-          {!isLoading && !showEmptyGlobal ? (
-            <p className="mes-canal__count muted" aria-live="polite">
-              {typeof total === "number" && total > 0 ? total : filteredItems.length}{" "}
-              {typeof total === "number" && total > 1 ? "titres" : "titre"}
-              {selectedCategoryId ? " dans cette catégorie" : ""}
-            </p>
-          ) : null}
+          <div className="mes-canal__headCopy">
+            <h1 className="mes-canal__title">
+              {selectedCategory ? categoryChipLabel(selectedCategory) : "Contenus"}
+            </h1>
+            {!isLoading && !showEmptyGlobal ? (
+              <p className="mes-canal__lede muted" aria-live="polite">
+                {selectedCategory
+                  ? categoryCatalogLede(selectedCategory, filteredItems.length)
+                  : catalogCountLabel(visibleCount)}
+              </p>
+            ) : null}
+          </div>
         </header>
 
         {showEmptyGlobal ? (
@@ -443,24 +459,32 @@ export default function MesContenusPage() {
                     type="button"
                     role="tab"
                     aria-selected={selectedCategoryId === null}
+                    aria-label={
+                      selectedCategoryId === null
+                        ? "Tous les contenus, filtre actif"
+                        : "Tous les contenus"
+                    }
                     className={`mes-canal__chip${selectedCategoryId === null ? " is-active" : ""}`}
                     onClick={() => setSelectedCategoryId(null)}
                   >
-                    Tous
+                    <span className="mes-canal__chipName">Tous</span>
                   </button>
                   {categories.map((c) => {
                     const active = selectedCategoryId === c.id;
                     const count = categoryCounts.get(c.id) ?? 0;
+                    const label = categoryChipLabel(c);
                     return (
                       <button
                         key={c.id}
                         type="button"
                         role="tab"
                         aria-selected={active}
+                        aria-label={categoryTabAriaLabel(c, count, active)}
+                        title={c.name}
                         className={`mes-canal__chip${active ? " is-active" : ""}`}
                         onClick={() => setSelectedCategoryId(c.id)}
                       >
-                        <span className="mes-canal__chipName">{c.name}</span>
+                        <span className="mes-canal__chipName">{label}</span>
                         {count > 0 ? <span className="mes-canal__chipCount">{count}</span> : null}
                       </button>
                     );
