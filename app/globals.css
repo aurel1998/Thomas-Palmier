@@ -2754,6 +2754,75 @@ main li > a:not([class]):hover,
   color: rgb(var(--text-rgb) / 0.72);
 }
 
+/* Logos marques / médias (SVG via <img> natif) */
+.brand-logo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-logo__img {
+  width: 100%;
+  height: 100%;
+  max-height: 52px;
+  object-fit: contain;
+  display: block;
+}
+
+.brand-logo--credibility,
+.brand-logo--partner {
+  width: 100%;
+  max-width: 112px;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-sm);
+  background: rgb(var(--surface-rgb) / 0.92);
+  box-shadow:
+    inset 0 0 0 1px rgb(var(--text-rgb) / 0.1),
+    0 8px 22px rgb(0 0 0 / 0.12);
+  padding: 10px 12px;
+}
+
+.brand-logo--partner {
+  max-width: 120px;
+}
+
+.brand-logo--cell {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  border: 1px solid rgb(var(--text-rgb) / 0.1);
+  background: rgb(var(--surface-rgb) / 0.7);
+  padding: 12px 14px;
+}
+
+[data-theme="dark"] .brand-logo--credibility,
+[data-theme="dark"] .brand-logo--partner,
+[data-theme="dark"] .brand-logo--cell {
+  background: rgb(248 250 252 / 0.96);
+}
+
+.brand-logo--fallback {
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  min-height: 72px;
+}
+
+.brand-logo__initials {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: rgb(var(--accent-rgb) / 0.95);
+}
+
+.brand-logo__name {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: rgb(var(--text-rgb) / 0.72);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .credibility [data-cred-item] {
     opacity: 1 !important;
@@ -2800,9 +2869,15 @@ main li > a:not([class]):hover,
   gap: clamp(14px, 2.2vw, 20px);
 }
 
-@media (min-width: 720px) {
+@media (min-width: 640px) {
   .home-partners__grid {
-    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  .home-partners__grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
@@ -7026,6 +7101,163 @@ main li > a:not([class]):hover,
   font-weight: 600;
 }
 
+.collab-biz__heroCta {
+  margin-top: clamp(18px, 3vw, 26px);
+  align-self: flex-start;
+}
+
+.collab-biz__head--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+}
+
+.collab-biz__bento {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.collab-biz__bentoCell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgb(var(--text-rgb) / 0.1);
+  background: rgb(var(--surface-rgb) / 0.45);
+  padding: clamp(16px, 2.5vw, 22px);
+  min-height: 128px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  transition:
+    transform 0.3s var(--ease-premium),
+    border-color 0.3s var(--ease-premium);
+}
+
+.collab-biz__bentoCell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 92% 6%, rgb(var(--accent-rgb) / 0.22), transparent 52%);
+  pointer-events: none;
+}
+
+.collab-biz__bentoCell:hover {
+  transform: translateY(-3px);
+  border-color: rgb(var(--accent-rgb) / 0.35);
+}
+
+.collab-biz__bentoIndex {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgb(var(--accent-rgb) / 0.88);
+}
+
+.collab-biz__bentoCell h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(22px, 2.8vw, 28px);
+  font-weight: 800;
+  letter-spacing: var(--type-track-display);
+  line-height: 1.05;
+}
+
+.collab-biz__bentoTag {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgb(var(--text-rgb) / 0.62);
+}
+
+.collab-biz__awards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.collab-biz__awards li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--text-rgb) / 0.75);
+}
+
+.collab-biz__awardYear {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgb(var(--accent-rgb) / 0.15);
+  color: rgb(var(--accent-rgb) / 0.95);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.collab-biz__logoWall {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 12px;
+}
+
+.collab-biz__logoCell {
+  min-width: 0;
+}
+
+.collab-biz__casesTrack {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.collab-biz__caseCard {
+  border-radius: 18px;
+  border: 1px solid rgb(var(--text-rgb) / 0.1);
+  background: rgb(var(--surface-rgb) / 0.42);
+  padding: 16px 18px;
+  transition:
+    transform 0.3s var(--ease-premium),
+    border-color 0.3s var(--ease-premium);
+}
+
+.collab-biz__caseCard:hover {
+  transform: translateY(-2px);
+  border-color: rgb(var(--accent-rgb) / 0.3);
+}
+
+.collab-biz__caseN {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgb(var(--accent-rgb) / 0.9);
+}
+
+.collab-biz__caseCard h3 {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: var(--type-track-display);
+}
+
+.collab-biz__caseCard p {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(var(--text-rgb) / 0.7);
+}
+
 .collab-biz__head h2 {
   margin: 10px 0 0;
   color: var(--text);
@@ -7161,10 +7393,36 @@ main li > a:not([class]):hover,
   max-width: 20ch;
 }
 
+@media (min-width: 720px) {
+  .collab-biz__bento {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .collab-biz__bentoCell--1 {
+    grid-column: span 3;
+  }
+
+  .collab-biz__bentoCell--2 {
+    grid-column: span 3;
+  }
+
+  .collab-biz__bentoCell--3 {
+    grid-column: span 6;
+  }
+
+  .collab-biz__casesTrack {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 900px) {
   .collab-biz__hero {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
     align-items: end;
+  }
+
+  .collab-biz__logoWall {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 

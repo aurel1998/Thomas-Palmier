@@ -1,39 +1,20 @@
 "use client";
 
 import gsap from "gsap";
-import Image from "next/image";
 import { useEffect, useRef } from "react";
 import { CREDIBILITY_AWARDS, CREDIBILITY_MEDIA, type CredibilityLogoItem } from "../../lib/credibility";
+import { BrandLogo } from "../media/BrandLogo";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
 
 function LogoTile({ item }: { item: CredibilityLogoItem }) {
-  const hasLogo = Boolean(item.logoSrc);
-
   return (
     <div className="credibility__logoTile" data-cred-item>
-      <div
-        className={
-          hasLogo
-            ? "credibility__logoFrame credibility__logoFrame--img"
-            : "credibility__logoFrame"
-        }
-      >
-        {hasLogo && item.logoSrc ? (
-          <Image
-            src={item.logoSrc}
-            alt=""
-            fill
-            className="credibility__logoImg"
-            sizes="112px"
-            unoptimized
-          />
-        ) : (
-          <span className="credibility__logoInitials">
-            {item.initials ?? item.name.slice(0, 2).toUpperCase()}
-          </span>
-        )}
-      </div>
-      <span className={`credibility__logoName${hasLogo ? " u-visuallyHidden" : ""}`}>{item.name}</span>
+      <BrandLogo
+        name={item.name}
+        logoSrc={item.logoSrc}
+        initials={item.initials}
+        className="brand-logo--credibility"
+      />
     </div>
   );
 }
