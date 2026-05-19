@@ -1000,37 +1000,31 @@ main li > a:not([class]):hover,
 
 /*
  * Logo « Thomas Palmier » : encre bleu nuit sur fond transparent.
- * On l’affiche sans plaque pour préserver le tracé original. En thème sombre,
- * on inverse les couleurs pour obtenir un logo blanc lisible sur fond foncé.
+ * Une plaque ivoire identique sur les deux thèmes assure un contraste fort
+ * (l’encre navy reste lisible quel que soit le fond du header).
  */
 .site-header__logoWrap {
-  display: grid;
-  place-items: center;
-  padding: 4px 6px;
-  border-radius: 12px;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  transition: background 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 14px;
+  background: #f7f4ef;
+  border: 1px solid rgb(0 0 0 / 0.06);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
 }
 
-[data-theme="light"] .site-header--scrolled .site-header__logoWrap {
-  background: rgb(var(--surface-rgb) / 0.65);
+[data-theme="light"] .site-header__logoWrap {
+  background: #ffffff;
+  border-color: rgb(0 0 0 / 0.08);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.08);
 }
 
 .site-header__logo {
   display: block;
   width: auto;
-  height: 44px;
-}
-
-/* Thème sombre : logo encre foncée → on l’inverse en blanc pour le rendre visible. */
-[data-theme="dark"] .site-header__logo {
-  filter: brightness(0) invert(1) drop-shadow(0 0 10px rgb(var(--accent-rgb) / 0.22));
-}
-
-[data-theme="light"] .site-header__logo {
-  filter: drop-shadow(0 0 6px rgb(0 0 0 / 0.08));
+  height: 38px;
+  filter: drop-shadow(0 0 6px rgb(0 0 0 / 0.06));
 }
 
 .site-header__nav {
@@ -8136,13 +8130,13 @@ main li > a:not([class]):hover,
   }
 
   .site-header__logoWrap {
-    padding: 3px 4px;
-    border-radius: 10px;
+    padding: 6px 12px;
+    border-radius: 12px;
   }
 
   .site-header__logo {
     width: auto;
-    height: 38px;
+    height: 32px;
   }
 
   .site-header__cta {
@@ -8649,13 +8643,13 @@ main li > a:not([class]):hover,
 
 @media (max-width: 390px) {
   .site-header__logoWrap {
-    padding: 2px 3px;
-    border-radius: 8px;
+    padding: 5px 10px;
+    border-radius: 10px;
   }
 
   .site-header__logo {
     width: auto;
-    height: 34px;
+    height: 28px;
   }
 
   .site-header__menuToggle {
