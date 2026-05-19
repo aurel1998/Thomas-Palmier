@@ -21,9 +21,27 @@ const OFFERS = [
 ] as const;
 
 const CASES = [
-  { n: "01", title: "Activation club", result: "+28 % d’engagement qualifié" },
-  { n: "02", title: "Lancement produit", result: "CTR ×1,9" },
-  { n: "03", title: "Institution", result: "Reprise médias partenaires" },
+  {
+    n: "01",
+    title: "Club professionnel",
+    format: "Série brand content — vidéo & réseaux sociaux",
+    result: "+28 % d’interactions qualifiées",
+    detail: "Par rapport à la campagne de la saison précédente",
+  },
+  {
+    n: "02",
+    title: "Marque sport & lifestyle",
+    format: "Reportage terrain + déclinaisons pour le lancement",
+    result: "Taux de clic publicitaire ×1,9",
+    detail: "Sur la fenêtre de lancement produit",
+  },
+  {
+    n: "03",
+    title: "Institution sportive",
+    format: "Dossier long format & contenus partenaires",
+    result: "4 reprises médias",
+    detail: "Presse et web partenaires",
+  },
 ] as const;
 
 const LOGO_WALL = [...CREDIBILITY_MEDIA, ...HOME_PARTNER_LOGOS];
@@ -180,27 +198,6 @@ export function CollaborerClient() {
         );
       });
 
-      const logoCells = gsap.utils.toArray<HTMLElement>(root.querySelectorAll(".collab-biz__logoCell"));
-      if (logoCells.length) {
-        gsap.fromTo(
-          logoCells,
-          { autoAlpha: 0, y: 16, scale: 0.96 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            scale: 1,
-            duration: motion.duration.revealFast,
-            ease: motion.ease.out,
-            stagger: 0.04,
-            scrollTrigger: {
-              trigger: root.querySelector(".collab-biz__logoWall"),
-              start: motion.scroll.startCards,
-              toggleActions: motion.scroll.toggleOnce,
-            },
-          }
-        );
-      }
-
       const disposers: Array<() => void> = [];
       if (!isMotionLite()) {
         root.querySelectorAll<HTMLElement>(".collab-biz__bentoCell").forEach((cell) => {
@@ -331,14 +328,21 @@ export function CollaborerClient() {
         <section className="collab-biz__section collab-biz__cases">
           <header className="collab-biz__head" data-collab-reveal>
             <p className="home-sectionEyebrow">Résultats</p>
-            <h2>Cas repères</h2>
+            <h2>Exemples de collaborations</h2>
+            <p className="collab-biz__casesIntro muted">
+              Objectif, format produit et bilan chiffré — pour vous projeter sur un projet similaire.
+            </p>
           </header>
           <div className="collab-biz__casesTrack">
             {CASES.map((c) => (
               <article key={c.n} className="collab-biz__caseCard" data-collab-reveal>
                 <span className="collab-biz__caseN">{c.n}</span>
                 <h3>{c.title}</h3>
-                <p>{c.result}</p>
+                <p className="collab-biz__caseFormat">{c.format}</p>
+                <p className="collab-biz__caseResult">
+                  <strong>{c.result}</strong>
+                </p>
+                <p className="collab-biz__caseDetail muted">{c.detail}</p>
               </article>
             ))}
           </div>

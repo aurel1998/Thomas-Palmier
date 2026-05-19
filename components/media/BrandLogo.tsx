@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 type BrandLogoProps = {
   name: string;
   logoSrc?: string;
@@ -10,7 +14,10 @@ type BrandLogoProps = {
  * Logo marque / média : <img> natif pour les SVG (affichage fiable, pas d’optimizer Next).
  */
 export function BrandLogo({ name, logoSrc, initials, className = "", imgClassName = "" }: BrandLogoProps) {
-  if (logoSrc) {
+  const [failed, setFailed] = useState(false);
+  const showImage = Boolean(logoSrc) && !failed;
+
+  if (showImage) {
     return (
       <div className={`brand-logo ${className}`.trim()}>
         <img
@@ -19,6 +26,7 @@ export function BrandLogo({ name, logoSrc, initials, className = "", imgClassNam
           className={`brand-logo__img ${imgClassName}`.trim()}
           loading="lazy"
           decoding="async"
+          onError={() => setFailed(true)}
         />
         <span className="u-visuallyHidden">{name}</span>
       </div>

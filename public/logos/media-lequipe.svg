@@ -1,1 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none" role="img" aria-labelledby="t"><title id="t">L'Équipe</title><rect width="160" height="48" rx="8" fill="#e20813"/><text x="80" y="31" text-anchor="middle" fill="#fff" font-family="system-ui,sans-serif" font-size="15" font-weight="800">L'ÉQUIPE</text></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" role="img" aria-label="L Equipe">
+  <rect width="160" height="48" rx="8" fill="#e20813"/>
+  <text x="80" y="31" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="14" font-weight="800">L&apos;&#201;QUIPE</text>
+</svg>
