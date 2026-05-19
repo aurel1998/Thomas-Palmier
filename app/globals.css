@@ -1007,7 +1007,7 @@ main li > a:not([class]):hover,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 14px;
   background: #f7f4ef;
   border: 1px solid rgb(0 0 0 / 0.06);
@@ -1023,7 +1023,7 @@ main li > a:not([class]):hover,
 .site-header__logo {
   display: block;
   width: auto;
-  height: 36px;
+  height: 44px;
   filter: drop-shadow(0 0 6px rgb(0 0 0 / 0.06));
 }
 
@@ -8130,13 +8130,13 @@ main li > a:not([class]):hover,
   }
 
   .site-header__logoWrap {
-    padding: 6px 12px;
+    padding: 7px 14px;
     border-radius: 12px;
   }
 
   .site-header__logo {
     width: auto;
-    height: 32px;
+    height: 38px;
   }
 
   .site-header__cta {
@@ -8643,13 +8643,13 @@ main li > a:not([class]):hover,
 
 @media (max-width: 390px) {
   .site-header__logoWrap {
-    padding: 5px 10px;
+    padding: 6px 12px;
     border-radius: 10px;
   }
 
   .site-header__logo {
     width: auto;
-    height: 28px;
+    height: 34px;
   }
 
   .site-header__menuToggle {
