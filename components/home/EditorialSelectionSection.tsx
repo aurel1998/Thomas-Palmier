@@ -59,9 +59,6 @@ export function EditorialSelectionSection({
             <h2 id="editorial-selection-heading" className="home-sectionTitle">
               Sélection éditoriale
             </h2>
-            <p className="muted editorial-selection__lede">
-              Les contenus sont réunis par thématiques pour une lecture claire.
-            </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
         </div>

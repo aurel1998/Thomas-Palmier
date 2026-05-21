@@ -203,7 +203,8 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
 
   return (
     <header ref={headerRef} className="site-header site-header--transparent">
-      <div className="container site-header__inner">
+      <div className="site-header__bar">
+        <div className="site-header__inner">
         <div className="site-header__start">
           <Link href="/" prefetch className="site-header__brand interactive" aria-label="Sport Journal, accueil">
             <span className="site-header__logoWrap">
@@ -303,6 +304,7 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
             <ThemeToggle className="interactive is-pressable" />
           </div>
         </nav>
+        </div>
       </div>
     </header>
   );

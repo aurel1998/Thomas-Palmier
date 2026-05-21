@@ -13,7 +13,7 @@ export const interTight = Inter_Tight({
   subsets: ["latin"],
   variable: "--font-inter-tight",
   display: "swap",
-  weight: ["600", "700", "800"],
+  weight: ["600", "700", "800", "900"],
 });
 
 /**

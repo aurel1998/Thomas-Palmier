@@ -19,13 +19,9 @@ export function RecentYoutubeSection({ items }: RecentYoutubeSectionProps) {
       <div className="container recent-yt__container">
         <div className="recent-yt__intro">
           <div>
-            <div className="home-sectionEyebrow">YouTube</div>
             <h2 id="recent-yt-heading" className="home-sectionTitle">
               Vidéos récentes
             </h2>
-            <p className="muted recent-yt__lede">
-              Extraits vidéo publiés récemment.
-            </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
         </div>

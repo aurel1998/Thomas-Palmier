@@ -21,8 +21,8 @@ export function ThreeBackdropGate() {
 
   useEffect(() => {
     if (prefersSaveData() || prefersLightWebGL()) return;
-    /* Un seul canvas WebGL sur l’accueil : /mes-contenus reste plus léger au scroll. */
-    const eligible = pathname === "/";
+    /* Canvas WebGL décoratif : accueil + page Collaborer (léger, monté après idle). */
+    const eligible = pathname === "/" || pathname === "/collaborer";
     if (!eligible) {
       setMount(false);
       return;

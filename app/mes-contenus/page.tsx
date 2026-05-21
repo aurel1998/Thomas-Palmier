@@ -17,7 +17,6 @@ import { FeatureContentCard } from "../../components/contenus/FeatureContentCard
 import { ContenuCard } from "../../components/contenus/ContenuCard";
 import {
   catalogCountLabel,
-  categoryCatalogLede,
   categoryChipLabel,
   categoryTabAriaLabel,
 } from "../../lib/categoryCopy";
@@ -429,11 +428,9 @@ export default function MesContenusPage() {
             <h1 className="mes-canal__title">
               {selectedCategory ? categoryChipLabel(selectedCategory) : "Contenus"}
             </h1>
-            {!isLoading && !showEmptyGlobal ? (
+            {!isLoading && !showEmptyGlobal && !selectedCategory ? (
               <p className="mes-canal__lede muted" aria-live="polite">
-                {selectedCategory
-                  ? categoryCatalogLede(selectedCategory, filteredItems.length)
-                  : catalogCountLabel(visibleCount)}
+                {catalogCountLabel(visibleCount)}
               </p>
             ) : null}
           </div>
