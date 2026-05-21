@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { isReducedMotion, motion } from "../lib/gsapMotion";
 import logo from "../src/logo/thomas.png";
@@ -15,7 +15,6 @@ import { ThemeToggle } from "./theme/ThemeToggle";
  * Espace technique : `/monsite` (hors menu, protégé par auth).
  */
 const PRIMARY_LINKS = [
-  { href: "/", label: "Accueil" },
   { href: "/mes-contenus", label: "Contenus" },
   { href: "/a-propos", label: "À propos" },
   { href: "/collaborer", label: "Collaborer" },
@@ -41,7 +40,6 @@ function routeMatches(pathname: string, href: string): boolean {
 export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
   const primaryNavRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLSpanElement | null>(null);
@@ -179,23 +177,6 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
   }, []);
 
   useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    document.body.classList.toggle("mobile-menu-open", menuOpen);
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.classList.remove("mobile-menu-open");
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [menuOpen]);
-
-  useEffect(() => {
     for (const href of PREFETCH_HREFS) {
       router.prefetch(href);
     }
@@ -222,18 +203,7 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
           <SocialLinks variant="header" />
         </div>
 
-        <button
-          type="button"
-          className={`site-header__menuToggle interactive is-pressable${menuOpen ? " is-open" : ""}`}
-          aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
-        >
-          <span />
-          <span />
-        </button>
-
-        <nav className={`site-header__nav${menuOpen ? " is-open" : ""}`} aria-label="Navigation principale">
+        <nav className="site-header__nav" aria-label="Navigation principale">
           <div
             ref={primaryNavRef}
             className="site-header__navPrimary"
@@ -264,7 +234,6 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
                   ref={(el) => setLinkRef(item.href, el)}
                   className={`site-header__navItem site-header__link interactive${active ? " is-active" : ""}`}
                   aria-current={active ? "page" : undefined}
-                  onClick={() => setMenuOpen(false)}
                   {...navHandlers}
                 >
                   <span className="site-header__linkLabel">{item.label}</span>
@@ -297,7 +266,6 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
               className={`site-header__navItem site-header__cta interactive is-magnetic is-pressable${contactActive ? " is-active" : ""}`}
               data-magnetic="0.32"
               aria-current={contactActive ? "page" : undefined}
-              onClick={() => setMenuOpen(false)}
             >
               <span className="site-header__ctaLabel">{CONTACT_CTA.label}</span>
             </Link>

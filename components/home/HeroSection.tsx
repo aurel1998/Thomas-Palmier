@@ -10,7 +10,6 @@ import { prefersSaveData } from "../../lib/clientPerf";
 import {
   HERO_HEADLINE,
   HERO_JOURNAL_LINE,
-  HERO_POSITIONING,
   HERO_VIDEO_MP4_DEFAULT,
   HERO_VIDEO_MP4_FALLBACK,
 } from "../../lib/heroCopy";
@@ -445,8 +444,6 @@ export function HeroSection({
             <span className="home-hero__nameSlot">{heroFirstName}</span>
             {heroLastName ? <span className="home-hero__nameSlot">{heroLastName}</span> : null}
           </h1>
-
-          <p className="home-hero__lead">{HERO_POSITIONING}</p>
 
           <div className="home-hero__actions">
             <Link

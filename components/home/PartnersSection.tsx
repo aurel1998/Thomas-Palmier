@@ -14,9 +14,6 @@ export function PartnersSection() {
           <h2 id="home-partners-heading" className="home-partners__title">
             Partenaires
           </h2>
-          <p className="muted home-partners__intro">
-            Marques et structures qui accompagnent les récits sportifs.
-          </p>
         </header>
 
         <div className="home-partners__grid" role="list">

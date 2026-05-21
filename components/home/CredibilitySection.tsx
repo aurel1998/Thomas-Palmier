@@ -77,10 +77,6 @@ export function CredibilitySection() {
           <h2 id="credibility-heading" className="credibility__title">
             Une plume reconnue
           </h2>
-          <p className="muted credibility__intro">
-            Distinctions et visibilité médiatique — repères pour situer le travail journalistique
-            derrière chaque contenu.
-          </p>
         </header>
 
         <div className="credibility__grid">
