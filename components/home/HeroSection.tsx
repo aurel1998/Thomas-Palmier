@@ -427,7 +427,7 @@ export function HeroSection({
                   src={profileImageSrc}
                   alt=""
                   fill
-                  sizes="42px"
+                  sizes="64px"
                   className="home-hero__journalAvatarImg"
                 />
               </span>
