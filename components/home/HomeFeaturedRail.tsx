@@ -14,18 +14,15 @@ type HomeFeaturedRailProps = {
 
 function sortForRail(contents: Content[]): Content[] {
   const seen = new Set<string>();
-  const sorted = [...contents].sort((a, b) => {
-    const fa = a.is_featured ? 1 : 0;
-    const fb = b.is_featured ? 1 : 0;
-    if (fb !== fa) return fb - fa;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  const sorted = [...contents].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
   const out: Content[] = [];
   for (const c of sorted) {
     if (seen.has(c.id)) continue;
     seen.add(c.id);
     out.push(c);
-    if (out.length >= 14) break;
+    if (out.length >= 6) break;
   }
   return out;
 }

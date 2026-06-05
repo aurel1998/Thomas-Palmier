@@ -13,7 +13,7 @@ import { isReducedMotion, motion } from "../../lib/gsapMotion";
 
 const typeLabels: Record<ContentType, string> = {
   video: "Vidéo",
-  article: "Article",
+  article: "Publication",
   audio: "Audio",
 };
 
@@ -200,7 +200,7 @@ export function ContenuCard({ item, intentRail }: { item: Content; intentRail?: 
             </div>
           ) : null}
           <Link href={`/mes-contenus/${item.id}`} className="contenus-card__readLink">
-            Ouvrir le contenu
+            {isArticle ? "Lire l'article" : isVideo ? "Voir la vidéo" : "Écouter"}
           </Link>
         </div>
       </div>

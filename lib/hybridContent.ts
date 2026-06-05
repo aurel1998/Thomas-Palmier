@@ -85,11 +85,24 @@ export function buildHybridBlocks(item: Content): HybridBlock[] {
   return [{ type: "text", body: item.content, title: "Lecture" }];
 }
 
-/** Découpe un bloc texte long en paragraphes lisibles. */
+/** Découpe un bloc texte long en paragraphes lisibles (articles de presse). */
 export function toParagraphs(text: string): string[] {
-  return text
-    .replace(/<[^>]*>/g, " ")
+  const cleaned = text.replace(/<[^>]*>/g, " ").trim();
+  if (!cleaned) return [];
+
+  const fromDoubleBreak = cleaned
     .split(/\n\s*\n/)
     .map((x) => x.replace(/\s+/g, " ").trim())
     .filter(Boolean);
+
+  if (fromDoubleBreak.length > 1) return fromDoubleBreak;
+
+  if (cleaned.includes("\n")) {
+    return cleaned
+      .split(/\n+/)
+      .map((x) => x.replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+  }
+
+  return [cleaned.replace(/\s+/g, " ").trim()];
 }

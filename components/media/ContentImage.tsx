@@ -10,8 +10,7 @@ function isOptimizableRemoteUrl(src: string): boolean {
     const h = u.hostname;
     return (
       h === "i.ytimg.com" ||
-      h === "img.youtube.com" ||
-      h.endsWith(".supabase.co")
+      h === "img.youtube.com"
     );
   } catch {
     return false;
@@ -46,7 +45,7 @@ export type ContentImageProps = ContentImageFill | ContentImageFixed;
 
 /**
  * Image responsive optimisee : Next/Image pour assets locaux et hotes
- * connus (YouTube, Supabase). Fallback `<img>` lazy pour URLs non autorisees
+ * connus (YouTube). Fallback `<img>` lazy pour URLs non autorisees
  * (pas de config remotePatterns).
  */
 export function ContentImage(props: ContentImageProps) {

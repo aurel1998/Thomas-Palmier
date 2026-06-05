@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { getServerSupabaseOrResponse } from "../../../lib/supabaseServer";
+import { mapCategoryRow } from "../../../lib/dbMappers";
 import { requireAdmin } from "../../../lib/apiAuth";
+import { prisma } from "../../../lib/prisma";
+import { resolveCatalogCategories } from "../../../lib/resolveCategories";
 
 type CategoryBody = {
   name?: unknown;
@@ -13,23 +15,17 @@ type CategoryBody = {
  * Liste simple des categories triees par ordre editorial.
  */
 export async function GET() {
-  const srv = getServerSupabaseOrResponse();
-  if (!srv.ok) return srv.response;
-
-  const { data, error } = await srv.supabase
-    .from("categories")
-    .select("*")
-    .order("position", { ascending: true })
-    .order("name", { ascending: true });
-
-  if (error) {
+  try {
+    const data = await prisma.category.findMany({
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    });
     return NextResponse.json(
-      { error: "Impossible de recuperer les categories.", details: error.message },
-      { status: 500 }
+      { data: resolveCatalogCategories(data.map(mapCategoryRow)) },
+      { status: 200 }
     );
+  } catch {
+    return NextResponse.json({ data: resolveCatalogCategories([]) }, { status: 200 });
   }
-
-  return NextResponse.json({ data: data ?? [] }, { status: 200 });
 }
 
 /**
@@ -53,24 +49,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le champ 'name' est obligatoire." }, { status: 400 });
     }
 
-    const srv = getServerSupabaseOrResponse();
-    if (!srv.ok) return srv.response;
-
-    const { data, error } = await srv.supabase
-      .from("categories")
-      .insert({ name, description, position })
-      .select("*")
-      .single();
-
-    if (error) {
+    const data = await prisma.category.create({
+      data: { name, description, position },
+    });
+    return NextResponse.json({ data: mapCategoryRow(data) }, { status: 201 });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2002") {
       return NextResponse.json(
-        { error: "Impossible de creer la categorie.", details: error.message },
-        { status: 500 }
+        { error: "Cette categorie existe deja." },
+        { status: 409 }
       );
     }
-
-    return NextResponse.json({ data }, { status: 201 });
-  } catch {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: "Corps de requete invalide (JSON attendu)." }, { status: 400 });
+    }
     return NextResponse.json({ error: "Corps de requete invalide (JSON attendu)." }, { status: 400 });
   }
 }

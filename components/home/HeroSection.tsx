@@ -1,30 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Link from "next/link";
 import { ContentImage } from "../media/ContentImage";
 import { ensureScrollTrigger, isReducedMotion, motion, motionPresets } from "../../lib/gsapMotion";
 import { prefersSaveData } from "../../lib/clientPerf";
-import {
-  HERO_HEADLINE,
-  HERO_JOURNAL_LINE,
-  HERO_VIDEO_MP4_DEFAULT,
-  HERO_VIDEO_MP4_FALLBACK,
-} from "../../lib/heroCopy";
-
-const HeroParticles = dynamic(
-  () => import("./HeroParticles").then((m) => ({ default: m.HeroParticles })),
-  { ssr: false, loading: () => null }
-);
-
-const defaultPosterSrc = "/src/stade/stade1.jpg";
-
-const heroNameParts = HERO_HEADLINE.trim().split(/\s+/);
-const heroFirstName = heroNameParts[0] ?? HERO_HEADLINE;
-const heroLastName = heroNameParts.slice(1).join(" ");
-
 export type HeroSectionProps = {
   /** Image poster (LCP) + secours si vidéo indisponible. */
   backdropSrc?: string;
@@ -32,16 +13,22 @@ export type HeroSectionProps = {
   profileImageSrc?: string;
   /** Source MP4 principale (URL ou /videos/....mp4). */
   videoSrc?: string;
-  /** Source MP4 de secours si la principale échoue au chargement. */
-  videoFallbackSrc?: string;
+  displayName?: string;
+  jobTitle?: string;
+  tagline?: string;
 };
 
 export function HeroSection({
-  backdropSrc = defaultPosterSrc,
+  backdropSrc,
   profileImageSrc,
-  videoSrc = HERO_VIDEO_MP4_DEFAULT,
-  videoFallbackSrc = HERO_VIDEO_MP4_FALLBACK,
+  videoSrc,
+  displayName = "",
+  jobTitle = "",
+  tagline = "",
 }: HeroSectionProps) {
+  const heroNameParts = displayName.trim().split(/\s+/).filter(Boolean);
+  const heroFirstName = heroNameParts[0] ?? displayName;
+  const heroLastName = heroNameParts.slice(1).join(" ");
   const sectionRef = useRef<HTMLElement | null>(null);
   const mediaRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -52,19 +39,21 @@ export function HeroSection({
 
   const [mounted, setMounted] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
-  const [currentVideoSrc, setCurrentVideoSrc] = useState(videoSrc);
+  const [currentVideoSrc, setCurrentVideoSrc] = useState(videoSrc ?? "");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    setCurrentVideoSrc(videoSrc);
+    setCurrentVideoSrc(videoSrc ?? "");
     setVideoFailed(false);
   }, [videoSrc]);
 
+  const hasVideo = Boolean(currentVideoSrc?.trim());
+  const hasPoster = Boolean(backdropSrc?.trim());
   const videoAllowed = mounted && !isReducedMotion() && !prefersSaveData();
-  const showVideo = videoAllowed && !videoFailed;
+  const showVideo = hasVideo && videoAllowed && !videoFailed;
 
   const handleVideoError = () => {
     /* Une seule source MP4 : en cas d’échec, poster statique (pas de bascule vers l’autre fichier). */
@@ -93,15 +82,19 @@ export function HeroSection({
 
     const journal = root.querySelector<HTMLElement>(".home-hero__journalLine");
     const rule = root.querySelector<HTMLElement>(".home-hero__rule");
+    const positioning = root.querySelector<HTMLElement>(".home-hero__positioning");
     const actions = root.querySelector<HTMLElement>(".home-hero__actions");
     const scrollBlock = root.querySelector<HTMLElement>(".home-hero__scrollBlock");
     const vignette = root.querySelector<HTMLElement>(".home-hero__vignette");
     const grain = root.querySelectorAll<HTMLElement>(".home-hero__grain");
 
     if (isReducedMotion()) {
-      gsap.set([media, overlay, float, journal, rule, actions, scrollBlock, vignette, ...grain].filter(Boolean), {
-        clearProps: "all",
-      });
+      gsap.set(
+        [media, overlay, float, journal, rule, positioning, actions, scrollBlock, vignette, ...grain].filter(Boolean),
+        {
+          clearProps: "all",
+        }
+      );
       gsap.set(headline, { clearProps: "all" });
       return;
     }
@@ -121,6 +114,7 @@ export function HeroSection({
     gsap.set(headline, { opacity: 0.001 });
     if (journal) gsap.set(journal, { y: 14, autoAlpha: 0 });
     if (rule) gsap.set(rule, { scaleX: 0, transformOrigin: "left center" });
+    if (positioning) gsap.set(positioning, { y: 20, autoAlpha: 0, filter: "blur(6px)" });
     if (actions) gsap.set(actions, { y: 28, autoAlpha: 0 });
     const showScrollHint = typeof window !== "undefined" && window.matchMedia("(min-width: 900px)").matches;
     if (scrollBlock && showScrollHint) {
@@ -198,9 +192,20 @@ export function HeroSection({
             0.18
           )
           .to(
+            positioning,
+            {
+              y: 0,
+              autoAlpha: 1,
+              filter: "blur(0px)",
+              duration: motion.duration.reveal,
+              ease: motion.ease.outLux,
+            },
+            "-=0.46"
+          )
+          .to(
             actions,
             { y: 0, autoAlpha: 1, duration: motion.duration.revealMed, ease: motion.ease.out },
-            "-=0.48"
+            "-=0.42"
           );
 
         if (actions) {
@@ -242,6 +247,7 @@ export function HeroSection({
             { opacity: 1, y: 0, duration: motion.duration.heroChars, ease: motion.ease.outLux },
             0.18
           )
+          .to(positioning, { y: 0, autoAlpha: 1, filter: "blur(0px)", duration: motion.duration.revealMed }, "-=0.3")
           .to(actions, { y: 0, autoAlpha: 1, duration: motion.duration.revealFast }, "-=0.22");
       });
 
@@ -377,7 +383,7 @@ export function HeroSection({
     };
   }, []);
 
-  const posterSrc = backdropSrc;
+  const posterSrc = backdropSrc?.trim() || undefined;
 
   return (
     <section ref={sectionRef} className="home-hero" aria-label="Accueil — hero">
@@ -398,10 +404,10 @@ export function HeroSection({
           >
             <source src={currentVideoSrc} type="video/mp4" />
           </video>
-        ) : (
+        ) : hasPoster ? (
           <ContentImage
             key={posterSrc}
-            src={posterSrc}
+            src={posterSrc!}
             alt=""
             fill
             priority
@@ -409,8 +415,7 @@ export function HeroSection({
             sizes="100vw"
             className="home-hero__video home-hero__video--static"
           />
-        )}
-        <HeroParticles />
+        ) : null}
       </div>
 
       <div ref={overlayRef} className="home-hero__overlay" />
@@ -432,18 +437,24 @@ export function HeroSection({
                 />
               </span>
             ) : null}
-            <p className="home-hero__journalLine">{HERO_JOURNAL_LINE}</p>
+            {jobTitle ? <p className="home-hero__journalLine">{jobTitle}</p> : null}
             <span className="home-hero__rule" aria-hidden="true" />
           </div>
 
-          <h1
-            ref={headlineRef}
-            className="home-hero__title home-hero__title--splitText home-hero__title--name"
-            aria-label={HERO_HEADLINE}
-          >
-            <span className="home-hero__nameSlot">{heroFirstName}</span>
-            {heroLastName ? <span className="home-hero__nameSlot">{heroLastName}</span> : null}
-          </h1>
+          {displayName ? (
+            <h1
+              ref={headlineRef}
+              className="home-hero__title home-hero__title--splitText home-hero__title--name"
+              aria-label={displayName}
+            >
+              <span className="home-hero__nameSlot">{heroFirstName}</span>
+              {heroLastName ? <span className="home-hero__nameSlot">{heroLastName}</span> : null}
+            </h1>
+          ) : (
+            <h1 ref={headlineRef} className="home-hero__title home-hero__title--splitText home-hero__title--name" />
+          )}
+
+          {tagline ? <p className="home-hero__positioning">{tagline}</p> : null}
 
           <div className="home-hero__actions">
             <Link

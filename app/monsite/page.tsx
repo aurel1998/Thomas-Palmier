@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import { isReducedMotion, motion } from "../../lib/gsapMotion";
 import { useRouter } from "next/navigation";
@@ -7,9 +8,49 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import type { Content, ContentType } from "../../types/content";
 import type { Category } from "../../types/category";
-import { extractYouTubeId, getYouTubeThumbnail } from "../../lib/youtube";
+import type { Subcategory } from "../../types/subcategory";
+import {
+  type PublicationStatus,
+  publicationStatusLabel,
+} from "../../lib/publicationStatus";
+import { extractYouTubeId, getYouTubeThumbnail, isYouTubeUrl } from "../../lib/youtube";
+import { isPlayableAudioUrl, uploadMediaFile } from "../../lib/uploadClient";
 
-type AdminTab = "dashboard" | "publier" | "contenus" | "categories" | "profil";
+const AgendaAdminPanel = dynamic(
+  () => import("../../components/monsite/AgendaAdminPanel").then((m) => ({ default: m.AgendaAdminPanel })),
+  { loading: () => <p className="admin-field__hint">Chargement…</p> }
+);
+const DashboardAdminPanel = dynamic(
+  () => import("../../components/monsite/DashboardAdminPanel").then((m) => ({ default: m.DashboardAdminPanel })),
+  { loading: () => <p className="admin-field__hint">Chargement…</p> }
+);
+const NewsletterAdminPanel = dynamic(
+  () => import("../../components/monsite/NewsletterAdminPanel").then((m) => ({ default: m.NewsletterAdminPanel })),
+  { loading: () => <p className="admin-field__hint">Chargement…</p> }
+);
+const PartnersAdminPanel = dynamic(
+  () => import("../../components/monsite/PartnersAdminPanel").then((m) => ({ default: m.PartnersAdminPanel })),
+  { loading: () => <p className="admin-field__hint">Chargement…</p> }
+);
+const SiteSettingsAdminPanel = dynamic(
+  () => import("../../components/monsite/SiteSettingsAdminPanel").then((m) => ({ default: m.SiteSettingsAdminPanel })),
+  { loading: () => <p className="admin-field__hint">Chargement…</p> }
+);
+const ThomasProfileAdminPanel = dynamic(
+  () => import("../../components/monsite/ThomasProfileAdminPanel").then((m) => ({ default: m.ThomasProfileAdminPanel })),
+  { loading: () => <p className="admin-field__hint">Chargement…</p> }
+);
+
+type AdminTab =
+  | "dashboard"
+  | "publier"
+  | "contenus"
+  | "categories"
+  | "agenda"
+  | "newsletter"
+  | "profil"
+  | "site"
+  | "partenaires";
 type ToastKind = "success" | "error" | "info";
 type ToastAction = { label: string; onClick: () => void };
 type Toast = {
@@ -23,14 +64,30 @@ type Toast = {
 const tabs: { id: AdminTab; label: string }[] = [
   { id: "dashboard", label: "Dashboard" },
   { id: "publier", label: "Publier" },
-  { id: "contenus", label: "Mes contenus" },
-  { id: "categories", label: "Catégories" },
-  { id: "profil", label: "Profil" },
+  { id: "contenus", label: "Contenus" },
+  { id: "categories", label: "Rubriques" },
+  { id: "agenda", label: "Agenda" },
+  { id: "newsletter", label: "Newsletter" },
+  { id: "profil", label: "Profil Thomas" },
+  { id: "site", label: "Textes site" },
+  { id: "partenaires", label: "Collaborer" },
 ];
+
+const tabTitles: Record<AdminTab, string> = {
+  dashboard: "Dashboard",
+  publier: "Publier",
+  contenus: "Contenus",
+  categories: "Rubriques",
+  agenda: "Agenda",
+  newsletter: "Newsletter",
+  profil: "Profil Thomas",
+  site: "Textes du site",
+  partenaires: "Page Collaborer",
+};
 
 const typeLabels: Record<ContentType, string> = {
   video: "Vidéo",
-  article: "Article",
+  article: "Publication",
   audio: "Audio",
 };
 
@@ -50,8 +107,11 @@ export default function MonSitePage() {
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState("");
   const [tagsInput, setTagsInput] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [contentStatus, setContentStatus] = useState<PublicationStatus>("draft");
+  const [notifySubscribers, setNotifySubscribers] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingAudio, setIsUploadingAudio] = useState(false);
@@ -64,15 +124,14 @@ export default function MonSitePage() {
   const [filterType, setFilterType] = useState<"all" | ContentType>("all");
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
-  const [categoryName, setCategoryName] = useState("");
-  const [categoryDescription, setCategoryDescription] = useState("");
-  const [categoryPosition, setCategoryPosition] = useState("100");
-  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
-  const [isSavingCategory, setIsSavingCategory] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState("");
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false);
-
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+  const [parentCategoryId, setParentCategoryId] = useState("");
+  const [subcategoryName, setSubcategoryName] = useState("");
+  const [subcategoryDescription, setSubcategoryDescription] = useState("");
+  const [subcategoryPosition, setSubcategoryPosition] = useState("100");
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState<string | null>(null);
+  const [isSavingSubcategory, setIsSavingSubcategory] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastIdRef = useRef(0);
   const toastTimersRef = useRef<Map<number, number>>(new Map());
@@ -156,7 +215,9 @@ export default function MonSitePage() {
     async (opts?: { silent?: boolean }) => {
       if (!opts?.silent) setLoadingContents(true);
       try {
-        const response = await apiFetch("/api/content", { cache: "no-store" });
+        const response = await apiFetch("/api/content?include_drafts=1&limit=100&offset=0", {
+          cache: "no-store",
+        });
         const result = (await response.json()) as { data?: Content[]; error?: string };
         if (!response.ok) {
           if (response.status !== 401) {
@@ -167,7 +228,7 @@ export default function MonSitePage() {
         }
         setContents(Array.isArray(result.data) ? result.data : []);
       } catch {
-        pushToast("error", "Erreur reseau pendant le chargement.");
+        pushToast("error", "Erreur réseau pendant le chargement.");
         setContents([]);
       } finally {
         if (!opts?.silent) setLoadingContents(false);
@@ -189,71 +250,78 @@ export default function MonSitePage() {
           setCategories([]);
           return;
         }
-        setCategories(Array.isArray(result.data) ? result.data : []);
+        const list = Array.isArray(result.data) ? result.data : [];
+        setCategories(list);
+        if (!parentCategoryId && list[0]?.id) {
+          setParentCategoryId(list[0].id);
+        }
       } catch {
-        pushToast("error", "Erreur reseau pendant le chargement des categories.");
+        pushToast("error", "Erreur réseau pendant le chargement des catégories.");
         setCategories([]);
       } finally {
         if (!opts?.silent) setLoadingCategories(false);
       }
     },
+    [apiFetch, parentCategoryId, pushToast]
+  );
+
+  const loadSubcategories = useCallback(
+    async (opts?: { silent?: boolean; categoryId?: string }) => {
+      if (!opts?.silent) setLoadingSubcategories(true);
+      try {
+        const query = opts?.categoryId ? `?category_id=${encodeURIComponent(opts.categoryId)}` : "";
+        const response = await apiFetch(`/api/subcategories${query}`, { cache: "no-store" });
+        const result = (await response.json()) as { data?: Subcategory[]; error?: string };
+        if (!response.ok) {
+          if (response.status !== 401) {
+            pushToast("error", result.error ?? "Impossible de charger les rubriques.");
+          }
+          setSubcategories([]);
+          return;
+        }
+        setSubcategories(Array.isArray(result.data) ? result.data : []);
+      } catch {
+        pushToast("error", "Erreur réseau pendant le chargement des rubriques.");
+        setSubcategories([]);
+      } finally {
+        if (!opts?.silent) setLoadingSubcategories(false);
+      }
+    },
     [apiFetch, pushToast]
   );
 
-  const loadProfile = useCallback(async () => {
-    try {
-      const response = await apiFetch("/api/profile", { cache: "no-store" });
-      const result = (await response.json()) as { data?: { image_url?: string }; error?: string };
-      if (!response.ok) {
-        if (response.status !== 401) {
-          pushToast("error", result.error ?? "Impossible de charger le profil.");
-        }
-        return;
-      }
-      setProfileImageUrl(typeof result.data?.image_url === "string" ? result.data.image_url : "");
-    } catch {
-      pushToast("error", "Erreur reseau pendant le chargement du profil.");
-    }
-  }, [apiFetch, pushToast]);
-
   useEffect(() => {
-    if (activeTab === "contenus" || activeTab === "dashboard") {
-      void loadContents({ silent: activeTab === "dashboard" });
+    if (activeTab === "contenus") {
+      void loadContents();
     }
   }, [activeTab, loadContents]);
 
   useEffect(() => {
-    if (
-      activeTab === "categories" ||
-      activeTab === "dashboard" ||
-      activeTab === "publier" ||
-      activeTab === "contenus"
-    ) {
-      void loadCategories({ silent: activeTab === "dashboard" });
+    if (activeTab === "categories" || activeTab === "publier" || activeTab === "contenus") {
+      void loadCategories({ silent: activeTab !== "categories" });
     }
   }, [activeTab, loadCategories]);
 
   useEffect(() => {
-    if (activeTab === "profil" || activeTab === "dashboard") {
-      void loadProfile();
+    if (activeTab === "categories" || activeTab === "publier" || activeTab === "contenus") {
+      void loadSubcategories({ silent: activeTab !== "categories" });
     }
-  }, [activeTab, loadProfile]);
+  }, [activeTab, loadSubcategories]);
 
-  async function uploadFile(file: File): Promise<{ kind: "image" | "audio"; url: string } | null> {
-    const formData = new FormData();
-    formData.append("file", file);
-    const response = await apiFetch("/api/upload", { method: "POST", body: formData });
-    const result = (await response.json()) as {
-      data?: { kind?: "image" | "audio"; url?: string };
-      error?: string;
-    };
-    if (!response.ok || !result.data?.url || !result.data.kind) {
-      if (response.status !== 401) {
-        pushToast("error", result.error ?? "Upload impossible.");
-      }
-      return null;
+  useEffect(() => {
+    if (!selectedCategoryId) return;
+    const stillValid = subcategories.some(
+      (s) => s.id === selectedSubcategoryId && s.category_id === selectedCategoryId
+    );
+    if (!stillValid) setSelectedSubcategoryId("");
+  }, [selectedCategoryId, selectedSubcategoryId, subcategories]);
+
+  async function uploadFile(file: File, kind: "image" | "audio") {
+    const result = await uploadMediaFile(apiFetch, file, kind);
+    if (!result && file) {
+      pushToast("error", "Upload impossible.");
     }
-    return { kind: result.data.kind, url: result.data.url };
+    return result;
   }
 
   async function onImageFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -261,15 +329,13 @@ export default function MonSitePage() {
     if (!file) return;
     setIsUploading(true);
     try {
-      const result = await uploadFile(file);
+      const result = await uploadFile(file, "image");
       if (result?.kind === "image") {
         setImageUrl(result.url);
-        pushToast("success", "Image uploadee.");
-      } else if (result) {
-        pushToast("error", "Ce champ accepte uniquement une image.");
+        pushToast("success", "Image uploadée.");
       }
     } catch {
-      pushToast("error", "Erreur reseau pendant l'upload.");
+      pushToast("error", "Erreur réseau pendant l'upload.");
     } finally {
       setIsUploading(false);
       event.target.value = "";
@@ -281,62 +347,16 @@ export default function MonSitePage() {
     if (!file) return;
     setIsUploadingAudio(true);
     try {
-      const result = await uploadFile(file);
+      const result = await uploadFile(file, "audio");
       if (result?.kind === "audio") {
         setContent(result.url);
         pushToast("success", "Audio uploade.");
-      } else if (result) {
-        pushToast("error", "Ce champ accepte uniquement un audio.");
       }
     } catch {
-      pushToast("error", "Erreur reseau pendant l'upload.");
+      pushToast("error", "Erreur réseau pendant l'upload.");
     } finally {
       setIsUploadingAudio(false);
       event.target.value = "";
-    }
-  }
-
-  async function onProfileImageFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setIsUploadingProfileImage(true);
-    try {
-      const result = await uploadFile(file);
-      if (result?.kind === "image") {
-        setProfileImageUrl(result.url);
-        pushToast("success", "Photo de profil uploadée.");
-      } else if (result) {
-        pushToast("error", "Ce champ accepte uniquement une image.");
-      }
-    } catch {
-      pushToast("error", "Erreur reseau pendant l'upload.");
-    } finally {
-      setIsUploadingProfileImage(false);
-      event.target.value = "";
-    }
-  }
-
-  async function onSaveProfile() {
-    setIsSavingProfile(true);
-    try {
-      const response = await apiFetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_url: profileImageUrl.trim() }),
-      });
-      const result = (await response.json()) as { error?: string };
-      if (!response.ok) {
-        if (response.status !== 401) {
-          pushToast("error", result.error ?? "Impossible de mettre à jour le profil.");
-        }
-        return;
-      }
-      pushToast("success", "Photo du journaliste mise à jour.");
-      void loadProfile();
-    } catch {
-      pushToast("error", "Erreur reseau pendant la mise à jour.");
-    } finally {
-      setIsSavingProfile(false);
     }
   }
 
@@ -347,17 +367,34 @@ export default function MonSitePage() {
     setContent("");
     setImageUrl("");
     setSelectedCategoryId("");
+    setSelectedSubcategoryId("");
     setTagsInput("");
     setIsFeatured(false);
+    setContentStatus("draft");
+    setNotifySubscribers(false);
     setEditingContentId(null);
   }
 
-  function resetCategoryForm() {
-    setCategoryName("");
-    setCategoryDescription("");
-    setCategoryPosition("100");
-    setEditingCategoryId(null);
+  function resetSubcategoryForm() {
+    setSubcategoryName("");
+    setSubcategoryDescription("");
+    setSubcategoryPosition("100");
+    setEditingSubcategoryId(null);
   }
+
+  const publishSubcategoryOptions = useMemo(() => {
+    if (!selectedCategoryId) return [];
+    return subcategories
+      .filter((s) => s.category_id === selectedCategoryId)
+      .sort((a, b) => a.position - b.position || a.name.localeCompare(b.name, "fr"));
+  }, [selectedCategoryId, subcategories]);
+
+  const parentSubcategories = useMemo(() => {
+    if (!parentCategoryId) return [];
+    return subcategories
+      .filter((s) => s.category_id === parentCategoryId)
+      .sort((a, b) => a.position - b.position || a.name.localeCompare(b.name, "fr"));
+  }, [parentCategoryId, subcategories]);
 
   // Supprime l'erreur de titre des que l'utilisateur corrige
   useEffect(() => {
@@ -402,6 +439,32 @@ export default function MonSitePage() {
       pushToast("error", "Le type est obligatoire.");
       return;
     }
+    const normalizedContent = content.trim();
+    if (type === "video" && !isYouTubeUrl(normalizedContent)) {
+      pushToast("error", "Le lien vidéo doit être une URL YouTube valide.");
+      return;
+    }
+    if (type === "article" && normalizedContent.length < 80) {
+      pushToast("error", "Un article doit contenir au moins 80 caractères.");
+      return;
+    }
+    if (type === "audio") {
+      if (!normalizedContent) {
+        pushToast("error", "Le champ audio est obligatoire (upload ou URL).");
+        return;
+      }
+      const audioOk =
+        isPlayableAudioUrl(normalizedContent);
+      if (!audioOk) {
+        pushToast("error", "Le contenu audio doit être une URL publique ou /uploads/audio/...");
+        return;
+      }
+    }
+
+    if (!selectedSubcategoryId) {
+      pushToast("error", "Choisissez une rubrique (sous-catégorie) avant de publier.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -417,11 +480,14 @@ export default function MonSitePage() {
           id: editingContentId ?? undefined,
           title: title.trim(),
           type,
-          content: content.trim(),
+          content: normalizedContent,
           image_url: imageUrl.trim(),
           category_id: selectedCategoryId || null,
+          subcategory_id: selectedSubcategoryId,
           tags,
           is_featured: isFeatured,
+          status: contentStatus,
+          ...(contentStatus === "published" && notifySubscribers ? { notify: true } : {}),
         }),
       });
 
@@ -463,7 +529,7 @@ export default function MonSitePage() {
       resetForm();
       void loadContents({ silent: true });
     } catch {
-      pushToast("error", "Erreur reseau. Reessaie.");
+      pushToast("error", "Erreur réseau. Réessaie.");
     } finally {
       setIsSubmitting(false);
     }
@@ -511,7 +577,7 @@ export default function MonSitePage() {
             (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           );
         });
-        pushToast("error", "Erreur reseau pendant la suppression.");
+        pushToast("error", "Erreur réseau pendant la suppression.");
       }
     }, UNDO_DELAY);
 
@@ -561,26 +627,30 @@ export default function MonSitePage() {
     setContent(item.content);
     setImageUrl(item.image_url);
     setSelectedCategoryId(item.category_id ?? "");
+    setSelectedSubcategoryId(item.subcategory_id ?? "");
     setTagsInput(item.tags.join(", "));
     setIsFeatured(Boolean(item.is_featured));
+    setContentStatus(item.status ?? "draft");
+    setNotifySubscribers(false);
     pushToast("info", "Mode edition: modifie puis valide.");
     window.requestAnimationFrame(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   }
 
-  function onEditCategory(item: Category) {
-    setCategoryName(item.name);
-    setCategoryDescription(item.description ?? "");
-    setCategoryPosition(String(item.position ?? 100));
-    setEditingCategoryId(item.id);
-    pushToast("info", "Mode edition categorie actif.");
+  function onEditSubcategory(item: Subcategory) {
+    setParentCategoryId(item.category_id);
+    setSubcategoryName(item.name);
+    setSubcategoryDescription(item.description ?? "");
+    setSubcategoryPosition(String(item.position ?? 100));
+    setEditingSubcategoryId(item.id);
+    pushToast("info", "Mode édition rubrique actif.");
   }
 
-  async function onDeleteCategory(item: Category) {
-    if (typeof window !== "undefined" && !window.confirm(`Supprimer la categorie "${item.name}" ?`)) return;
+  async function onDeleteSubcategory(item: Subcategory) {
+    if (typeof window !== "undefined" && !window.confirm(`Supprimer la rubrique « ${item.name} » ?`)) return;
     try {
-      const response = await apiFetch(`/api/categories/${item.id}`, { method: "DELETE" });
+      const response = await apiFetch(`/api/subcategories/${item.id}`, { method: "DELETE" });
       const result = (await response.json()) as { error?: string };
       if (!response.ok) {
         if (response.status !== 401) {
@@ -588,40 +658,53 @@ export default function MonSitePage() {
         }
         return;
       }
-      pushToast("success", `Categorie supprimee : ${item.name}`);
-      if (editingCategoryId === item.id) resetCategoryForm();
-      void loadCategories({ silent: true });
+      pushToast("success", `Rubrique supprimée : ${item.name}`);
+      if (editingSubcategoryId === item.id) resetSubcategoryForm();
+      void loadSubcategories({ silent: true });
     } catch {
-      pushToast("error", "Erreur reseau pendant la suppression.");
+      pushToast("error", "Erreur réseau pendant la suppression.");
     }
   }
 
-  async function onSubmitCategory(event: FormEvent<HTMLFormElement>) {
+  async function onSubmitSubcategory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const name = categoryName.trim();
+    const name = subcategoryName.trim();
+    if (!parentCategoryId) {
+      pushToast("error", "Choisissez une catégorie parente.");
+      return;
+    }
     if (!name) {
-      pushToast("error", "Le nom de la categorie est obligatoire.");
+      pushToast("error", "Le nom de la rubrique est obligatoire.");
       return;
     }
 
-    setIsSavingCategory(true);
+    setIsSavingSubcategory(true);
     try {
-      const isEditing = Boolean(editingCategoryId);
-      const endpoint = isEditing ? `/api/categories/${editingCategoryId}` : "/api/categories";
+      const isEditing = Boolean(editingSubcategoryId);
+      const endpoint = isEditing ? `/api/subcategories/${editingSubcategoryId}` : "/api/subcategories";
       const method = isEditing ? "PUT" : "POST";
       const response = await apiFetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          description: categoryDescription.trim(),
-          position: Number.isFinite(Number(categoryPosition)) ? Number(categoryPosition) : 100,
-        }),
+        body: JSON.stringify(
+          isEditing
+            ? {
+                name,
+                description: subcategoryDescription.trim(),
+                position: Number.isFinite(Number(subcategoryPosition)) ? Number(subcategoryPosition) : 100,
+              }
+            : {
+                category_id: parentCategoryId,
+                name,
+                description: subcategoryDescription.trim(),
+                position: Number.isFinite(Number(subcategoryPosition)) ? Number(subcategoryPosition) : 100,
+              }
+        ),
       });
       const result = (await response.json()) as { error?: string; data?: { name?: string } };
       if (!response.ok) {
         if (response.status !== 401) {
-          pushToast("error", result.error ?? "Echec de l'enregistrement de la categorie.");
+          pushToast("error", result.error ?? "Échec de l'enregistrement de la rubrique.");
         }
         return;
       }
@@ -629,15 +712,15 @@ export default function MonSitePage() {
       pushToast(
         "success",
         isEditing
-          ? `Categorie modifiee : ${result.data?.name ?? name}`
-          : `Categorie creee : ${result.data?.name ?? name}`
+          ? `Rubrique modifiée : ${result.data?.name ?? name}`
+          : `Rubrique créée : ${result.data?.name ?? name}`
       );
-      resetCategoryForm();
-      void loadCategories({ silent: true });
+      resetSubcategoryForm();
+      void loadSubcategories({ silent: true });
     } catch {
-      pushToast("error", "Erreur reseau. Reessaie.");
+      pushToast("error", "Erreur réseau. Réessaie.");
     } finally {
-      setIsSavingCategory(false);
+      setIsSavingSubcategory(false);
     }
   }
 
@@ -708,35 +791,17 @@ export default function MonSitePage() {
   let panel: ReactNode = null;
 
   if (activeTab === "dashboard") {
-    const total = contents.length;
-    const videos = contents.filter((c) => c.type === "video").length;
-    const articles = contents.filter((c) => c.type === "article").length;
-    const audios = contents.filter((c) => c.type === "audio").length;
-    const stats: { label: string; value: number | string }[] = [
-      { label: "Contenus publies", value: loadingContents ? "--" : total },
-      { label: "Vidéos", value: loadingContents ? "--" : videos },
-      { label: "Articles", value: loadingContents ? "--" : articles },
-      { label: "Audios", value: loadingContents ? "--" : audios },
-    ];
-
     panel = (
-      <div className="admin-grid admin-reveal">
-        {stats.map((stat) => (
-          <article key={stat.label} className="admin-card">
-            <p className="admin-card__label">{stat.label}</p>
-            {loadingContents ? (
-              <span className="admin-skeleton admin-skeleton--value" aria-hidden="true" />
-            ) : (
-              <p className="admin-card__value">{stat.value}</p>
-            )}
-          </article>
-        ))}
-      </div>
+      <DashboardAdminPanel
+        apiFetch={apiFetch}
+        pushToast={pushToast}
+        onEditContent={onEditContent}
+        onOpenTab={(tab) => setActiveTab(tab)}
+      />
     );
   }
 
   if (activeTab === "publier") {
-    const hasCategories = categories.length > 0;
     panel = (
       <form ref={formRef} className="admin-form admin-reveal" onSubmit={onPublish}>
         {editingContentId ? (
@@ -768,26 +833,37 @@ export default function MonSitePage() {
           <label htmlFor="type">Type</label>
           <select id="type" name="type" value={type} onChange={(e) => setType(e.target.value as ContentType)}>
             <option value="video">Vidéo</option>
-            <option value="article">Article</option>
+            <option value="article">Publication (texte)</option>
             <option value="audio">Audio</option>
           </select>
         </div>
         <div className="admin-field">
           <label htmlFor="content">
             {type === "article"
-              ? "Contenu texte"
+              ? "Texte de la publication"
               : type === "video"
-              ? "Lien vidéo (YouTube, Vimeo…)"
+              ? "Lien vidéo YouTube"
               : "Lien audio ou URL publique"}
           </label>
           <textarea
             id="content"
             name="content"
-            rows={type === "article" ? 5 : 3}
-            placeholder={type === "article" ? "Ecris ton article..." : "https://..."}
+            rows={type === "article" ? 14 : 3}
+            placeholder={
+              type === "article"
+                ? "Rédige ton article comme en presse : un paragraphe par bloc, séparés par une ligne vide…"
+                : type === "audio"
+                ? "/uploads/audio/... ou https://..."
+                : "https://www.youtube.com/watch?v=..."
+            }
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
+          {type === "article" ? (
+            <p className="admin-field__hint">
+              Format texte long (minimum 80 caractères). Les retours à la ligne créent les paragraphes à la lecture.
+            </p>
+          ) : null}
         </div>
         {type === "audio" ? (
           <div className="admin-field">
@@ -806,18 +882,20 @@ export default function MonSitePage() {
                 Upload audio en cours...
               </p>
             ) : null}
-            {content && !isUploadingAudio && /^https?:\/\//i.test(content) ? (
+            {content && !isUploadingAudio && isPlayableAudioUrl(content) ? (
               <p className="admin-field__hint">
-                Fichier actuel:{" "}
+                Fichier actuel :{" "}
                 <a href={content} target="_blank" rel="noreferrer">
-                  ecouter
+                  Écouter
                 </a>
               </p>
             ) : null}
           </div>
         ) : null}
         <div className="admin-field">
-          <label htmlFor="imageUrl">Image (URL, optionnel)</label>
+          <label htmlFor="imageUrl">
+            {type === "article" ? "Illustration de une (recommandée)" : "Image (URL, optionnel)"}
+          </label>
           <input
             id="imageUrl"
             name="imageUrl"
@@ -848,6 +926,10 @@ export default function MonSitePage() {
               <a href={imageUrl} target="_blank" rel="noreferrer">
                 voir
               </a>
+            </p>
+          ) : type === "article" ? (
+            <p className="admin-field__hint">
+              Une illustration renforce la carte publication dans le catalogue (comme une une de journal).
             </p>
           ) : null}
         </div>
@@ -889,39 +971,106 @@ export default function MonSitePage() {
             id="category_id"
             name="category_id"
             value={selectedCategoryId}
-            onChange={(e) => setSelectedCategoryId(e.target.value)}
+            onChange={(e) => {
+              setSelectedCategoryId(e.target.value);
+              setSelectedSubcategoryId("");
+            }}
           >
-            <option value="">Sans catégorie</option>
+            <option value="">Choisir une catégorie</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}
           </select>
-          {!loadingCategories && !hasCategories ? (
-            <p className="admin-field__hint">
-              Aucune catégorie disponible. Crée-les dans l’onglet Catégories.
-            </p>
-          ) : null}
         </div>
 
         <div className="admin-field">
-          <label htmlFor="is_featured">Mise en avant</label>
-          <button
-            id="is_featured"
-            type="button"
-            className={`admin-btn ${isFeatured ? "" : "admin-btn--ghost"}`}
-            onClick={() => setIsFeatured((prev) => !prev)}
-            aria-pressed={isFeatured}
+          <label htmlFor="subcategory_id">Rubrique</label>
+          <select
+            id="subcategory_id"
+            name="subcategory_id"
+            value={selectedSubcategoryId}
+            onChange={(e) => setSelectedSubcategoryId(e.target.value)}
+            disabled={!selectedCategoryId}
           >
-            {isFeatured ? "Retirer de la une" : "Mettre à la une"}
-          </button>
+            <option value="">Choisir une rubrique</option>
+            {publishSubcategoryOptions.map((sub) => (
+              <option key={sub.id} value={sub.id}>
+                {sub.name}
+              </option>
+            ))}
+          </select>
+          {selectedCategoryId && !loadingSubcategories && publishSubcategoryOptions.length === 0 ? (
+            <p className="admin-field__hint">
+              Aucune rubrique dans cette catégorie. Créez-en dans l’onglet <strong>Rubriques</strong>.
+            </p>
+          ) : (
+            <p className="admin-field__hint">
+              Vidéos, articles de presse et audio sont rangés dans une rubrique avant publication.
+            </p>
+          )}
+        </div>
+
+        <div className="admin-field">
+          <label
+            className={`admin-check${contentStatus !== "published" ? " admin-check--disabled" : ""}`}
+            htmlFor="contentFeatured"
+          >
+            <input
+              id="contentFeatured"
+              type="checkbox"
+              checked={isFeatured}
+              disabled={contentStatus !== "published"}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+            />
+            <span>Mettre à la une</span>
+          </label>
           <p className="admin-field__hint">
-            {isFeatured
-              ? "Ce contenu remontera dans les sélections à la une."
-              : "Active ce bouton pour mettre ce contenu en avant."}
+            {contentStatus !== "published"
+              ? "Publiez d'abord ce contenu pour le mettre à la une."
+              : isFeatured
+                ? "Contenu principal : accueil (feature story) et catalogue. Un seul à la fois — l'ancien est retiré automatiquement."
+                : "Affiche ce contenu en feature story sur l'accueil et en tête du catalogue."}
           </p>
         </div>
+
+        <div className="admin-field">
+          <label htmlFor="contentStatus">Statut</label>
+          <select
+            id="contentStatus"
+            value={contentStatus}
+            onChange={(e) => {
+              const next = e.target.value as PublicationStatus;
+              setContentStatus(next);
+              if (next === "draft") {
+                setNotifySubscribers(false);
+                setIsFeatured(false);
+              }
+            }}
+          >
+            <option value="draft">Brouillon — invisible sur le site</option>
+            <option value="published">Publié — visible sur le site</option>
+          </select>
+        </div>
+
+        {contentStatus === "published" ? (
+          <div className="admin-field">
+            <label className="admin-check" htmlFor="contentNotifySubscribers">
+              <input
+                id="contentNotifySubscribers"
+                type="checkbox"
+                checked={notifySubscribers}
+                onChange={(e) => setNotifySubscribers(e.target.checked)}
+              />
+              <span>Informer les abonnés</span>
+            </label>
+            <p className="admin-field__hint">
+              Envoie un email aux abonnés actifs à la publication de ce contenu.
+            </p>
+          </div>
+        ) : null}
+
         <div className="admin-assistants">
           <button
             type="button"
@@ -978,9 +1127,11 @@ export default function MonSitePage() {
                 Envoi...
               </>
             ) : editingContentId ? (
-              "Mettre a jour"
-            ) : (
+              contentStatus === "published" ? "Enregistrer (publié)" : "Enregistrer le brouillon"
+            ) : contentStatus === "published" ? (
               "Publier"
+            ) : (
+              "Enregistrer le brouillon"
             )}
           </button>
           {editingContentId ? (
@@ -1005,6 +1156,7 @@ export default function MonSitePage() {
 
   if (activeTab === "contenus") {
     const categoriesById = new Map(categories.map((category) => [category.id, category.name]));
+    const subcategoriesById = new Map(subcategories.map((sub) => [sub.id, sub.name]));
     const search = searchTerm.trim().toLowerCase();
     const filteredContents = contents.filter((item) => {
       if (filterType !== "all" && item.type !== filterType) return false;
@@ -1012,6 +1164,10 @@ export default function MonSitePage() {
       if (item.title.toLowerCase().includes(search)) return true;
       const categoryName = item.category_id ? categoriesById.get(item.category_id)?.toLowerCase() ?? "" : "";
       if (categoryName && categoryName.includes(search)) return true;
+      const subName = item.subcategory_id
+        ? subcategoriesById.get(item.subcategory_id)?.toLowerCase() ?? ""
+        : "";
+      if (subName && subName.includes(search)) return true;
       return item.tags.some((tag) => tag.toLowerCase().includes(search));
     });
 
@@ -1142,10 +1298,20 @@ export default function MonSitePage() {
                 </div>
                 <p className="admin-list__title">{item.title}</p>
                 <div className="admin-list__row">
+                  <span
+                    className={`admin-statusBadge ${item.status === "draft" ? "admin-statusBadge--draft" : "admin-statusBadge--published"}`}
+                  >
+                    {publicationStatusLabel(item.status ?? "published")}
+                  </span>
                   {item.is_featured ? <span className="admin-typeBadge">À la une</span> : null}
                   {item.category_id ? (
                     <span className="admin-list__tag">
                       {categoriesById.get(item.category_id) ?? "Catégorie"}
+                    </span>
+                  ) : null}
+                  {item.subcategory_id ? (
+                    <span className="admin-list__tag">
+                      {subcategoriesById.get(item.subcategory_id) ?? "Rubrique"}
                     </span>
                   ) : null}
                 </div>
@@ -1182,132 +1348,112 @@ export default function MonSitePage() {
   }
 
   if (activeTab === "profil") {
-    panel = (
-      <div className="admin-profile admin-reveal">
-        <p>
-          <strong>Nom:</strong> Thomas Palmier
-        </p>
-        <p>
-          <strong>Email:</strong> contact@sportjournal.fr
-        </p>
-        <p>
-          <strong>Ligne éditoriale:</strong> Analyse, terrain, formats courts.
-        </p>
-        <div className="admin-field">
-          <label htmlFor="profileImageUrl">Photo du journaliste (URL)</label>
-          <input
-            id="profileImageUrl"
-            name="profileImageUrl"
-            placeholder="https://... ou upload ci-dessous"
-            value={profileImageUrl}
-            onChange={(e) => setProfileImageUrl(e.target.value)}
-          />
-        </div>
-        <div className="admin-field">
-          <label htmlFor="profileImageUpload">Photo du journaliste (upload)</label>
-          <input
-            id="profileImageUpload"
-            name="profileImageUpload"
-            type="file"
-            accept="image/*"
-            onChange={onProfileImageFileChange}
-            disabled={isUploadingProfileImage}
-          />
-          {isUploadingProfileImage ? (
-            <p className="admin-assistantState">
-              <span className="admin-loader" aria-hidden="true" />
-              Upload en cours...
-            </p>
-          ) : null}
-          {profileImageUrl ? (
-            <p className="admin-field__hint">
-              Photo actuelle:{" "}
-              <a href={profileImageUrl} target="_blank" rel="noreferrer">
-                voir
-              </a>
-            </p>
-          ) : null}
-        </div>
-        <button type="button" className="admin-btn" onClick={() => void onSaveProfile()} disabled={isSavingProfile}>
-          {isSavingProfile ? (
-            <>
-              <span className="admin-loader" aria-hidden="true" />
-              Mise à jour...
-            </>
-          ) : (
-            "Mettre à jour"
-          )}
-        </button>
-      </div>
-    );
+    panel = <ThomasProfileAdminPanel apiFetch={apiFetch} pushToast={pushToast} />;
+  }
+
+  if (activeTab === "site") {
+    panel = <SiteSettingsAdminPanel apiFetch={apiFetch} pushToast={pushToast} />;
+  }
+
+  if (activeTab === "partenaires") {
+    panel = <PartnersAdminPanel apiFetch={apiFetch} pushToast={pushToast} />;
+  }
+
+  if (activeTab === "agenda") {
+    panel = <AgendaAdminPanel apiFetch={apiFetch} pushToast={pushToast} />;
+  }
+
+  if (activeTab === "newsletter") {
+    panel = <NewsletterAdminPanel apiFetch={apiFetch} pushToast={pushToast} />;
   }
 
   if (activeTab === "categories") {
+    const categoriesById = new Map(categories.map((c) => [c.id, c.name]));
     panel = (
       <div className="admin-reveal">
         <p className="admin-field__hint" style={{ marginBottom: 16 }}>
-          Les catégories créées ici sont proposées dans l’onglet <strong>Publier</strong> et filtrables sur la page
-          publique <strong>Mes contenus</strong>. Pour un texte long, choisissez le type <strong>Article</strong>.
+          Les 4 catégories du catalogue sont fixes. Créez ici les <strong>rubriques</strong> (sous-catégories) dans
+          chaque catégorie avant de publier vidéos, publications texte ou audio dans l’onglet <strong>Publier</strong>.
         </p>
-        <form className="admin-form" onSubmit={onSubmitCategory}>
+
+        <div className="admin-field">
+          <label htmlFor="parentCategoryId">Catégorie parente</label>
+          <select
+            id="parentCategoryId"
+            value={parentCategoryId}
+            onChange={(e) => {
+              setParentCategoryId(e.target.value);
+              if (!editingSubcategoryId) resetSubcategoryForm();
+            }}
+          >
+            <option value="">Choisir une catégorie</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <form className="admin-form" onSubmit={onSubmitSubcategory}>
           <div className="admin-field">
-            <label htmlFor="categoryName">Nom de la catégorie</label>
+            <label htmlFor="subcategoryName">Nom de la rubrique</label>
             <input
-              id="categoryName"
-              name="categoryName"
-              placeholder="Analyse, Enquête, Reportage..."
-              value={categoryName}
-              onChange={(e) => setCategoryName(e.target.value)}
+              id="subcategoryName"
+              name="subcategoryName"
+              placeholder="Reportages, Analyses, Coulisses..."
+              value={subcategoryName}
+              onChange={(e) => setSubcategoryName(e.target.value)}
             />
           </div>
 
           <div className="admin-field">
-            <label htmlFor="categoryDescription">Description</label>
+            <label htmlFor="subcategoryDescription">Description</label>
             <textarea
-              id="categoryDescription"
-              name="categoryDescription"
+              id="subcategoryDescription"
+              name="subcategoryDescription"
               rows={3}
-              placeholder="Brève description éditoriale"
-              value={categoryDescription}
-              onChange={(e) => setCategoryDescription(e.target.value)}
+              placeholder="Brève description affichée sur le catalogue"
+              value={subcategoryDescription}
+              onChange={(e) => setSubcategoryDescription(e.target.value)}
             />
           </div>
 
           <div className="admin-field">
-            <label htmlFor="categoryPosition">Position éditoriale</label>
+            <label htmlFor="subcategoryPosition">Position</label>
             <input
-              id="categoryPosition"
-              name="categoryPosition"
+              id="subcategoryPosition"
+              name="subcategoryPosition"
               type="number"
               min={0}
               step={1}
               placeholder="100"
-              value={categoryPosition}
-              onChange={(e) => setCategoryPosition(e.target.value)}
+              value={subcategoryPosition}
+              onChange={(e) => setSubcategoryPosition(e.target.value)}
             />
-            <p className="admin-field__hint">Plus petit = plus haut sur la homepage.</p>
+            <p className="admin-field__hint">Plus petit = affiché plus haut dans la catégorie.</p>
           </div>
 
           <div className="admin-formActions">
-            <button type="submit" className="admin-btn" disabled={isSavingCategory}>
-              {isSavingCategory ? (
+            <button type="submit" className="admin-btn" disabled={isSavingSubcategory || !parentCategoryId}>
+              {isSavingSubcategory ? (
                 <>
                   <span className="admin-loader" aria-hidden="true" />
                   Enregistrement...
                 </>
-              ) : editingCategoryId ? (
+              ) : editingSubcategoryId ? (
                 "Mettre à jour"
               ) : (
-                "Créer catégorie"
+                "Créer rubrique"
               )}
             </button>
-            {editingCategoryId ? (
+            {editingSubcategoryId ? (
               <button
                 type="button"
                 className="admin-btn admin-btn--ghost"
                 onClick={() => {
-                  resetCategoryForm();
-                  pushToast("info", "Edition categorie annulee.");
+                  resetSubcategoryForm();
+                  pushToast("info", "Édition rubrique annulée.");
                 }}
               >
                 Annuler édition
@@ -1319,32 +1465,42 @@ export default function MonSitePage() {
         <div className="admin-list" style={{ marginTop: 18 }}>
           <div className="admin-tools">
             <p className="admin-list__count" style={{ margin: 0 }}>
-              {loadingCategories
+              {loadingSubcategories
                 ? "Chargement..."
-                : `${categories.length} ${categories.length > 1 ? "catégories" : "catégorie"}`}
+                : `${parentSubcategories.length} rubrique${parentSubcategories.length > 1 ? "s" : ""}${
+                    parentCategoryId && categoriesById.get(parentCategoryId)
+                      ? ` — ${categoriesById.get(parentCategoryId)}`
+                      : ""
+                  }`}
             </p>
             <button
               type="button"
               className="admin-btn admin-btn--ghost"
-              onClick={() => void loadCategories()}
-              disabled={loadingCategories}
+              onClick={() => void loadSubcategories()}
+              disabled={loadingSubcategories}
             >
               Actualiser
             </button>
           </div>
 
-          {!loadingCategories && !categories.length ? (
+          {!parentCategoryId ? (
             <div className="admin-emptyState">
-              <p>Aucune catégorie pour le moment.</p>
+              <p>Sélectionnez une catégorie pour gérer ses rubriques.</p>
             </div>
           ) : null}
 
-          {!loadingCategories &&
-            categories.map((item) => (
+          {parentCategoryId && !loadingSubcategories && parentSubcategories.length === 0 ? (
+            <div className="admin-emptyState">
+              <p>Aucune rubrique dans cette catégorie.</p>
+            </div>
+          ) : null}
+
+          {!loadingSubcategories &&
+            parentSubcategories.map((item) => (
               <article key={item.id} className="admin-list__item">
                 <div className="admin-list__info">
                   <div className="admin-list__row">
-                    <span className="admin-typeBadge">Catégorie</span>
+                    <span className="admin-typeBadge">Rubrique</span>
                     <span className="admin-list__tag">Pos. {item.position ?? 100}</span>
                     <time className="admin-list__date" dateTime={item.created_at}>
                       {dateFormatter.format(new Date(item.created_at))}
@@ -1357,14 +1513,14 @@ export default function MonSitePage() {
                   <button
                     type="button"
                     className="admin-btn admin-btn--ghost"
-                    onClick={() => onEditCategory(item)}
+                    onClick={() => onEditSubcategory(item)}
                   >
                     Modifier
                   </button>
                   <button
                     type="button"
                     className="admin-btn admin-btn--danger"
-                    onClick={() => void onDeleteCategory(item)}
+                    onClick={() => void onDeleteSubcategory(item)}
                   >
                     Supprimer
                   </button>
@@ -1396,7 +1552,7 @@ export default function MonSitePage() {
         <article className="admin-panel">
           <header className="admin-panel__head admin-reveal">
             <p className="home-sectionEyebrow">Interface journaliste</p>
-            <h1 className="admin-title">{tabs.find((tab) => tab.id === activeTab)?.label}</h1>
+            <h1 className="admin-title">{tabTitles[activeTab]}</h1>
           </header>
           <div ref={panelRef}>{panel}</div>
         </article>

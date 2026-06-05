@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSupabaseOrResponse } from "../../../../lib/supabaseServer";
 import { requireAdmin } from "../../../../lib/apiAuth";
+import { revalidateContentCaches } from "../../../../lib/contentCache";
+import { prisma } from "../../../../lib/prisma";
 
 type DeleteContentBody = {
   id?: unknown;
@@ -22,25 +23,16 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Le champ 'id' est obligatoire." }, { status: 400 });
     }
 
-    const srv = getServerSupabaseOrResponse();
-    if (!srv.ok) return srv.response;
-
-    const { data, error } = await srv.supabase
-      .from("contents")
-      .delete()
-      .eq("id", id)
-      .select("id")
-      .single();
-
-    if (error) {
-      return NextResponse.json(
-        { error: "Impossible de supprimer le contenu.", details: error.message },
-        { status: 500 }
-      );
-    }
-
+    const data = await prisma.content.delete({
+      where: { id },
+      select: { id: true },
+    });
+    revalidateContentCaches();
     return NextResponse.json({ data: { id: data.id, deleted: true } }, { status: 200 });
-  } catch {
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2025") {
+      return NextResponse.json({ error: "Contenu introuvable." }, { status: 404 });
+    }
     return NextResponse.json({ error: "Corps de requete invalide (JSON attendu)." }, { status: 400 });
   }
 }

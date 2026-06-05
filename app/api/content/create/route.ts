@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import type { Content, ContentType } from "../../../../types/content";
-import { getServerSupabaseOrResponse } from "../../../../lib/supabaseServer";
+import { mapContentRow } from "../../../../lib/dbMappers";
 import { requireAdmin } from "../../../../lib/apiAuth";
-import { extractYouTubeId, getYouTubeThumbnail } from "../../../../lib/youtube";
+import { prisma } from "../../../../lib/prisma";
+import { extractYouTubeId, getYouTubeThumbnail, isYouTubeUrl } from "../../../../lib/youtube";
+import { isMailerConfigured } from "../../../../lib/mailer";
+import { unsetOtherFeaturedContent } from "../../../../lib/featuredContent";
+import { notifyNewContent } from "../../../../lib/newsletter";
+import { parsePublicationStatus } from "../../../../lib/publicationStatus";
+import { revalidateContentCaches } from "../../../../lib/contentCache";
+import { categoryIdFromSubcategory } from "../../../../lib/subcategoryResolve";
 
 const allowedTypes: ContentType[] = ["video", "article", "audio"];
 
@@ -13,7 +20,10 @@ type CreateContentBody = {
   image_url?: unknown;
   tags?: unknown;
   category_id?: unknown;
+  subcategory_id?: unknown;
   is_featured?: unknown;
+  status?: unknown;
+  notify?: unknown;
 };
 
 function normalizeTags(tags: unknown): string[] {
@@ -22,6 +32,24 @@ function normalizeTags(tags: unknown): string[] {
     .filter((tag): tag is string => typeof tag === "string")
     .map((tag) => tag.trim())
     .filter(Boolean);
+}
+
+function validateContentByType(type: ContentType, content: string): string | null {
+  const normalized = content.trim();
+  if (type === "video" && !isYouTubeUrl(normalized)) {
+    return "Le contenu video doit etre un lien YouTube valide.";
+  }
+  if (type === "article" && normalized.length < 80) {
+    return "Le contenu article doit contenir au moins 80 caracteres.";
+  }
+  if (type === "audio") {
+    if (!normalized) return "Le contenu audio est obligatoire.";
+    const audioOk = /^https?:\/\//i.test(normalized) || normalized.startsWith("/uploads/audio/");
+    if (!audioOk) {
+      return "Le contenu audio doit etre une URL publique ou /uploads/audio/...";
+    }
+  }
+  return null;
 }
 
 /**
@@ -52,13 +80,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const srv = getServerSupabaseOrResponse();
-    if (!srv.ok) return srv.response;
-
     const rawContent = typeof body.content === "string" ? body.content : "";
     const rawImageUrl = typeof body.image_url === "string" ? body.image_url.trim() : "";
+
+    const validationError = validateContentByType(type as ContentType, rawContent);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
+    }
+
     const ytId = type === "video" ? extractYouTubeId(rawContent.trim()) : null;
     const computedImageUrl = rawImageUrl || (ytId ? getYouTubeThumbnail(ytId, "hq") : "");
+
+    const subcategoryId =
+      typeof body.subcategory_id === "string" && body.subcategory_id.trim()
+        ? body.subcategory_id.trim()
+        : null;
+    const categoryFromSub = await categoryIdFromSubcategory(subcategoryId);
+    const explicitCategoryId =
+      typeof body.category_id === "string" && body.category_id.trim() ? body.category_id.trim() : null;
+
+    if (!subcategoryId) {
+      return NextResponse.json(
+        { error: "Choisissez une rubrique (sous-catégorie) avant de publier." },
+        { status: 400 }
+      );
+    }
 
     const payload = {
       title,
@@ -66,48 +112,48 @@ export async function POST(request: Request) {
       content: rawContent,
       image_url: computedImageUrl,
       tags: normalizeTags(body.tags),
-      category_id: typeof body.category_id === "string" ? body.category_id : null,
+      category_id: categoryFromSub ?? explicitCategoryId,
+      subcategory_id: subcategoryId,
       is_featured: typeof body.is_featured === "boolean" ? body.is_featured : false,
+      status: parsePublicationStatus(body.status, "draft"),
     };
 
-    if (payload.is_featured) {
-      const { error: resetFeaturedError } = await srv.supabase
-        .from("contents")
-        .update({ is_featured: false })
-        .eq("is_featured", true);
-      if (resetFeaturedError) {
-        return NextResponse.json(
-          { error: "Impossible de preparer la mise a la une.", details: resetFeaturedError.message },
-          { status: 500 }
-        );
-      }
-    }
-
-    const { data, error } = await srv.supabase
-      .from("contents")
-      .insert(payload)
-      .select("*")
-      .single();
-
-    if (error) {
+    if (payload.is_featured && payload.status !== "published") {
       return NextResponse.json(
-        { error: "Impossible de creer le contenu.", details: error.message },
-        { status: 500 }
+        { error: "Seul un contenu publié peut être mis à la une." },
+        { status: 400 }
       );
     }
 
-    const created: Content = {
-      id: data.id,
-      title: data.title,
-      type: data.type,
-      content: data.content,
-      image_url: data.image_url,
-      tags: Array.isArray(data.tags) ? data.tags : [],
-      category_id: data.category_id ?? null,
-      is_featured: Boolean(data.is_featured),
-      created_at: data.created_at,
-    };
+    if (payload.is_featured) {
+      await unsetOtherFeaturedContent();
+    }
 
+    const data = await prisma.content.create({
+      data: {
+        title: payload.title,
+        type: payload.type,
+        content: payload.content,
+        imageUrl: payload.image_url,
+        tags: payload.tags,
+        categoryId: payload.category_id,
+        subcategoryId: payload.subcategory_id,
+        isFeatured: payload.is_featured,
+        status: payload.status,
+        createdById: auth.session.user.id,
+      },
+    });
+    const created = mapContentRow(data) as Content;
+
+    // Notification des abonnes : publie + case cochée (fire-and-forget).
+    const shouldNotify = payload.status === "published" && body.notify === true;
+    if (shouldNotify && isMailerConfigured()) {
+      void notifyNewContent(created).catch((error) => {
+        console.error("[newsletter] notification nouveau contenu echouee:", (error as Error).message);
+      });
+    }
+
+    revalidateContentCaches();
     return NextResponse.json({ data: created }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Corps de requete invalide (JSON attendu)." }, { status: 400 });

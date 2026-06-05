@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSupabaseOrResponse } from "../../../../lib/supabaseServer";
+import { mapCategoryRow } from "../../../../lib/dbMappers";
 import { requireAdmin } from "../../../../lib/apiAuth";
+import { prisma } from "../../../../lib/prisma";
 
 type CategoryBody = {
   name?: unknown;
@@ -51,25 +52,19 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       return NextResponse.json({ error: "Aucune donnee a mettre a jour." }, { status: 400 });
     }
 
-    const srv = getServerSupabaseOrResponse();
-    if (!srv.ok) return srv.response;
-
-    const { data, error } = await srv.supabase
-      .from("categories")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-
-    if (error) {
-      return NextResponse.json(
-        { error: "Impossible de modifier la categorie.", details: error.message },
-        { status: 500 }
-      );
+    const data = await prisma.category.update({
+      where: { id },
+      data: updates,
+    });
+    return NextResponse.json({ data: mapCategoryRow(data) }, { status: 200 });
+  } catch (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "P2025") {
+      return NextResponse.json({ error: "Categorie introuvable." }, { status: 404 });
     }
-
-    return NextResponse.json({ data }, { status: 200 });
-  } catch {
+    if (code === "P2002") {
+      return NextResponse.json({ error: "Cette categorie existe deja." }, { status: 409 });
+    }
     return NextResponse.json({ error: "Corps de requete invalide (JSON attendu)." }, { status: 400 });
   }
 }
@@ -84,15 +79,13 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
   const { id } = await context.params;
   if (!id) return NextResponse.json({ error: "Identifiant manquant." }, { status: 400 });
 
-  const srv = getServerSupabaseOrResponse();
-  if (!srv.ok) return srv.response;
-
-  const { error } = await srv.supabase.from("categories").delete().eq("id", id);
-  if (error) {
-    return NextResponse.json(
-      { error: "Impossible de supprimer la categorie.", details: error.message },
-      { status: 500 }
-    );
+  try {
+    await prisma.category.delete({ where: { id } });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2025") {
+      return NextResponse.json({ error: "Categorie introuvable." }, { status: 404 });
+    }
+    return NextResponse.json({ error: "Impossible de supprimer la categorie." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true }, { status: 200 });

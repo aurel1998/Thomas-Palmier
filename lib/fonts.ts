@@ -1,4 +1,10 @@
-import { Geist_Mono, Instrument_Serif, Inter, Inter_Tight } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Geist_Mono,
+  Instrument_Serif,
+  Inter,
+  Inter_Tight,
+} from "next/font/google";
 
 /** Corps de texte : lisibilité longue, UI. */
 export const inter = Inter({
@@ -14,6 +20,19 @@ export const interTight = Inter_Tight({
   variable: "--font-inter-tight",
   display: "swap",
   weight: ["600", "700", "800", "900"],
+});
+
+/**
+ * Display signature : Bricolage Grotesque.
+ * Grotesque éditoriale au caractère marqué (optical sizing, contrastes nets) —
+ * donne une identité typographique distinctive aux grands titres (hero, sections),
+ * là où Inter Tight reste réservé à l'UI.
+ */
+export const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
+  display: "swap",
+  weight: ["600", "700", "800"],
 });
 
 /**

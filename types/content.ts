@@ -1,3 +1,5 @@
+import type { PublicationStatus } from "../lib/publicationStatus";
+
 export type ContentType = "video" | "article" | "audio";
 
 export type Content = {
@@ -8,6 +10,8 @@ export type Content = {
   image_url: string;
   tags: string[];
   category_id?: string | null;
+  subcategory_id?: string | null;
   is_featured?: boolean;
+  status: PublicationStatus;
   created_at: string;
 };

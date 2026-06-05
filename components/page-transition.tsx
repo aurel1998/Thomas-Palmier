@@ -7,11 +7,12 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { prefersLightWebGL, prefersSaveData } from "../lib/clientPerf";
 import { isReducedMotion, motion } from "../lib/gsapMotion";
 
-/**
- * Premier chargement : preloader + entrée. Ensuite, changements de route **instantanés**
- * (pas d’overlay / rideau) pour que le menu réagisse comme une app classique.
- */
-export function PageTransition({ children }: { children: ReactNode }) {
+  /**
+   * Premier chargement : preloader + entrée. Ensuite, chaque changement de route
+   * joue une entrée de contenu courte (fade + blur + translate) — signature fluide
+   * sans rideau bloquant, pour que le menu reste réactif.
+   */
+  export function PageTransition({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -76,7 +77,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
     return () => ctx.revert();
   }, []);
 
-  /** Changements de route : aucune animation — Next affiche la nouvelle page tout de suite. */
+  /** Changements de route : entrée de contenu rapide (ou instantanée si reduced-motion). */
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current;
     const overlay = overlayRef.current;
@@ -88,8 +89,27 @@ export function PageTransition({ children }: { children: ReactNode }) {
     }
 
     gsap.killTweensOf([wrapper, overlay]);
-    gsap.set(wrapper, { opacity: 1, y: 0, scale: 1, filter: "none", clearProps: "filter" });
     gsap.set(overlay, { autoAlpha: 0, yPercent: 100 });
+
+    if (isReducedMotion() || prefersSaveData()) {
+      gsap.set(wrapper, { opacity: 1, y: 0, scale: 1, filter: "none", clearProps: "filter" });
+      return;
+    }
+
+    gsap.fromTo(
+      wrapper,
+      { opacity: 0.72, y: 10 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: motion.duration.route * 0.85,
+        ease: motion.ease.out,
+        overwrite: "auto",
+      }
+    );
+
+    // Remonte en haut de la nouvelle page (comportement attendu d'une navigation).
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, [pathname]);
 
   return (

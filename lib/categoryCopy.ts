@@ -1,8 +1,13 @@
 import type { Category } from "../types/category";
+import { slugFromCategoryName, type CatalogCategorySlug } from "./fixedCategories";
 
 /** Libellé affiché sur l’onglet / puce (nom éditorial tel quel, trim). */
 export function categoryChipLabel(category: Pick<Category, "name">): string {
   return category.name.trim();
+}
+
+function slugForCategory(category: Pick<Category, "name">): CatalogCategorySlug | null {
+  return slugFromCategoryName(category.name);
 }
 
 /** Phrase sous le titre de page quand une catégorie est active. */
@@ -10,21 +15,18 @@ export function categoryCatalogLede(category: Category, count: number): string {
   const custom = category.description?.trim();
   if (custom && custom.length > 8) return custom;
 
-  const key = category.name.toLowerCase();
-  if (key.includes("reportage") || key.includes("rmc")) {
-    return "Reportages et formats terrain — vidéos, articles et chroniques de cette ligne.";
+  const slug = slugForCategory(category);
+  if (slug === "webcontenus") {
+    return "Articles, dossiers et récits conçus pour le web.";
   }
-  if (key.includes("vidéo") || key.includes("video")) {
-    return "Sélection vidéo : formats courts et longs, lecture directe dans le catalogue.";
+  if (slug === "media") {
+    return "Vidéos, audio et formats broadcast du catalogue.";
   }
-  if (key.includes("audio") || key.includes("podcast") || key.includes("radio")) {
-    return "Chroniques et formats audio à écouter depuis le catalogue.";
+  if (slug === "animations") {
+    return "Motion, boucles et séquences animées.";
   }
-  if (key.includes("analyse") || key.includes("tactique")) {
-    return "Analyses et décryptages — lecture approfondie sur le jeu et les enjeux.";
-  }
-  if (key.includes("immersion") || key.includes("coulisse")) {
-    return "Immersion et coulisses — le sport vu de l’intérieur.";
+  if (slug === "elements") {
+    return "Modules courts, vignettes et fragments éditoriaux.";
   }
 
   const n = count;
@@ -38,19 +40,11 @@ export function categoryRailLede(category: Category): string {
   const custom = category.description?.trim();
   if (custom && custom.length > 8) return custom;
 
-  const key = category.name.toLowerCase();
-  if (key.includes("reportage") || key.includes("rmc")) {
-    return "Reportages terrain et récits au plus près du sport.";
-  }
-  if (key.includes("vidéo") || key.includes("video")) {
-    return "Vidéos récentes de cette thématique.";
-  }
-  if (key.includes("audio") || key.includes("podcast")) {
-    return "Formats audio et chroniques à écouter.";
-  }
-  if (key.includes("analyse") || key.includes("tactique")) {
-    return "Analyses et lectures tactiques.";
-  }
+  const slug = slugForCategory(category);
+  if (slug === "webcontenus") return "Dossiers et formats longs pour le web.";
+  if (slug === "media") return "Vidéos et audio — lecture directe.";
+  if (slug === "animations") return "Séquences animées et motion design sportif.";
+  if (slug === "elements") return "Formats courts et modules éditoriaux.";
 
   return `Contenus classés sous « ${category.name.trim()} ».`;
 }

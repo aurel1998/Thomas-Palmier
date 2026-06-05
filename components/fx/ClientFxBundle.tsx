@@ -3,12 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-import { prefersCoarsePointer, prefersSaveData } from "../../lib/clientPerf";
-
-const CustomCursor = dynamic(
-  () => import("./CustomCursor").then((m) => ({ default: m.CustomCursor })),
-  { ssr: false, loading: () => null }
-);
+import { prefersSaveData } from "../../lib/clientPerf";
 
 const MicroInteractions = dynamic(
   () => import("./MicroInteractions").then((m) => ({ default: m.MicroInteractions })),
@@ -23,22 +18,19 @@ export function ClientFxBundle() {
   const [mount, setMount] = useState(false);
 
   useEffect(() => {
-    if (prefersSaveData() || prefersCoarsePointer()) return;
+    // Save-Data : on coupe tout. Sinon on monte (les révélations au scroll
+    // doivent jouer aussi sur tactile — elles ne dépendent pas du pointeur).
+    if (prefersSaveData()) return;
     const go = () => setMount(true);
     if (typeof window.requestIdleCallback === "function") {
-      const id = window.requestIdleCallback(go, { timeout: 4200 });
+      const id = window.requestIdleCallback(go, { timeout: 6000 });
       return () => window.cancelIdleCallback(id);
     }
-    const t = window.setTimeout(go, 720);
+    const t = window.setTimeout(go, 1200);
     return () => window.clearTimeout(t);
   }, []);
 
   if (!mount) return null;
 
-  return (
-    <>
-      <MicroInteractions />
-      <CustomCursor />
-    </>
-  );
+  return <MicroInteractions />;
 }

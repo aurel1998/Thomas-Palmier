@@ -1,45 +1,61 @@
+import { unstable_cache } from "next/cache";
 import type { Content } from "../types/content";
-import { getServerSupabaseOrResponse } from "./supabaseServer";
+import { CONTENT_CACHE_TAG } from "./contentCache";
+import { mapContentRow } from "./dbMappers";
+import { prisma } from "./prisma";
 
-const HOME_CONTENTS_COLUMNS =
-  "id,title,type,content,image_url,tags,category_id,is_featured,created_at";
+export { getFeaturedContentServer } from "./featuredContent";
 
-/**
- * Homepage uniquement : borne le nombre de lignes pour réduire le temps DB + le HTML RSC
- * (listing, cartes, JSON inline). L’ordre reste `created_at` desc comme l’ancien chargement complet.
- */
-export async function getContentsForHomeServer(limit = 120): Promise<Content[]> {
-  const srv = getServerSupabaseOrResponse();
-  if (!srv.ok) return [];
+async function fetchPublishedContentsForHome(limit: number): Promise<Content[]> {
+  const data = await prisma.content.findMany({
+    where: { status: "published" },
+    orderBy: { createdAt: "desc" },
+    take: Math.max(1, Math.min(limit, 48)),
+  });
+  return data.map(mapContentRow);
+}
 
+/** Homepage : contenus publiés récents (cache taggé, max 48). */
+export async function getContentsForHomeServer(limit = 48): Promise<Content[]> {
   try {
-    const { data, error } = await srv.supabase
-      .from("contents")
-      .select(HOME_CONTENTS_COLUMNS)
-      .order("created_at", { ascending: false })
-      .limit(Math.max(24, Math.min(limit, 200)));
-    if (error) return [];
-    return (data ?? []) as Content[];
-  } catch {
+    const clamped = Math.max(1, Math.min(limit, 48));
+    return unstable_cache(
+      () => fetchPublishedContentsForHome(clamped),
+      ["home-contents", String(clamped)],
+      { tags: [CONTENT_CACHE_TAG], revalidate: 120 }
+    )();
+  } catch (error) {
+    console.error("[contents] getContentsForHomeServer:", (error as Error).message);
     return [];
   }
 }
 
+
+
 /**
+
  * Liste complète (admin, futures pages archive). Préférer `getContentsForHomeServer` sur l’accueil.
+
  */
+
 export async function getAllContentsServer(): Promise<Content[]> {
-  const srv = getServerSupabaseOrResponse();
-  if (!srv.ok) return [];
 
   try {
-    const { data, error } = await srv.supabase
-      .from("contents")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) return [];
-    return (data ?? []) as Content[];
+
+    const data = await prisma.content.findMany({
+
+      orderBy: { createdAt: "desc" },
+
+    });
+
+    return data.map(mapContentRow);
+
   } catch {
+
     return [];
+
   }
+
 }
+
+

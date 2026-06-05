@@ -133,7 +133,17 @@ export default function HybridContentPage() {
           <Link href="/mes-contenus" className="hybrid-content__back">
             Retour aux contenus
           </Link>
-          {item ? <p className="home-sectionEyebrow">{item.tags[0] ?? "Édition"}</p> : null}
+          {item ? (
+            <p className="home-sectionEyebrow">
+              {item.type === "article"
+                ? "Publication"
+                : item.type === "video"
+                  ? "Vidéo"
+                  : item.type === "audio"
+                    ? "Audio"
+                    : item.tags[0] ?? "Édition"}
+            </p>
+          ) : null}
           <h1 className="hybrid-content__title">
             {loading ? "Ouverture du contenu..." : item?.title ?? "Contenu"}
           </h1>

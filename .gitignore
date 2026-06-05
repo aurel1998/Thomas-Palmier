@@ -24,6 +24,22 @@ Thumbs.db
 .vscode/
 .idea/
 
-# heavy local media (non versionné)
-public/src/video/video2.mp4
-public/src/video/video9.mp4
+# artefacts locaux
+_bat_dev.txt
+*.docx
+supabase/
+
+# ancien emplacement logo (désormais public/logos/) — racine uniquement
+/src/
+
+# Vidéos locales lourdes (hero seul dans public/videos/)
+public/src/video/
+
+# fichiers uploadés en prod (structure versionnée via .gitkeep)
+public/uploads/**/*
+!public/uploads/**/.gitkeep
+
+# sauvegardes VPS locales
+backups/
+logs/*.log
+!logs/.gitkeep

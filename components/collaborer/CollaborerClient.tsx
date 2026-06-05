@@ -3,7 +3,11 @@
 import Link from "next/link";
 import gsap from "gsap";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { CREDIBILITY_AWARDS, CREDIBILITY_MEDIA } from "../../lib/credibility";
+import type {
+  CollaborationCaseDto,
+  CollaborationOfferDto,
+  CredibilityItemDto,
+} from "../../types/editorial";
 import {
   bindParallaxYPercent,
   ensureScrollTrigger,
@@ -11,43 +15,35 @@ import {
   isReducedMotion,
   motion,
 } from "../../lib/gsapMotion";
-import { HOME_PARTNER_LOGOS } from "../../lib/partners";
 import { BrandLogo } from "../media/BrandLogo";
 
-const OFFERS = [
-  { title: "Brand content", tag: "Sponsorisé · éditorial" },
-  { title: "Événement", tag: "Terrain · multi-format" },
-  { title: "Série", tag: "Vidéo · texte · audio" },
-] as const;
+type LogoItem = { id: string; name: string; logoSrc?: string; initials?: string };
 
-const CASES = [
-  {
-    n: "01",
-    title: "Club professionnel",
-    format: "Série brand content — vidéo & réseaux sociaux",
-    result: "+28 % d’interactions qualifiées",
-    detail: "Par rapport à la campagne de la saison précédente",
-  },
-  {
-    n: "02",
-    title: "Marque sport & lifestyle",
-    format: "Reportage terrain + déclinaisons pour le lancement",
-    result: "Taux de clic publicitaire ×1,9",
-    detail: "Sur la fenêtre de lancement produit",
-  },
-  {
-    n: "03",
-    title: "Institution sportive",
-    format: "Dossier long format & contenus partenaires",
-    result: "4 reprises médias",
-    detail: "Presse et web partenaires",
-  },
-] as const;
+type CollaborerClientProps = {
+  eyebrow?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
+  closingTitle?: string;
+  offers?: CollaborationOfferDto[];
+  cases?: CollaborationCaseDto[];
+  awards?: CredibilityItemDto[];
+  logoWall?: LogoItem[];
+};
 
-const LOGO_WALL = [...CREDIBILITY_MEDIA, ...HOME_PARTNER_LOGOS];
-const HERO_TITLE = "Récits sport qui servent vos objectifs.";
-
-export function CollaborerClient() {
+export function CollaborerClient({
+  eyebrow = "Collaborer",
+  heroTitle = "Récits sport qui servent vos objectifs.",
+  heroSubtitle = "Visibilité, crédibilité, engagement — sans sacrifier l'exigence éditoriale.",
+  ctaLabel = "Demander une proposition",
+  ctaHref = "/contact",
+  closingTitle = "On structure votre prochain format.",
+  offers = [],
+  cases = [],
+  awards = [],
+  logoWall = [],
+}: CollaborerClientProps) {
   const pageRef = useRef<HTMLElement | null>(null);
   const heroRef = useRef<HTMLElement | null>(null);
   const heroMediaRef = useRef<HTMLDivElement | null>(null);
@@ -245,16 +241,14 @@ export function CollaborerClient() {
         <div className="container collab-biz__heroInner">
           <div className="collab-biz__heroGrid">
             <div className="collab-biz__heroCopy">
-              <p className="home-sectionEyebrow collab-biz__heroEyebrow">Collaborer</p>
+              <p className="home-sectionEyebrow collab-biz__heroEyebrow">{eyebrow}</p>
               <span className="collab-biz__heroRule" aria-hidden="true" />
               <h1 id="collab-hero-title" ref={titleRef} className="collab-biz__title collab-biz__title--split">
-                {HERO_TITLE}
+                {heroTitle}
               </h1>
-              <p className="collab-biz__sub muted">
-                Visibilité, crédibilité, engagement — sans sacrifier l’exigence éditoriale.
-              </p>
-              <Link href="/contact" className="btn btn-primary collab-biz__heroCta">
-                Demander une proposition
+              <p className="collab-biz__sub muted">{heroSubtitle}</p>
+              <Link href={ctaHref} className="btn btn-primary collab-biz__heroCta">
+                {ctaLabel}
               </Link>
             </div>
             <ul className="collab-biz__heroKpis" aria-label="Chiffres clés">
@@ -282,9 +276,9 @@ export function CollaborerClient() {
             <h2>Ce qu’on produit</h2>
           </header>
           <div className="collab-biz__bento">
-            {OFFERS.map((offer, i) => (
+            {offers.map((offer, i) => (
               <article
-                key={offer.title}
+                key={offer.id}
                 className={`collab-biz__bentoCell collab-biz__bentoCell--${i + 1}`}
                 data-collab-reveal
               >
@@ -303,7 +297,7 @@ export function CollaborerClient() {
               <h2>Médias &amp; partenaires</h2>
             </div>
             <ul className="collab-biz__awards" aria-label="Récompenses">
-              {CREDIBILITY_AWARDS.map((a) => (
+              {awards.map((a) => (
                 <li key={a.id}>
                   <span className="collab-biz__awardYear">{a.year}</span>
                   <span>{a.title}</span>
@@ -312,7 +306,7 @@ export function CollaborerClient() {
             </ul>
           </header>
           <div className="collab-biz__logoWall">
-            {LOGO_WALL.map((item) => (
+            {logoWall.map((item) => (
               <div key={item.id} className="collab-biz__logoCell">
                 <BrandLogo
                   name={item.name}
@@ -334,15 +328,12 @@ export function CollaborerClient() {
             </p>
           </header>
           <div className="collab-biz__casesTrack">
-            {CASES.map((c) => (
-              <article key={c.n} className="collab-biz__caseCard" data-collab-reveal>
-                <span className="collab-biz__caseN">{c.n}</span>
+            {cases.map((c) => (
+              <article key={c.id} className="collab-biz__caseCard" data-collab-reveal>
+                <span className="collab-biz__caseN">{c.number}</span>
                 <h3>{c.title}</h3>
                 <p className="collab-biz__caseFormat">{c.format}</p>
-                <p className="collab-biz__caseResult">
-                  <strong>{c.result}</strong>
-                </p>
-                <p className="collab-biz__caseDetail muted">{c.detail}</p>
+                {c.note ? <p className="collab-biz__caseDetail muted">{c.note}</p> : null}
               </article>
             ))}
           </div>
@@ -350,14 +341,14 @@ export function CollaborerClient() {
 
         <section className="collab-biz__section collab-biz__ctaWrap">
           <div className="collab-biz__cta" data-collab-reveal>
-            <h2>On structure votre prochain format.</h2>
+            <h2>{closingTitle}</h2>
             <Link
               id="collabCtaBtn"
-              href="/contact"
+              href={ctaHref}
               className="collab-ctaBtn is-pressable"
               aria-label="Aller au formulaire de contact"
             >
-              Contact
+              {ctaLabel}
             </Link>
           </div>
         </section>

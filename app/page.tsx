@@ -1,45 +1,30 @@
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { HeroSection } from "../components/home/HeroSection";
-import { HomeChapterNav } from "../components/home/HomeChapterNav";
+import { FeatureStorySection } from "../components/home/FeatureStorySection";
 import { UneSection } from "../components/home/UneSection";
 import { getAllCategoriesServer } from "../lib/categoriesServer";
-import { getContentsForHomeServer } from "../lib/contentsServer";
-import { getJournalistProfileImageServer } from "../lib/journalistProfileServer";
-import { pickRecentYoutubeContents } from "../lib/recentYoutube";
+import { getContentsForHomeServer, getFeaturedContentServer } from "../lib/contentsServer";
+import { getAgendaEventsServer } from "../lib/agendaEventsServer";
+import { getFeaturedEventServer } from "../lib/featuredEvent";
+import { getJournalistProfileServer, getSiteSettingsServer } from "../lib/editorialServer";
+import { attachCategoryIds } from "../lib/resolveCategories";
+import { buildPageMetadata, SITE_DESCRIPTION } from "../lib/seo";
+
+export const metadata: Metadata = buildPageMetadata({
+  title: "Journaliste sportif",
+  description: SITE_DESCRIPTION,
+  path: "/",
+});
 
 const AboutThomasSection = dynamic(
   () => import("../components/home/AboutThomasSection").then((m) => ({ default: m.AboutThomasSection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(180px, 24vh, 300px)" }} aria-busy /> }
+  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(160px, 22vh, 260px)" }} aria-busy /> }
 );
 
-const CredibilitySection = dynamic(
-  () => import("../components/home/CredibilitySection").then((m) => ({ default: m.CredibilitySection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(120px, 16vh, 200px)" }} aria-busy /> }
-);
-
-const PartnersSection = dynamic(
-  () => import("../components/home/PartnersSection").then((m) => ({ default: m.PartnersSection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(140px, 18vh, 240px)" }} aria-busy /> }
-);
-
-const EditorialSelectionSection = dynamic(
-  () => import("../components/home/EditorialSelectionSection").then((m) => ({ default: m.EditorialSelectionSection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(260px, 36vh, 480px)" }} aria-busy /> }
-);
-
-const RecentYoutubeSection = dynamic(
-  () => import("../components/home/RecentYoutubeSection").then((m) => ({ default: m.RecentYoutubeSection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(240px, 34vh, 440px)" }} aria-busy /> }
-);
-
-const RecentContents = dynamic(
-  () => import("../components/home/RecentContents").then((m) => ({ default: m.RecentContents })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(200px, 28vh, 360px)" }} aria-busy /> }
-);
-
-const PitchSubjectSection = dynamic(
-  () => import("../components/home/PitchSubjectSection").then((m) => ({ default: m.PitchSubjectSection })),
-  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(160px, 22vh, 280px)" }} aria-busy /> }
+const AgendaSection = dynamic(
+  () => import("../components/home/AgendaSection").then((m) => ({ default: m.AgendaSection })),
+  { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(180px, 26vh, 320px)" }} aria-busy /> }
 );
 
 const NewsletterSection = dynamic(
@@ -47,73 +32,61 @@ const NewsletterSection = dynamic(
   { loading: () => <div className="home-dynamic-fallback" style={{ minHeight: "clamp(100px, 14vh, 160px)" }} aria-busy /> }
 );
 
-/* Cache court : évite un aller-retour DB à chaque navigation (perception « site lent »). */
-export const revalidate = 60;
+/** Accueil allégé : moins de sections, moins de lignes DB. */
+export const revalidate = 120;
 
 export default async function HomePage() {
-  const [contents, categories, profileImageUrl] = await Promise.all([
-    getContentsForHomeServer(120),
-    getAllCategoriesServer(),
-    getJournalistProfileImageServer(),
-  ]);
-  const featuredContent = contents.find((item) => item.is_featured) ?? contents[0] ?? null;
-  const featuredId = featuredContent?.id;
-  const heroBackdrop = "/src/stade/stade1.jpg";
-  const youtubeRecent = pickRecentYoutubeContents(contents, {
-    limit: 10,
-    excludeIds: featuredId ? [featuredId] : [],
-  });
-  /* Exclusion limitée au « À la une » : on autorise la sélection éditoriale
-     à reprendre les vidéos YouTube récentes, car la navigation thématique
-     (par catégorie) répond à un besoin différent du grid « récentes ». */
-  const editorialExcludeIds = featuredId ? [featuredId] : [];
-  const recentExcludeIds = [
-    ...(featuredId ? [featuredId] : []),
-    ...youtubeRecent.map((c) => c.id),
-  ];
+  const [rawContents, featuredContent, categories, profile, site, agendaEvents, featuredEvent] =
+    await Promise.all([
+      getContentsForHomeServer(16),
+      getFeaturedContentServer(),
+      getAllCategoriesServer(),
+      getJournalistProfileServer(),
+      getSiteSettingsServer(),
+      getAgendaEventsServer(),
+      getFeaturedEventServer(),
+    ]);
+  const profileImageUrl = profile.image_url?.trim() || null;
+
+  const contents = attachCategoryIds(rawContents, categories);
+  const railContents = featuredContent
+    ? contents.filter((c) => c.id !== featuredContent.id)
+    : contents;
 
   return (
-    <div className="home-page">
-      <HeroSection backdropSrc={heroBackdrop} profileImageSrc={profileImageUrl ?? undefined} />
-      <HomeChapterNav />
+    <div className="home-page home-page--lean">
+      <HeroSection
+        backdropSrc={profile.hero_poster_url || undefined}
+        profileImageSrc={profileImageUrl ?? undefined}
+        videoSrc={profile.hero_video_url || undefined}
+        displayName={profile.display_name}
+        jobTitle={profile.job_title}
+        tagline={profile.tagline || profile.editorial_line}
+      />
 
-      <section id="acte-manifeste" className="home-act home-act--manifeste">
+      <section className="home-act home-act--manifeste">
         <div className="home-strip home-strip--une">
-          <UneSection initialContents={contents} />
+          {featuredContent ? <FeatureStorySection item={featuredContent} /> : null}
+          <UneSection initialContents={railContents} />
         </div>
         <div className="home-strip home-strip--about">
-          <AboutThomasSection portraitSrc={profileImageUrl ?? "/src/joueurs/joueur6.jpg"} />
-        </div>
-      </section>
-
-      <section id="acte-preuves" className="home-act home-act--preuves">
-        <div className="home-strip home-strip--credibility">
-          <CredibilitySection />
-        </div>
-        <div className="home-strip home-strip--partners">
-          <PartnersSection />
-        </div>
-      </section>
-
-      <section id="acte-immersion" className="home-act home-act--immersion">
-        <div className="home-strip home-strip--youtube">
-          <RecentYoutubeSection items={youtubeRecent} />
-        </div>
-        <div className="home-strip home-strip--editorial">
-          <EditorialSelectionSection
-            initialContents={contents}
-            categories={categories}
-            excludeIds={editorialExcludeIds}
+          <AboutThomasSection
+            portraitSrc={profileImageUrl ?? undefined}
+            displayName={profile.display_name}
+            eyebrow={site.home_about_eyebrow}
+            title={site.home_about_title}
+            bioShort={profile.bio_short}
+            specialties={profile.specialties}
           />
         </div>
-        <div className="home-strip home-strip--recent">
-          <RecentContents initialContents={contents} excludeIds={recentExcludeIds} />
-        </div>
-        <div className="home-strip home-strip--pitch">
-          <PitchSubjectSection />
+      </section>
+
+      <section className="home-act home-act--immersion">
+        <div className="home-strip home-strip--agenda">
+          <AgendaSection events={agendaEvents} featuredEvent={featuredEvent} />
         </div>
         <div className="home-strip home-strip--newsletter">
-          <NewsletterSection />
+          <NewsletterSection eyebrow={site.newsletter_eyebrow} title={site.newsletter_title} />
         </div>
       </section>
     </div>

@@ -7,9 +7,26 @@ import { ContentImage } from "../media/ContentImage";
 
 type AboutThomasSectionProps = {
   portraitSrc?: string;
+  displayName?: string;
+  eyebrow?: string;
+  title?: string;
+  bioShort?: string;
+  specialties?: string[];
 };
 
-export function AboutThomasSection({ portraitSrc = "/src/joueurs/joueur6.jpg" }: AboutThomasSectionProps) {
+export function AboutThomasSection({
+  portraitSrc,
+  displayName = "",
+  eyebrow = "",
+  title = "",
+  bioShort = "",
+  specialties = [],
+}: AboutThomasSectionProps) {
+  const portraitAlt = displayName.trim()
+    ? `Portrait de ${displayName.trim()}`
+    : "Portrait";
+  const hasPortrait = Boolean(portraitSrc?.trim());
+  const hasCopy = Boolean(eyebrow || title || bioShort || specialties.length);
   const sectionRef = useRef<HTMLElement | null>(null);
   const mediaInnerRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,44 +88,57 @@ export function AboutThomasSection({ portraitSrc = "/src/joueurs/joueur6.jpg" }:
     return () => ctx.revert();
   }, []);
 
+  if (!hasPortrait && !hasCopy) return null;
+
   return (
     <section className="about-thomas section" aria-labelledby="about-thomas-heading" ref={sectionRef}>
       <div className="container about-thomas__container">
-        <div className="about-thomas__mediaWrap" data-about-reveal>
-          <div ref={mediaInnerRef} className="about-thomas__mediaInner">
-            <ContentImage
-              src={portraitSrc}
-              alt="Portrait de Thomas Palmier, journaliste sportif"
-              fill
-              priority={false}
-              sizes="(max-width: 980px) 100vw, 46vw"
-              className="about-thomas__media"
-            />
+        {hasPortrait ? (
+          <div className="about-thomas__mediaWrap" data-about-reveal>
+            <div ref={mediaInnerRef} className="about-thomas__mediaInner">
+              <ContentImage
+                src={portraitSrc!}
+                alt={portraitAlt}
+                fill
+                priority={false}
+                sizes="(max-width: 980px) 100vw, 46vw"
+                className="about-thomas__media"
+              />
+            </div>
+            <div className="about-thomas__mediaScrim" aria-hidden="true" />
           </div>
-          <div className="about-thomas__mediaScrim" aria-hidden="true" />
-        </div>
+        ) : null}
 
-        <div className="about-thomas__copy">
-          <p className="home-sectionEyebrow" data-about-reveal>
-            À propos
-          </p>
-          <h2 id="about-thomas-heading" className="about-thomas__title" data-about-reveal>
-            Qui est Thomas Palmier
-          </h2>
-          <p className="about-thomas__bio" data-about-reveal>
-            Journaliste sportif indépendant, Thomas Palmier couvre le sport au plus près du terrain.
-            Son approche mêle narration, contexte et regard critique pour transformer un match en récit.
-          </p>
+        {hasCopy ? (
+          <div className="about-thomas__copy">
+            {eyebrow ? (
+              <p className="home-sectionEyebrow" data-about-reveal>
+                {eyebrow}
+              </p>
+            ) : null}
+            {title ? (
+              <h2 id="about-thomas-heading" className="about-thomas__title" data-about-reveal>
+                {title}
+              </h2>
+            ) : null}
+            {bioShort ? (
+              <p className="about-thomas__bio" data-about-reveal>
+                {bioShort}
+              </p>
+            ) : null}
 
-          <div className="about-thomas__specs" data-about-reveal>
-            <span className="about-thomas__specLabel">Spécialités</span>
-            <ul className="about-thomas__specList" aria-label="Spécialités éditoriales">
-              <li>Football</li>
-              <li>Analyse</li>
-              <li>Reportage</li>
-            </ul>
+            {specialties.length > 0 ? (
+              <div className="about-thomas__specs" data-about-reveal>
+                <span className="about-thomas__specLabel">Spécialités</span>
+                <ul className="about-thomas__specList" aria-label="Spécialités éditoriales">
+                  {specialties.map((spec) => (
+                    <li key={spec}>{spec}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </div>
-        </div>
+        ) : null}
       </div>
     </section>
   );

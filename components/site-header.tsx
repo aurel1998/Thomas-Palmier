@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { isReducedMotion, motion } from "../lib/gsapMotion";
-import logo from "../src/logo/thomas.png";
+const LOGO_SRC = "/logos/thomas.png";
+import { SITE_NAME } from "../lib/sitePublic";
+import type { SocialLinkDto } from "../types/editorial";
 import { SocialLinks } from "./SocialLinks";
 import { ThemeToggle } from "./theme/ThemeToggle";
 
@@ -31,16 +33,17 @@ const PREFETCH_HREFS = [
 ] as const;
 
 type PrimaryHref = (typeof PRIMARY_LINKS)[number]["href"];
-type SiteHeaderProps = { profileImageSrc?: string };
+type SiteHeaderProps = { profileImageSrc?: string; socialLinks?: SocialLinkDto[] };
 
 function routeMatches(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
+export function SiteHeader({ profileImageSrc, socialLinks }: SiteHeaderProps) {
   const pathname = usePathname() ?? "/";
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement | null>(null);
   const primaryNavRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLSpanElement | null>(null);
@@ -183,38 +186,69 @@ export function SiteHeader({ profileImageSrc }: SiteHeaderProps) {
     }
   }, [router]);
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.classList.toggle("site-header-menu-open", menuOpen);
+    return () => document.body.classList.remove("site-header-menu-open");
+  }, [menuOpen]);
+
   return (
-    <header ref={headerRef} className="site-header site-header--transparent">
+    <header
+      ref={headerRef}
+      className={`site-header site-header--transparent${menuOpen ? " site-header--menuOpen" : ""}`}
+    >
       <div className="site-header__bar">
         <div className="site-header__inner">
         <div className="site-header__start">
-          <Link href="/" prefetch className="site-header__brand interactive" aria-label="Sport Journal, accueil">
+          <Link href="/" prefetch className="site-header__brand interactive" aria-label={`${SITE_NAME}, accueil`}>
             <span className="site-header__logoWrap">
               <Image
-                src={logo}
+                src={LOGO_SRC}
                 alt=""
-                width={1024}
-                height={374}
+                width={312}
+                height={114}
                 priority
+                sizes="156px"
                 aria-hidden
                 className="site-header__logo"
               />
             </span>
           </Link>
-          <SocialLinks variant="header" />
+          <SocialLinks variant="header" links={socialLinks} />
         </div>
 
-        <nav className="site-header__nav" aria-label="Navigation principale">
+        <button
+          type="button"
+          className={`site-header__menuToggle interactive${menuOpen ? " is-open" : ""}`}
+          aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={menuOpen}
+          aria-controls="site-header-mobile-nav"
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+        </button>
+
+        <nav
+          id="site-header-mobile-nav"
+          className={`site-header__nav${menuOpen ? " site-header__nav--open" : ""}`}
+          aria-label="Navigation principale"
+        >
           <div
             ref={primaryNavRef}
             className="site-header__navPrimary"
             onPointerLeave={(e) => {
-              if (!primaryNavRef.current?.contains(e.relatedTarget as Node)) {
+              const related = e.relatedTarget;
+              if (!(related instanceof Node) || !primaryNavRef.current?.contains(related)) {
                 repositionIndicator(activePrimaryHref(), true);
               }
             }}
             onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              const related = e.relatedTarget;
+              if (!(related instanceof Node) || !e.currentTarget.contains(related)) {
                 repositionIndicator(activePrimaryHref(), true);
               }
             }}

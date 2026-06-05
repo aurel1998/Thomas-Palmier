@@ -2,8 +2,10 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
 import {
+  Suspense,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -11,56 +13,23 @@ import {
   useRef,
   useState,
 } from "react";
-import type { Content } from "../../types/content";
+import type { Content, ContentType } from "../../types/content";
 import type { Category } from "../../types/category";
+import type { Subcategory } from "../../types/subcategory";
+import { CatalogHub, type CatalogLevel } from "../../components/contenus/CatalogHub";
 import { FeatureContentCard } from "../../components/contenus/FeatureContentCard";
 import { ContenuCard } from "../../components/contenus/ContenuCard";
-import {
-  catalogCountLabel,
-  categoryChipLabel,
-  categoryTabAriaLabel,
-} from "../../lib/categoryCopy";
-
-const fallbackItems: Content[] = [
-  {
-    id: "v1",
-    type: "video",
-    title: "Lecture du tempo en pleine intensité",
-    content: "/src/video/video9.mp4",
-    image_url: "/src/stade/stade4.jpg",
-    tags: ["Action"],
-    created_at: "2026-03-20T10:00:00.000Z",
-  },
-  {
-    id: "a1",
-    type: "article",
-    title: "Duel décisif et bascule tactique",
-    content: "Analyse des séquences clés et des ajustements collectifs.",
-    image_url: "/src/joueurs/joueur9.jpg",
-    tags: ["Action"],
-    created_at: "2026-03-18T08:30:00.000Z",
-  },
-  {
-    id: "au1",
-    type: "audio",
-    title: "Chronique tribunes et émotion brute",
-    content: "https://example.com/audio/chronique-tribunes",
-    image_url: "/src/stade/stade6.jpg",
-    tags: ["Reportage"],
-    created_at: "2026-03-16T09:45:00.000Z",
-  },
-  {
-    id: "v2",
-    type: "video",
-    title: "Plongée immersive au cœur du stade",
-    content: "/src/video/video9.mp4",
-    image_url: "/src/stade/stade1.jpg",
-    tags: ["Immersion"],
-    created_at: "2026-03-14T11:20:00.000Z",
-  },
-];
+import { countByContentType } from "../../lib/catalogContentCopy";
+import { attachCategoryIds, resolveCatalogCategories } from "../../lib/resolveCategories";
+import { ENABLE_DEV_FALLBACKS } from "../../lib/runtime";
 
 const PAGE_SIZE = 24;
+
+async function withDevCatalogFallback(data: Content[]): Promise<Content[]> {
+  if (!ENABLE_DEV_FALLBACKS) return data;
+  const { enrichCatalogContents } = await import("../../lib/demoCatalog");
+  return enrichCatalogContents(data);
+}
 
 type ContentApiResponse = {
   data?: Content[];
@@ -69,25 +38,43 @@ type ContentApiResponse = {
   error?: string;
 };
 
-function buildContentQuery(offset: number, stats: boolean): string {
+function buildContentQuery(
+  offset: number,
+  opts?: { stats?: boolean; subcategoryId?: string | null }
+): string {
   const params = new URLSearchParams();
   params.set("limit", String(PAGE_SIZE));
   params.set("offset", String(offset));
-  if (stats) params.set("stats", "1");
+  if (opts?.stats) params.set("stats", "1");
+  if (opts?.subcategoryId) params.set("subcategory_id", opts.subcategoryId);
   return `/api/content?${params.toString()}`;
 }
 
-export default function MesContenusPage() {
-  const [items, setItems] = useState<Content[]>(fallbackItems);
+function MesContenusCatalog() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedCategoryId = searchParams.get("c");
+  const selectedSubcategoryId = searchParams.get("s");
+
+  const catalogLevel: CatalogLevel =
+    selectedCategoryId && selectedSubcategoryId
+      ? "contents"
+      : selectedCategoryId
+        ? "subcategories"
+        : "categories";
+
+  const [items, setItems] = useState<Content[]>([]);
+  const [contentsItems, setContentsItems] = useState<Content[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
-  const [total, setTotal] = useState<number | null>(null);
-  const [usingFallback, setUsingFallback] = useState(true);
-  /** `null` = tous les contenus ; sinon filtre une catégorie (comportement type hub streaming). */
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [, setTotal] = useState<number | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [categories, setCategories] = useState<Category[]>(() => resolveCatalogCategories([]));
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+  const [contentTypeFilter, setContentTypeFilter] = useState<"all" | ContentType>("all");
   const pageRef = useRef<HTMLDivElement | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const stRefreshRaf = useRef<number | null>(null);
@@ -103,30 +90,81 @@ export default function MesContenusPage() {
     });
   }, []);
 
+  const goToCategories = useCallback(() => {
+    router.replace("/mes-contenus", { scroll: false });
+  }, [router]);
+
+  const goToSubcategories = useCallback(
+    (categoryId: string) => {
+      router.replace(`/mes-contenus?c=${encodeURIComponent(categoryId)}`, { scroll: false });
+    },
+    [router]
+  );
+
+  const goToContents = useCallback(
+    (categoryId: string, subcategoryId: string) => {
+      router.replace(
+        `/mes-contenus?c=${encodeURIComponent(categoryId)}&s=${encodeURIComponent(subcategoryId)}`,
+        { scroll: false }
+      );
+    },
+    [router]
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      setLoadingSubcategories(true);
+      try {
+        const response = await fetch("/api/subcategories", { cache: "no-store" });
+        const json = (await response.json()) as { data?: Subcategory[] };
+        if (!isMounted) return;
+        setSubcategories(Array.isArray(json.data) ? json.data : []);
+      } catch {
+        if (isMounted) setSubcategories([]);
+      } finally {
+        if (isMounted) setLoadingSubcategories(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     (async () => {
       setIsLoading(true);
+      let resolvedCategories = resolveCatalogCategories([]);
       try {
-        const response = await fetch(buildContentQuery(0, true), { cache: "no-store" });
+        const catRes = await fetch("/api/categories", { cache: "no-store" });
+        const catJson = (await catRes.json()) as { data?: Category[] };
+        resolvedCategories = resolveCatalogCategories(
+          Array.isArray(catJson.data) ? catJson.data : []
+        );
+      } catch {
+        /* catégories fixes en local */
+      }
+      if (!isMounted) return;
+      setCategories(resolvedCategories);
+
+      try {
+        const response = await fetch(buildContentQuery(0, { stats: true }), { cache: "no-store" });
         const result = (await response.json()) as ContentApiResponse;
         if (!isMounted) return;
         if (Array.isArray(result.data)) {
-          setUsingFallback(false);
-          if (result.data.length) {
-            setItems(result.data);
-            setOffset(result.data.length);
-            setHasMore(Boolean(result.hasMore));
-            setTotal(typeof result.total === "number" ? result.total : null);
-          } else {
-            setItems([]);
-            setOffset(0);
-            setHasMore(false);
-            setTotal(0);
-          }
+          const source = await withDevCatalogFallback(result.data);
+          const merged = attachCategoryIds(source, resolvedCategories);
+          setUsingFallback(ENABLE_DEV_FALLBACKS && result.data.length === 0 && merged.length > 0);
+          setItems(merged);
+          setTotal(typeof result.total === "number" ? result.total : merged.length);
+        } else {
+          const source = await withDevCatalogFallback([]);
+          setItems(attachCategoryIds(source, resolvedCategories));
         }
       } catch {
-        /* fallback démo */
+        const source = await withDevCatalogFallback([]);
+        setItems(attachCategoryIds(source, resolvedCategories));
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -137,33 +175,62 @@ export default function MesContenusPage() {
   }, []);
 
   useEffect(() => {
+    if (catalogLevel !== "contents" || !selectedSubcategoryId) {
+      setContentsItems([]);
+      setOffset(0);
+      setHasMore(false);
+      return;
+    }
+
     let isMounted = true;
     (async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch("/api/categories", { cache: "no-store" });
-        const result = (await response.json()) as { data?: Category[] };
+        const response = await fetch(
+          buildContentQuery(0, { subcategoryId: selectedSubcategoryId }),
+          { cache: "no-store" }
+        );
+        const result = (await response.json()) as ContentApiResponse;
         if (!isMounted) return;
-        setCategories(Array.isArray(result.data) ? result.data : []);
+        if (Array.isArray(result.data)) {
+          const source = await withDevCatalogFallback(result.data);
+          const merged = attachCategoryIds(source, categories);
+          setContentsItems(merged);
+          setOffset(result.data.length);
+          setHasMore(Boolean(result.hasMore) && result.data.length > 0);
+        } else {
+          setContentsItems([]);
+          setHasMore(false);
+        }
       } catch {
-        if (isMounted) setCategories([]);
+        if (isMounted) setContentsItems([]);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     })();
+
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [catalogLevel, selectedSubcategoryId, categories]);
 
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore || usingFallback) return;
+    if (isLoadingMore || !hasMore || usingFallback || catalogLevel !== "contents" || !selectedSubcategoryId) {
+      return;
+    }
     setIsLoadingMore(true);
     try {
-      const response = await fetch(buildContentQuery(offset, false), { cache: "no-store" });
+      const response = await fetch(
+        buildContentQuery(offset, { subcategoryId: selectedSubcategoryId }),
+        { cache: "no-store" }
+      );
       const result = (await response.json()) as ContentApiResponse;
       const batch = Array.isArray(result.data) ? result.data : [];
       if (batch.length > 0) {
-        setItems((prev) => {
+        const merged = attachCategoryIds(batch, categories);
+        setContentsItems((prev) => {
           const seen = new Set(prev.map((i) => i.id));
-          const next = batch.filter((i) => !seen.has(i.id));
+          const next = merged.filter((i) => !seen.has(i.id));
           return next.length ? [...prev, ...next] : prev;
         });
         setOffset((prev) => prev + batch.length);
@@ -177,7 +244,7 @@ export default function MesContenusPage() {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [hasMore, isLoadingMore, offset, usingFallback]);
+  }, [catalogLevel, categories, hasMore, isLoadingMore, offset, selectedSubcategoryId, usingFallback]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -196,51 +263,49 @@ export default function MesContenusPage() {
     return () => observer.disconnect();
   }, [hasMore, isLoading, usingFallback, loadMore]);
 
+  useEffect(() => {
+    setContentTypeFilter("all");
+  }, [selectedSubcategoryId]);
+
+  const rubriqueItems = useMemo(() => {
+    if (catalogLevel !== "contents" || !selectedSubcategoryId) return [];
+    return contentsItems;
+  }, [contentsItems, catalogLevel, selectedSubcategoryId]);
+
   const filteredItems = useMemo(() => {
-    if (!selectedCategoryId) return items;
-    return items.filter((item) => item.category_id === selectedCategoryId);
-  }, [items, selectedCategoryId]);
+    if (contentTypeFilter === "all") return rubriqueItems;
+    return rubriqueItems.filter((item) => item.type === contentTypeFilter);
+  }, [rubriqueItems, contentTypeFilter]);
 
-  const sortedCatalogItems = useMemo(() => {
-    return [...filteredItems].sort((a, b) => {
-      const fa = a.is_featured ? 1 : 0;
-      const fb = b.is_featured ? 1 : 0;
-      if (fb !== fa) return fb - fa;
-      const tb = new Date(b.created_at).getTime();
-      const ta = new Date(a.created_at).getTime();
-      return tb - ta;
-    });
-  }, [filteredItems]);
-
-  /** Pas de carte « héros » pleine largeur quand une catégorie est active : grille uniforme (vidéos côte à côte). */
-  const catalogHero = useMemo(() => {
-    if (selectedCategoryId != null) return null;
-    return sortedCatalogItems.find((item) => item.is_featured) ?? null;
-  }, [sortedCatalogItems, selectedCategoryId]);
-
-  const catalogGridItems = useMemo(() => {
-    if (!catalogHero) return sortedCatalogItems;
-    return sortedCatalogItems.filter((item) => item.id !== catalogHero.id);
-  }, [sortedCatalogItems, catalogHero]);
-
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const item of items) {
-      if (!item.category_id) continue;
-      counts.set(item.category_id, (counts.get(item.category_id) ?? 0) + 1);
-    }
-    return counts;
-  }, [items]);
+  const rubriqueTypeCounts = useMemo(() => countByContentType(rubriqueItems), [rubriqueItems]);
 
   const selectedCategory = useMemo(
     () => categories.find((c) => c.id === selectedCategoryId) ?? null,
     [categories, selectedCategoryId]
   );
 
-  const visibleCount =
-    typeof total === "number" && total > 0 && !selectedCategoryId
-      ? total
-      : filteredItems.length;
+  const selectedSubcategory = useMemo(
+    () => subcategories.find((s) => s.id === selectedSubcategoryId) ?? null,
+    [subcategories, selectedSubcategoryId]
+  );
+
+  const sortedCatalogItems = useMemo(() => {
+    return [...filteredItems].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [filteredItems]);
+
+  const catalogHero = useMemo(() => {
+    if (catalogLevel !== "contents") return null;
+    return (
+      sortedCatalogItems.find((item) => item.is_featured && item.status === "published") ?? null
+    );
+  }, [sortedCatalogItems, catalogLevel]);
+
+  const catalogGridItems = useMemo(() => {
+    if (!catalogHero) return sortedCatalogItems;
+    return sortedCatalogItems.filter((item) => item.id !== catalogHero.id);
+  }, [sortedCatalogItems, catalogHero]);
 
   const initialRevealDoneRef = useRef(false);
   const prevItemCountRef = useRef(0);
@@ -326,13 +391,14 @@ export default function MesContenusPage() {
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        ".mes-contenus-head",
+        ".mes-contenus-head, .catalog-tierCard",
         { autoAlpha: 0, y: 20 },
         {
           autoAlpha: 1,
           y: 0,
           duration: motion.duration.revealFast,
           ease: motion.ease.out,
+          stagger: motion.duration.staggerTight,
         }
       );
 
@@ -409,92 +475,113 @@ export default function MesContenusPage() {
       }
       ctx.revert();
     };
-  }, [isLoading, scheduleScrollTriggerRefresh]);
+  }, [isLoading, catalogLevel, scheduleScrollTriggerRefresh]);
 
   useEffect(() => {
     if (isLoading) return;
     if (isReducedMotion()) return;
     scheduleScrollTriggerRefresh();
-  }, [isLoading, items.length, sortedCatalogItems.length, scheduleScrollTriggerRefresh]);
+  }, [isLoading, items.length, sortedCatalogItems.length, catalogLevel, scheduleScrollTriggerRefresh]);
 
-  const showEmptyGlobal = !isLoading && !usingFallback && items.length === 0;
-  const showEmptyFiltered = !isLoading && items.length > 0 && filteredItems.length === 0;
+  const showEmptyGlobal =
+    !isLoading && !usingFallback && items.length === 0 && catalogLevel === "categories";
+  const showEmptyContents =
+    catalogLevel === "contents" &&
+    !isLoading &&
+    !hasMore &&
+    rubriqueItems.length === 0;
+  const showEmptyFormatFilter =
+    catalogLevel === "contents" &&
+    !isLoading &&
+    rubriqueItems.length > 0 &&
+    filteredItems.length === 0;
 
   return (
-    <section className="mes-contenus-page contenus-page broadcast-hub mes-canal-page" ref={pageRef}>
+    <section className="mes-contenus-page contenus-page catalog-hub mes-canal-page" ref={pageRef}>
       <div className="container mes-canal__container">
-        <header className="mes-contenus-head mes-canal__top">
-          <div className="mes-canal__headCopy">
-            <h1 className="mes-canal__title">
-              {selectedCategory ? categoryChipLabel(selectedCategory) : "Contenus"}
-            </h1>
-            {!isLoading && !showEmptyGlobal && !selectedCategory ? (
-              <p className="mes-canal__lede muted" aria-live="polite">
-                {catalogCountLabel(visibleCount)}
-              </p>
-            ) : null}
-          </div>
-        </header>
+        <CatalogHub
+          level={catalogLevel}
+          categories={categories}
+          subcategories={subcategories}
+          items={items}
+          selectedCategoryId={selectedCategoryId}
+          selectedSubcategoryId={selectedSubcategoryId}
+          selectedCategory={selectedCategory}
+          selectedSubcategory={selectedSubcategory}
+          isLoading={loadingSubcategories}
+          onSelectCategory={goToSubcategories}
+          onSelectSubcategory={(subId) => {
+            if (selectedCategoryId) goToContents(selectedCategoryId, subId);
+          }}
+          onBackToCategories={goToCategories}
+          onBackToSubcategories={() => {
+            if (selectedCategoryId) goToSubcategories(selectedCategoryId);
+          }}
+        >
+          {showEmptyGlobal ? (
+            <p className="contenus-empty muted">Les premiers contenus arrivent bientôt.</p>
+          ) : null}
 
-        {showEmptyGlobal ? (
-          <p className="contenus-empty muted">Les premiers contenus arrivent bientôt.</p>
-        ) : null}
+          {showEmptyContents ? (
+            <p className="contenus-empty muted">Aucun contenu dans cette rubrique.</p>
+          ) : null}
 
-        {showEmptyFiltered ? (
-          <p className="contenus-empty muted">Aucun contenu dans cette catégorie.</p>
-        ) : null}
+          {showEmptyFormatFilter ? (
+            <p className="contenus-empty muted">Aucun contenu pour ce format dans la rubrique.</p>
+          ) : null}
 
-        {!showEmptyGlobal && !showEmptyFiltered ? (
-          <div
-            className={`mes-canal__layout${categories.length === 0 ? " mes-canal__layout--solo" : ""}`}
-          >
-            {categories.length > 0 ? (
-              <aside className="mes-canal__sidebar" aria-label="Filtrer par catégorie">
-                <p className="mes-canal__sidebarLabel">Catégories</p>
-                <div className="mes-canal__chips" role="tablist" aria-orientation="vertical">
+          {!showEmptyGlobal && !showEmptyContents && !showEmptyFormatFilter ? (
+            <div className="mes-canal__main mes-canal__main--solo">
+              {rubriqueItems.length > 0 ? (
+                <div className="catalog-formatFilter" role="tablist" aria-label="Filtrer par format">
                   <button
                     type="button"
                     role="tab"
-                    aria-selected={selectedCategoryId === null}
-                    aria-label={
-                      selectedCategoryId === null
-                        ? "Tous les contenus, filtre actif"
-                        : "Tous les contenus"
-                    }
-                    className={`mes-canal__chip${selectedCategoryId === null ? " is-active" : ""}`}
-                    onClick={() => setSelectedCategoryId(null)}
+                    aria-selected={contentTypeFilter === "all"}
+                    className={`catalog-formatFilter__chip${contentTypeFilter === "all" ? " is-active" : ""}`}
+                    onClick={() => setContentTypeFilter("all")}
                   >
-                    <span className="mes-canal__chipName">Tous</span>
+                    Tous ({rubriqueItems.length})
                   </button>
-                  {categories.map((c) => {
-                    const active = selectedCategoryId === c.id;
-                    const count = categoryCounts.get(c.id) ?? 0;
-                    const label = categoryChipLabel(c);
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={active}
-                        aria-label={categoryTabAriaLabel(c, count, active)}
-                        title={c.name}
-                        className={`mes-canal__chip${active ? " is-active" : ""}`}
-                        onClick={() => setSelectedCategoryId(c.id)}
-                      >
-                        <span className="mes-canal__chipName">{label}</span>
-                        {count > 0 ? <span className="mes-canal__chipCount">{count}</span> : null}
-                      </button>
-                    );
-                  })}
+                  {rubriqueTypeCounts.video > 0 ? (
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={contentTypeFilter === "video"}
+                      className={`catalog-formatFilter__chip${contentTypeFilter === "video" ? " is-active" : ""}`}
+                      onClick={() => setContentTypeFilter("video")}
+                    >
+                      Vidéos ({rubriqueTypeCounts.video})
+                    </button>
+                  ) : null}
+                  {rubriqueTypeCounts.article > 0 ? (
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={contentTypeFilter === "article"}
+                      className={`catalog-formatFilter__chip${contentTypeFilter === "article" ? " is-active" : ""}`}
+                      onClick={() => setContentTypeFilter("article")}
+                    >
+                      Publications ({rubriqueTypeCounts.article})
+                    </button>
+                  ) : null}
+                  {rubriqueTypeCounts.audio > 0 ? (
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={contentTypeFilter === "audio"}
+                      className={`catalog-formatFilter__chip${contentTypeFilter === "audio" ? " is-active" : ""}`}
+                      onClick={() => setContentTypeFilter("audio")}
+                    >
+                      Audio ({rubriqueTypeCounts.audio})
+                    </button>
+                  ) : null}
                 </div>
-              </aside>
-            ) : null}
-
-            <div className="mes-canal__main">
+              ) : null}
               <section
                 id="catalogue"
                 className="mes-contenus-section contenus-section mes-hub__featured mes-canal__catalog"
-                aria-label="Catalogue de contenus"
+                aria-label="Contenus de la rubrique"
               >
                 {isLoading ? (
                   <p className="contenus-pending muted" role="status">
@@ -522,7 +609,7 @@ export default function MesContenusPage() {
                 )}
               </section>
 
-              {!isLoading && filteredItems.length > 0 ? (
+              {!isLoading && catalogLevel === "contents" && hasMore ? (
                 <div className="contenus-flux" aria-live="polite">
                   {isLoadingMore ? (
                     <p className="contenus-flux__loading" role="status">
@@ -534,9 +621,27 @@ export default function MesContenusPage() {
                 </div>
               ) : null}
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </CatalogHub>
       </div>
     </section>
+  );
+}
+
+export default function MesContenusPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="mes-contenus-page contenus-page catalog-hub mes-canal-page">
+          <div className="container mes-canal__container">
+            <p className="contenus-pending muted" role="status">
+              Chargement du catalogue…
+            </p>
+          </div>
+        </section>
+      }
+    >
+      <MesContenusCatalog />
+    </Suspense>
   );
 }

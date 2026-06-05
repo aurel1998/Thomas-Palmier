@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { Content, ContentType } from "../../../types/content";
-import { getServerSupabaseOrResponse } from "../../../lib/supabaseServer";
+import { isAdminSession } from "../../../lib/apiAuth";
+import { prisma } from "../../../lib/prisma";
+import { mapContentRow } from "../../../lib/dbMappers";
 
 const allowedTypes: ContentType[] = ["video", "article", "audio"];
 const DEFAULT_LIMIT = 24;
@@ -42,64 +44,56 @@ export async function GET(request: Request) {
       : null;
     const offset = Math.max(parseInt(offsetParam ?? "0", 10) || 0, 0);
 
-    const srv = getServerSupabaseOrResponse();
-    if (!srv.ok) return srv.response;
-
     const wantStats = searchParams.get("stats") === "1";
+    const includeDrafts =
+      searchParams.get("include_drafts") === "1" && (await isAdminSession());
 
     // Comptes globaux par type (pour badges / nav coherente avec pagination).
     let countsByType:
       | { all: number; video: number; article: number; audio: number }
       | undefined;
+    const publishedOnly = includeDrafts ? undefined : ({ status: "published" as const } satisfies { status: "published" });
+
     if (wantStats) {
-      const [rAll, rVideo, rArticle, rAudio] = await Promise.all([
-        srv.supabase.from("contents").select("id", { count: "exact", head: true }),
-        srv.supabase
-          .from("contents")
-          .select("id", { count: "exact", head: true })
-          .eq("type", "video"),
-        srv.supabase
-          .from("contents")
-          .select("id", { count: "exact", head: true })
-          .eq("type", "article"),
-        srv.supabase
-          .from("contents")
-          .select("id", { count: "exact", head: true })
-          .eq("type", "audio"),
+      const [all, video, article, audio] = await Promise.all([
+        prisma.content.count({ where: publishedOnly }),
+        prisma.content.count({ where: { ...publishedOnly, type: "video" } }),
+        prisma.content.count({ where: { ...publishedOnly, type: "article" } }),
+        prisma.content.count({ where: { ...publishedOnly, type: "audio" } }),
       ]);
       countsByType = {
-        all: rAll.count ?? 0,
-        video: rVideo.count ?? 0,
-        article: rArticle.count ?? 0,
-        audio: rAudio.count ?? 0,
+        all,
+        video,
+        article,
+        audio,
       };
     }
 
-    // On demande `count: "exact"` uniquement en mode paginer (evite un cout
-    // inutile en mode complet).
-    const countMode = hasLimit ? { count: "exact" as const } : undefined;
+    const categoryIdParam = searchParams.get("category_id")?.trim() || undefined;
+    const subcategoryIdParam = searchParams.get("subcategory_id")?.trim() || undefined;
 
-    let query = srv.supabase
-      .from("contents")
-      .select("*", countMode)
-      .order("created_at", { ascending: false });
+    const where: {
+      type?: ContentType;
+      categoryId?: string;
+      subcategoryId?: string;
+      status?: "published";
+    } = {};
+    if (!includeDrafts) where.status = "published";
+    if (typeParam) where.type = typeParam as ContentType;
+    if (categoryIdParam) where.categoryId = categoryIdParam;
+    if (subcategoryIdParam) where.subcategoryId = subcategoryIdParam;
 
-    if (typeParam) query = query.eq("type", typeParam);
-    if (hasLimit && limit !== null) {
-      query = query.range(offset, offset + limit - 1);
-    }
-
-    const { data, error, count } = await query;
-
-    if (error) {
-      return NextResponse.json(
-        { error: "Impossible de recuperer les contenus.", details: error.message },
-        { status: 500 }
-      );
-    }
-
-    const items = (data ?? []) as Content[];
-    const total = hasLimit ? count ?? items.length : items.length;
+    const hasWhere = Object.keys(where).length > 0;
+    const [rows, totalCount] = await Promise.all([
+      prisma.content.findMany({
+        where: hasWhere ? where : undefined,
+        orderBy: { createdAt: "desc" },
+        ...(hasLimit && limit !== null ? { skip: offset, take: limit } : {}),
+      }),
+      hasLimit ? prisma.content.count({ where: hasWhere ? where : undefined }) : Promise.resolve(0),
+    ]);
+    const items = rows.map(mapContentRow) as Content[];
+    const total = hasLimit ? totalCount : items.length;
     const hasMore = hasLimit ? offset + items.length < total : false;
 
     return NextResponse.json(

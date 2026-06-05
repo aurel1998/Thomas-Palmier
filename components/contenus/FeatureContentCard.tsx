@@ -10,7 +10,7 @@ import { VideoPlayer } from "../media/VideoPlayer";
 
 const typeLabels: Record<ContentType, string> = {
   video: "Vidéo",
-  article: "Article",
+  article: "Publication",
   audio: "Audio",
 };
 
@@ -89,9 +89,13 @@ export const FeatureContentCard = forwardRef<HTMLElement, FeatureContentCardProp
           {item.type === "article" && articleTeaser ? (
             <p className="contenus-feature__articleTeaser">{articleTeaser}</p>
           ) : null}
-          {item.type !== "video" ? (
+          {item.type === "article" ? (
             <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
-              Ouvrir le contenu
+              Lire l&apos;article
+            </Link>
+          ) : item.type === "audio" ? (
+            <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
+              Écouter
             </Link>
           ) : null}
           {item.type === "audio" ? (

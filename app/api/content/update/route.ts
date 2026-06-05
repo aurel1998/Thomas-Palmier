@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
 import type { Content, ContentType } from "../../../../types/content";
-import { getServerSupabaseOrResponse } from "../../../../lib/supabaseServer";
+import { mapContentRow } from "../../../../lib/dbMappers";
 import { requireAdmin } from "../../../../lib/apiAuth";
-import { extractYouTubeId, getYouTubeThumbnail } from "../../../../lib/youtube";
+import { prisma } from "../../../../lib/prisma";
+import { extractYouTubeId, getYouTubeThumbnail, isYouTubeUrl } from "../../../../lib/youtube";
+import { unsetOtherFeaturedContent } from "../../../../lib/featuredContent";
+import { parsePublicationStatus } from "../../../../lib/publicationStatus";
+import { revalidateContentCaches } from "../../../../lib/contentCache";
+import { isMailerConfigured } from "../../../../lib/mailer";
+import { notifyNewContent } from "../../../../lib/newsletter";
+import { categoryIdFromSubcategory } from "../../../../lib/subcategoryResolve";
 
 const allowedTypes: ContentType[] = ["video", "article", "audio"];
 
@@ -14,7 +21,10 @@ type UpdateContentBody = {
   image_url?: unknown;
   tags?: unknown;
   category_id?: unknown;
+  subcategory_id?: unknown;
   is_featured?: unknown;
+  status?: unknown;
+  notify?: unknown;
 };
 
 function normalizeTags(tags: unknown): string[] | undefined {
@@ -24,6 +34,24 @@ function normalizeTags(tags: unknown): string[] | undefined {
     .filter((tag): tag is string => typeof tag === "string")
     .map((tag) => tag.trim())
     .filter(Boolean);
+}
+
+function validateContentByType(type: ContentType, content: string): string | null {
+  const normalized = content.trim();
+  if (type === "video" && !isYouTubeUrl(normalized)) {
+    return "Le contenu video doit etre un lien YouTube valide.";
+  }
+  if (type === "article" && normalized.length < 80) {
+    return "Le contenu article doit contenir au moins 80 caracteres.";
+  }
+  if (type === "audio") {
+    if (!normalized) return "Le contenu audio est obligatoire.";
+    const audioOk = /^https?:\/\//i.test(normalized) || normalized.startsWith("/uploads/audio/");
+    if (!audioOk) {
+      return "Le contenu audio doit etre une URL publique ou /uploads/audio/...";
+    }
+  }
+  return null;
 }
 
 /**
@@ -80,7 +108,19 @@ export async function PUT(request: Request) {
     const tags = normalizeTags(body.tags);
     if (tags !== undefined) updates.tags = tags;
 
-    if (body.category_id !== undefined) {
+    if (body.subcategory_id !== undefined) {
+      const subcategoryId =
+        typeof body.subcategory_id === "string" && body.subcategory_id.trim()
+          ? body.subcategory_id.trim()
+          : null;
+      updates.subcategory_id = subcategoryId;
+      if (subcategoryId) {
+        const parentId = await categoryIdFromSubcategory(subcategoryId);
+        if (parentId) updates.category_id = parentId;
+      }
+    }
+
+    if (body.category_id !== undefined && body.subcategory_id === undefined) {
       updates.category_id = typeof body.category_id === "string" ? body.category_id : null;
     }
 
@@ -94,25 +134,48 @@ export async function PUT(request: Request) {
       updates.is_featured = body.is_featured;
     }
 
+    if (body.status !== undefined) {
+      updates.status = parsePublicationStatus(body.status);
+      if (updates.status === "draft") {
+        updates.is_featured = false;
+      }
+    }
+
     if (!Object.keys(updates).length) {
       return NextResponse.json({ error: "Aucune donnee a mettre a jour." }, { status: 400 });
     }
 
-    const srv = getServerSupabaseOrResponse();
-    if (!srv.ok) return srv.response;
+    // Validation stricte selon le type final (video/article/audio).
+    if (updates.type === "video" || updates.type === "article" || updates.type === "audio" || incomingContent !== null) {
+      let effectiveType = updates.type as ContentType | undefined;
+      let effectiveContent = incomingContent;
+      if (effectiveType === undefined || effectiveContent === null) {
+        const existingRow = await prisma.content.findUnique({
+          where: { id },
+          select: { type: true, content: true },
+        });
+        if (effectiveType === undefined) effectiveType = existingRow?.type as ContentType | undefined;
+        if (effectiveContent === null) effectiveContent = existingRow?.content ?? "";
+      }
+      if (effectiveType) {
+        const validationError = validateContentByType(effectiveType, effectiveContent ?? "");
+        if (validationError) {
+          return NextResponse.json({ error: validationError }, { status: 400 });
+        }
+      }
+    }
 
     const nextType = (updates.type as ContentType | undefined) ?? null;
     const shouldAutoThumb = (nextType === "video" || nextType === null) && (incomingImageUrl ?? "") === "";
     if (shouldAutoThumb) {
       let sourceForThumb = (incomingContent ?? "").trim();
       if (!sourceForThumb) {
-        const { data: existingRow } = await srv.supabase
-          .from("contents")
-          .select("type, content")
-          .eq("id", id)
-          .maybeSingle();
-        if ((existingRow?.type as string | undefined) === "video") {
-          sourceForThumb = typeof existingRow?.content === "string" ? existingRow.content.trim() : "";
+        const existingRow = await prisma.content.findUnique({
+          where: { id },
+          select: { type: true, content: true },
+        });
+        if (existingRow?.type === "video") {
+          sourceForThumb = existingRow.content.trim();
         }
       }
       if (sourceForThumb) {
@@ -121,36 +184,80 @@ export async function PUT(request: Request) {
       }
     }
 
-    if (updates.is_featured === true) {
-      const { error: resetFeaturedError } = await srv.supabase
-        .from("contents")
-        .update({ is_featured: false })
-        .eq("is_featured", true)
-        .neq("id", id);
-      if (resetFeaturedError) {
+    const existingRow = await prisma.content.findUnique({
+      where: { id },
+      select: { status: true, isFeatured: true, subcategoryId: true },
+    });
+    if (!existingRow) {
+      return NextResponse.json({ error: "Contenu introuvable." }, { status: 404 });
+    }
+
+    const nextStatus =
+      (updates.status as ReturnType<typeof parsePublicationStatus> | undefined) ?? existingRow.status;
+    const nextFeatured =
+      updates.is_featured !== undefined ? (updates.is_featured as boolean) : existingRow.isFeatured;
+
+    if (nextStatus === "published") {
+      const effectiveSubcategoryId =
+        updates.subcategory_id !== undefined
+          ? (updates.subcategory_id as string | null)
+          : existingRow.subcategoryId;
+      if (!effectiveSubcategoryId) {
         return NextResponse.json(
-          { error: "Impossible de preparer la mise a la une.", details: resetFeaturedError.message },
-          { status: 500 }
+          { error: "Une rubrique est obligatoire pour un contenu publié." },
+          { status: 400 }
         );
       }
     }
 
-    const { data, error } = await srv.supabase
-      .from("contents")
-      .update(updates)
-      .eq("id", id)
-      .select("*")
-      .single();
-
-    if (error) {
+    if (nextFeatured && nextStatus !== "published") {
       return NextResponse.json(
-        { error: "Impossible de mettre a jour le contenu.", details: error.message },
-        { status: 500 }
+        { error: "Seul un contenu publié peut être mis à la une." },
+        { status: 400 }
       );
     }
 
-    return NextResponse.json({ data: data as Content }, { status: 200 });
-  } catch {
+    if (updates.is_featured === true) {
+      await unsetOtherFeaturedContent(id);
+    }
+
+    const wasDraft = existingRow.status === "draft";
+    const publishingNow = wasDraft && nextStatus === "published";
+
+    const data = await prisma.content.update({
+      where: { id },
+      data: {
+        ...(updates.title !== undefined ? { title: updates.title as string } : {}),
+        ...(updates.type !== undefined ? { type: updates.type as ContentType } : {}),
+        ...(updates.content !== undefined ? { content: updates.content as string } : {}),
+        ...(updates.image_url !== undefined ? { imageUrl: updates.image_url as string } : {}),
+        ...(updates.tags !== undefined ? { tags: updates.tags as string[] } : {}),
+        ...(updates.category_id !== undefined ? { categoryId: updates.category_id as string | null } : {}),
+        ...(updates.subcategory_id !== undefined
+          ? { subcategoryId: updates.subcategory_id as string | null }
+          : {}),
+        ...(updates.is_featured !== undefined ? { isFeatured: updates.is_featured as boolean } : {}),
+        ...(updates.status !== undefined
+          ? { status: updates.status as ReturnType<typeof parsePublicationStatus> }
+          : {}),
+      },
+    });
+
+    const updated = mapContentRow(data) as Content;
+
+    const shouldNotify = publishingNow && body.notify === true;
+    if (shouldNotify && isMailerConfigured()) {
+      void notifyNewContent(updated).catch((error) => {
+        console.error("[newsletter] notification publication contenu:", (error as Error).message);
+      });
+    }
+
+    revalidateContentCaches();
+    return NextResponse.json({ data: updated }, { status: 200 });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2025") {
+      return NextResponse.json({ error: "Contenu introuvable." }, { status: 404 });
+    }
     return NextResponse.json({ error: "Corps de requete invalide (JSON attendu)." }, { status: 400 });
   }
 }

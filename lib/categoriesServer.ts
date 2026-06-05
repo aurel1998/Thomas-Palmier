@@ -1,24 +1,19 @@
 import type { Category } from "../types/category";
-import { getServerSupabaseOrResponse } from "./supabaseServer";
+import { mapCategoryRow } from "./dbMappers";
+import { prisma } from "./prisma";
+import { resolveCatalogCategories } from "./resolveCategories";
 
 /**
- * Lit les categories depuis Supabase cote serveur (RSC).
- * Retourne [] en cas d'erreur pour eviter de casser le rendu.
+ * Lit les categories depuis PostgreSQL (Prisma) cote serveur (RSC).
+ * Retourne toujours les 4 catégories fixes (fusionnées avec la base si présente).
  */
 export async function getAllCategoriesServer(): Promise<Category[]> {
-  const srv = getServerSupabaseOrResponse();
-  if (!srv.ok) return [];
-
   try {
-    const { data, error } = await srv.supabase
-      .from("categories")
-      .select("*")
-      .order("position", { ascending: true })
-      .order("name", { ascending: true });
-
-    if (error) return [];
-    return (data ?? []) as Category[];
+    const data = await prisma.category.findMany({
+      orderBy: [{ position: "asc" }, { name: "asc" }],
+    });
+    return resolveCatalogCategories(data.map(mapCategoryRow));
   } catch {
-    return [];
+    return resolveCatalogCategories([]);
   }
 }

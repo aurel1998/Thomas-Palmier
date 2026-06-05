@@ -4,27 +4,53 @@
   "private": true,
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true})\"",
+    "optimize:media": "node scripts/optimize-public-media.mjs",
+    "disk:usage": "node scripts/disk-usage.mjs",
     "dev": "next dev -p 3000",
     "dev:safe": "npm run clean && next dev -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "create-admin": "node scripts/create-admin.mjs"
+    "create-admin": "node scripts/create-admin.mjs",
+    "env:init": "node scripts/env-init.mjs",
+    "setup:ionos": "bash scripts/setup-ionos-vps.sh",
+    "install:cron": "bash scripts/install-cron.sh",
+    "post-deploy:check": "node scripts/post-deploy-check.mjs",
+    "backup:vps": "bash scripts/backup-vps.sh",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "seed:catalog": "node scripts/seed-catalog.mjs",
+    "seed:editorial": "tsx scripts/seed-editorial.ts",
+    "deploy:vps": "bash scripts/vps-deploy.sh",
+    "cron:event-reminders": "node scripts/cron-event-reminders.mjs"
   },
   "dependencies": {
-    "@supabase/ssr": "^0.10.2",
-    "@supabase/supabase-js": "^2.103.3",
+    "@auth/prisma-adapter": "^2.11.2",
+    "@fullcalendar/core": "^6.1.20",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "gsap": "^3.15.0",
     "next": "^15.3.2",
+    "next-auth": "^5.0.0-beta.31",
+    "nodemailer": "^7.0.13",
+    "pg": "^8.21.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "three": "^0.170.0"
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^22.15.21",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
-    "@types/three": "^0.170.0",
+    "prisma": "^7.8.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
 }

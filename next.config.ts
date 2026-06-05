@@ -26,9 +26,23 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "i.ytimg.com", pathname: "/**" },
       { protocol: "https", hostname: "img.youtube.com", pathname: "/**" },
-      { protocol: "https", hostname: "*.supabase.co", pathname: "/**" },
     ],
     minimumCacheTTL: 60 * 60 * 24 * 30,
+  },
+  /**
+   * Cache HTTP long pour les medias uploades : les noms de fichiers sont uniques
+   * (timestamp + random), donc le contenu est immuable -> on peut le mettre en
+   * cache navigateur/CDN un an. Allege fortement le VPS sur les visites repetees.
+   */
+  async headers() {
+    return [
+      {
+        source: "/uploads/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
   },
 };
 

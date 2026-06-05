@@ -2,112 +2,58 @@ import type { FC } from "react";
 
 import { useId } from "react";
 
-import type { SocialId } from "../lib/social";
-
-import { SOCIAL, SOCIAL_LABELS, SOCIAL_LINK_ORDER } from "../lib/social";
-
-
+import type { SocialLinkDto } from "../types/editorial";
 
 type SocialLinksProps = {
-
   className?: string;
-
   /** `header` : icônes seules ; `default` : icône + libellé */
-
   variant?: "default" | "header";
-
+  links?: SocialLinkDto[];
 };
 
-
-
-/** Couleurs marque — remplissages explicites (pas `currentColor`). */
-
 function IconYoutube({ className }: { className?: string }) {
-
   return (
-
     <svg className={className} viewBox="0 0 24 24" width="20" height="20" aria-hidden>
-
       <path
-
         fill="#FF0000"
-
         d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"
-
       />
-
       <path fill="#FFFFFF" d="M9.545 15.569V8.431L15.818 12l-6.273 3.569z" />
-
     </svg>
-
   );
-
 }
-
-
 
 function IconInstagram({ className }: { className?: string }) {
-
   const raw = useId();
-
   const gid = `ig-brand-${raw.replace(/[^a-zA-Z0-9_-]/g, "")}`;
-
   return (
-
     <svg className={className} viewBox="0 0 24 24" width="20" height="20" aria-hidden>
-
       <defs>
-
         <linearGradient id={gid} x1="0%" y1="100%" x2="100%" y2="0%">
-
           <stop offset="0%" stopColor="#fccc0a" />
-
           <stop offset="22%" stopColor="#fc0c4f" />
-
           <stop offset="52%" stopColor="#ef32cc" />
-
           <stop offset="78%" stopColor="#7a36f4" />
-
           <stop offset="100%" stopColor="#3051f1" />
-
         </linearGradient>
-
       </defs>
-
       <path
-
         fill={`url(#${gid})`}
-
         d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8A3.6 3.6 0 0 0 7.6 20h8.8A3.6 3.6 0 0 0 20 16.4V7.6A3.6 3.6 0 0 0 16.4 4H7.6m9.65 1.5a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10m0 2a3 3 0 1 0 .001 6.001A3 3 0 0 0 12 9z"
-
       />
-
     </svg>
-
   );
-
 }
 
-
-
 function IconFacebook({ className }: { className?: string }) {
-
   return (
-
     <svg className={className} viewBox="0 0 24 24" width="20" height="20" aria-hidden>
-
       <path
-
         fill="#1877F2"
-
         d="M13.5 22v-9.5h3.2l.48-3.7H13.5V6.8c0-1.07.3-1.8 1.85-1.8h2V1.6c-.33 0-1.47-.1-2.8-.1-2.77 0-4.66 1.69-4.66 4.8v2.2H6.5v3.7h2.4V22h4.6z"
-
       />
-
     </svg>
-
   );
-
 }
 
 function IconLinkedin({ className }: { className?: string }) {
@@ -121,76 +67,63 @@ function IconLinkedin({ className }: { className?: string }) {
   );
 }
 
-
-
-const ICONS: Record<SocialId, FC<{ className?: string }>> = {
-
-  youtube: IconYoutube,
-
-  linkedin: IconLinkedin,
-
-  instagram: IconInstagram,
-
-  facebook: IconFacebook,
-
-};
-
-
-
-export function SocialLinks({ className = "", variant = "default" }: SocialLinksProps) {
-
-  const compact = variant === "header";
-
-  const mod = variant === "header" ? "social-links--header" : "";
-
+function IconGeneric({ className }: { className?: string }) {
   return (
-
-    <div className={`social-links ${mod} ${className}`.trim()} role="list">
-
-      {SOCIAL_LINK_ORDER.map((id) => {
-
-        const Icon = ICONS[id];
-
-        const label = SOCIAL_LABELS[id];
-
-        const href = SOCIAL[id];
-
-        return (
-
-          <a
-
-            key={id}
-
-            role="listitem"
-
-            href={href}
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-            className={`social-links__item social-links__item--${id} is-pressable`.trim()}
-
-            aria-label={label}
-
-            title={label}
-
-          >
-
-            <Icon className="social-links__icon social-links__icon--brand" />
-
-            {!compact ? <span className="social-links__label">{label}</span> : null}
-
-          </a>
-
-        );
-
-      })}
-
-    </div>
-
+    <svg className={className} viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z"
+      />
+    </svg>
   );
-
 }
 
+const ICONS: Record<string, FC<{ className?: string }>> = {
+  youtube: IconYoutube,
+  linkedin: IconLinkedin,
+  instagram: IconInstagram,
+  facebook: IconFacebook,
+};
 
+function resolveLinks(links?: SocialLinkDto[]): { id: string; platform: string; label: string; href: string }[] {
+  if (!links?.length) return [];
+  return links
+    .filter((l) => l.is_active && l.url.trim())
+    .map((l) => ({
+      id: l.id,
+      platform: l.platform,
+      label: l.label,
+      href: l.url,
+    }));
+}
+
+export function SocialLinks({ className = "", variant = "default", links }: SocialLinksProps) {
+  const compact = variant === "header";
+  const mod = variant === "header" ? "social-links--header" : "";
+  const items = resolveLinks(links);
+
+  if (!items.length) return null;
+
+  return (
+    <div className={`social-links ${mod} ${className}`.trim()} role="list">
+      {items.map((item) => {
+        const Icon = ICONS[item.platform] ?? IconGeneric;
+        return (
+          <a
+            key={item.id}
+            role="listitem"
+            href={item.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`social-links__item social-links__item--${item.platform} is-pressable`.trim()}
+            aria-label={item.label}
+            title={item.label}
+          >
+            <Icon className="social-links__icon social-links__icon--brand" />
+            {!compact ? <span className="social-links__label">{item.label}</span> : null}
+          </a>
+        );
+      })}
+    </div>
+  );
+}

@@ -2,6 +2,7 @@
 
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
+import { BrandLogo } from "../media/BrandLogo";
 import { ContentImage } from "../media/ContentImage";
 import {
   bindParallaxYPercent,
@@ -10,27 +11,27 @@ import {
   motion,
   scrollRevealFadeUp,
 } from "../../lib/gsapMotion";
-import { CREDIBILITY_AWARDS, CREDIBILITY_MEDIA } from "../../lib/credibility";
+import type { CredibilityItemDto, TimelineStepDto } from "../../types/editorial";
 
-const TIMELINE = [
-  {
-    period: "2018 — 2020",
-    title: "Premiers terrains",
-    text: "Reportages de bord de pelouse et formats live orientés compréhension du jeu.",
-  },
-  {
-    period: "2020 — 2023",
-    title: "Montée en expertise",
-    text: "Développement des analyses tactiques et des formats multi-supports (vidéo, texte, audio).",
-  },
-  {
-    period: "2023 — aujourd’hui",
-    title: "Ligne éditoriale média",
-    text: "Production d’histoires sportives premium : contexte, angle, vérification et narration claire.",
-  },
-] as const;
+type AProposClientProps = {
+  profileImageUrl: string;
+  displayName?: string;
+  photoCaption?: string;
+  bio?: string;
+  timeline: TimelineStepDto[];
+  awards: CredibilityItemDto[];
+  media: CredibilityItemDto[];
+};
 
-export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) {
+export function AProposClient({
+  profileImageUrl,
+  displayName = "",
+  photoCaption = "",
+  bio,
+  timeline,
+  awards,
+  media,
+}: AProposClientProps) {
   const pageRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -38,10 +39,10 @@ export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) 
     if (!root) return;
     ensureScrollTrigger();
     const ctx = gsap.context(() => {
-      const media = root.querySelector(".apropos-story__media");
+      const mediaEl = root.querySelector(".apropos-story__media");
       const img = root.querySelector<HTMLElement>(".apropos-story__mediaImg");
-      if (!isReducedMotion() && media && img) {
-        bindParallaxYPercent(img, media as HTMLElement, motion.parallax.yPercent * 0.72);
+      if (!isReducedMotion() && mediaEl && img) {
+        bindParallaxYPercent(img, mediaEl as HTMLElement, motion.parallax.yPercent * 0.72);
       }
 
       const header = root.querySelector(".apropos-story__intro");
@@ -81,38 +82,57 @@ export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) 
     <section ref={pageRef} className="apropos-page apropos-story">
       <div className="container apropos-story__container">
         <div className="apropos-story__layout">
-          <aside className="apropos-story__media">
-            <ContentImage
-              src={profileImageUrl}
-              alt="Thomas Palmier en contexte sportif"
-              fill
-              priority
-              sizes="(max-width: 960px) 100vw, 42vw"
-              className="apropos-story__mediaImg"
-            />
-            <div className="apropos-story__mediaOverlay" />
-            <div className="apropos-story__mediaLabel">Journaliste sport · terrain & analyse</div>
-          </aside>
+          {profileImageUrl ? (
+            <aside className="apropos-story__media">
+              <ContentImage
+                src={profileImageUrl}
+                alt={displayName ? `${displayName} — portrait` : "Portrait"}
+                fill
+                priority
+                sizes="(max-width: 960px) 100vw, 42vw"
+                className="apropos-story__mediaImg"
+              />
+              <div className="apropos-story__mediaOverlay" />
+              {photoCaption ? (
+                <div className="apropos-story__mediaLabel">{photoCaption}</div>
+              ) : null}
+            </aside>
+          ) : null}
 
           <div className="apropos-story__narrative">
-            <section className="apropos-story__section apropos-story__step" aria-labelledby="apropos-timeline">
-              <div className="apropos-story__sectionHead">
-                <p className="home-sectionEyebrow">Parcours</p>
-                <h2 id="apropos-timeline" className="apropos-story__sectionTitle">
-                  Timeline éditoriale
-                </h2>
-              </div>
-              <div className="apropos-story__timeline">
-                {TIMELINE.map((step) => (
-                  <article key={step.period} className="apropos-story__timelineItem">
-                    <p className="apropos-story__timelinePeriod">{step.period}</p>
-                    <h3>{step.title}</h3>
-                    <p>{step.text}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
+            {bio ? (
+              <section className="apropos-story__section apropos-story__step apropos-story__intro" aria-labelledby="apropos-bio">
+                <div className="apropos-story__sectionHead">
+                  <p className="home-sectionEyebrow">Portrait</p>
+                  <h2 id="apropos-bio" className="apropos-story__sectionTitle">
+                    Biographie
+                  </h2>
+                </div>
+                <p className="apropos-story__bio">{bio}</p>
+              </section>
+            ) : null}
 
+            {timeline.length > 0 ? (
+              <section className="apropos-story__section apropos-story__step" aria-labelledby="apropos-timeline">
+                <div className="apropos-story__sectionHead">
+                  <p className="home-sectionEyebrow">Parcours</p>
+                  <h2 id="apropos-timeline" className="apropos-story__sectionTitle">
+                    Timeline éditoriale
+                  </h2>
+                </div>
+                <div className="apropos-story__timeline">
+                  {timeline.map((step) => (
+                    <article key={step.id} className="apropos-story__timelineItem">
+                      <p className="apropos-story__timelinePeriod">{step.period}</p>
+                      <h3>{step.title}</h3>
+                      <p>{step.text}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {awards.length > 0 ? (
             <section className="apropos-story__section apropos-story__step" aria-labelledby="apropos-awards">
               <div className="apropos-story__sectionHead">
                 <p className="home-sectionEyebrow">Crédibilité</p>
@@ -121,9 +141,9 @@ export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) 
                 </h2>
               </div>
               <ul className="apropos-story__awards">
-                {CREDIBILITY_AWARDS.map((award) => (
+                {awards.map((award) => (
                   <li key={award.id}>
-                    <span className="apropos-story__awardYear">{award.year ?? "—"}</span>
+                    <span className="apropos-story__awardYear">{award.year || "—"}</span>
                     <div>
                       <strong>{award.title}</strong>
                       {award.subtitle ? <p>{award.subtitle}</p> : null}
@@ -132,7 +152,9 @@ export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) 
                 ))}
               </ul>
             </section>
+            ) : null}
 
+            {media.length > 0 ? (
             <section className="apropos-story__section apropos-story__step" aria-labelledby="apropos-medias">
               <div className="apropos-story__sectionHead">
                 <p className="home-sectionEyebrow">Diffusion</p>
@@ -141,14 +163,34 @@ export function AProposClient({ profileImageUrl }: { profileImageUrl: string }) 
                 </h2>
               </div>
               <div className="apropos-story__mediaLogos">
-                {CREDIBILITY_MEDIA.map((m) => (
-                  <div key={m.id} className="apropos-story__logoTile">
-                    <span>{m.initials ?? m.name.slice(0, 2).toUpperCase()}</span>
-                    <small>{m.name}</small>
-                  </div>
-                ))}
+                {media.map((m) => {
+                  const inner = (
+                    <BrandLogo
+                      name={m.name}
+                      logoSrc={m.logo_url || undefined}
+                      initials={m.initials || undefined}
+                      className="apropos-story__brandLogo"
+                    />
+                  );
+                  return m.link_url?.trim() ? (
+                    <a
+                      key={m.id}
+                      href={m.link_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="apropos-story__logoTile apropos-story__logoTile--link"
+                    >
+                      {inner}
+                    </a>
+                  ) : (
+                    <div key={m.id} className="apropos-story__logoTile">
+                      {inner}
+                    </div>
+                  );
+                })}
               </div>
             </section>
+            ) : null}
           </div>
         </div>
       </div>

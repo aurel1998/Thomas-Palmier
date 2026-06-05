@@ -50,19 +50,6 @@ export function MicroInteractions() {
     if (typeof window === "undefined") return;
     if (isReducedMotion()) return;
 
-    const runSpotlight = (e: PointerEvent) => {
-      if (document.body.getAttribute("data-route-transitioning") === "true") return;
-      const target = e.target as HTMLElement | null;
-      if (!target || !target.closest) return;
-      const card = target.closest(SPOTLIGHT_SELECTOR) as HTMLElement | null;
-      if (!card) return;
-      const rect = card.getBoundingClientRect();
-      const mx = ((e.clientX - rect.left) / rect.width) * 100;
-      const my = ((e.clientY - rect.top) / rect.height) * 100;
-      card.style.setProperty("--mx", `${mx.toFixed(1)}%`);
-      card.style.setProperty("--my", `${my.toFixed(1)}%`);
-    };
-
     const runMagnetic = (e: PointerEvent) => {
       if (document.body.getAttribute("data-route-transitioning") === "true") return;
       const target = e.target as HTMLElement | null;
@@ -92,7 +79,6 @@ export function MicroInteractions() {
         rafMove = 0;
         const ev = lastMove;
         if (!ev) return;
-        runSpotlight(ev);
         runMagnetic(ev);
       });
     };
@@ -175,7 +161,8 @@ export function MicroInteractions() {
 
     const sections = Array.from(
       document.querySelectorAll<HTMLElement>(
-        ".home-une, .home-recent, .contact-wrap, .collab-biz__hero, .apropos-page .story-section"
+        ".home-une, .about-thomas, .home-agenda, .home-newsletter, " +
+          ".contact-wrap, .collab-biz__hero, .apropos-page .story-section"
       )
     );
     if (!sections.length) return;
@@ -183,7 +170,7 @@ export function MicroInteractions() {
     const tweens = sections.map((section) =>
       gsap.fromTo(
         section,
-        { autoAlpha: 0, y: 36 },
+        { autoAlpha: 0, y: 32 },
         {
           autoAlpha: 1,
           y: 0,

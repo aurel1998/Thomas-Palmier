@@ -4,8 +4,22 @@ import gsap from "gsap";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { SocialLinks } from "../SocialLinks";
 import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMotion";
+import { CONTACT_EMAIL } from "../../lib/sitePublic";
+import type { SocialLinkDto } from "../../types/editorial";
 
-export function ContactPageClient() {
+type ContactPageClientProps = {
+  displayName?: string;
+  contactRole?: string;
+  contactIntro?: string;
+  socialLinks?: SocialLinkDto[];
+};
+
+export function ContactPageClient({
+  displayName = "",
+  contactRole = "",
+  contactIntro = "",
+  socialLinks,
+}: ContactPageClientProps) {
   const pageRef = useRef<HTMLElement | null>(null);
   const [requestType, setRequestType] = useState<"partenariat" | "sujet">("partenariat");
   const [name, setName] = useState("");
@@ -65,7 +79,7 @@ export function ContactPageClient() {
         message.trim(),
       ].join("\n")
     );
-    window.location.href = `mailto:contact@sportjournal.fr?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -76,21 +90,19 @@ export function ContactPageClient() {
       <div className="container contact-wrap">
         <article className="contact-card">
           <p className="home-sectionEyebrow contact-reveal">Contact</p>
-          <h1 className="contact-title contact-reveal">Thomas Palmier</h1>
-          <p className="contact-role contact-reveal">Journaliste sportif</p>
-          <p className="contact-intro contact-reveal">
-            Expliquez votre demande en quelques lignes. Réponse rapide et cadrage clair.
-          </p>
+          {displayName ? <h1 className="contact-title contact-reveal">{displayName}</h1> : null}
+          {contactRole ? <p className="contact-role contact-reveal">{contactRole}</p> : null}
+          {contactIntro ? <p className="contact-intro contact-reveal">{contactIntro}</p> : null}
 
           <div className="contact-meta contact-reveal">
             <div className="contact-metaItem">
               <span>Email</span>
-              <a href="mailto:contact@sportjournal.fr">contact@sportjournal.fr</a>
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
             </div>
             <div className="contact-metaItem">
               <span>Réseaux sociaux</span>
               <div className="contact-socials">
-                <SocialLinks />
+                <SocialLinks links={socialLinks} />
               </div>
             </div>
           </div>
@@ -139,7 +151,7 @@ export function ContactPageClient() {
                 id="contact-email"
                 name="email"
                 type="email"
-                placeholder="contact@sportjournal.fr"
+                placeholder="votre@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
