@@ -1,10 +1,10 @@
 /**
- * Vidéo de fond du hero — fichiers dans `/public/src/stade/`.
+ * Vidéo de fond du hero — `/public/src/video/fond.mp4`.
  * Le paramètre `?v=` force le rechargement navigateur après remplacement du fichier.
  */
-export const HERO_VIDEO_MP4_DEFAULT = "/src/stade/15816491_3840_2160_25fps.mp4?v=1";
+export const HERO_VIDEO_MP4_DEFAULT = "/src/video/fond.mp4?v=1";
 
-export const HERO_VIDEO_MP4_FALLBACK = "/src/stade/13423891_3840_2160_24fps.mp4?v=1";
+export const HERO_VIDEO_MP4_FALLBACK = "/src/video/fond.mp4?v=1";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";
