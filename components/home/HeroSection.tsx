@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import gsap from "gsap";
 import Link from "next/link";
 import { ContentImage } from "../media/ContentImage";
 import { ensureScrollTrigger, isReducedMotion, motion, motionPresets } from "../../lib/gsapMotion";
 import { prefersSaveData } from "../../lib/clientPerf";
+
+const HeroWebGL = dynamic(() => import("./HeroWebGL").then((m) => ({ default: m.HeroWebGL })), {
+  ssr: false,
+});
 export type HeroSectionProps = {
   /** Image poster (LCP) + secours si vidéo indisponible. */
   backdropSrc?: string;
@@ -418,6 +423,7 @@ export function HeroSection({
         ) : null}
       </div>
 
+      <HeroWebGL />
       <div ref={overlayRef} className="home-hero__overlay" />
       <div className="home-hero__vignette" aria-hidden="true" />
       <div className="home-hero__grain" aria-hidden="true" />

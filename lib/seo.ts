@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { PROFILE_PORTRAIT_SRC } from "./profileAssets";
 import { getPublicAppUrl, getSiteName } from "./siteConfig";
 
 export const SITE_DESCRIPTION =
   process.env.NEXT_PUBLIC_SITE_DESCRIPTION ??
   "Thomas Palmier, journaliste sportif : analyses, reportages terrain, vidéos et formats courts. Le sport raconté au plus près.";
 
-const DEFAULT_OG_IMAGE = "/logos/thomas.png";
+const DEFAULT_OG_IMAGE = PROFILE_PORTRAIT_SRC;
 
 export function getMetadataBase(): URL {
   return new URL(getPublicAppUrl());
@@ -60,9 +61,9 @@ export function buildRootMetadata(): Metadata {
       images: [
         {
           url: DEFAULT_OG_IMAGE,
-          width: 1024,
-          height: 374,
-          alt: siteName,
+          width: 900,
+          height: 1200,
+          alt: `${siteName} — journaliste sportif`,
         },
       ],
     },

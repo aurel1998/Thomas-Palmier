@@ -1369,6 +1369,7 @@ main li > a:not([class]):hover,
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 32%;
   display: block;
 }
 
@@ -1666,7 +1667,7 @@ main li > a:not([class]):hover,
 
 .home-hero__journalAvatarImg {
   object-fit: cover;
-  object-position: center 24%;
+  object-position: center 32%;
 }
 
 .home-hero__rule {
@@ -2031,7 +2032,7 @@ main li > a:not([class]):hover,
 
 .about-thomas__media {
   object-fit: cover;
-  object-position: center 24%;
+  object-position: center 30%;
 }
 
 .about-thomas__mediaScrim {
@@ -6801,8 +6802,8 @@ main li > a:not([class]):hover,
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 28%;
-  transform: scale(1.03);
+  object-position: center 30%;
+  transform: scale(1.02);
 }
 
 .apropos-story__mediaOverlay {
@@ -9522,9 +9523,15 @@ main li > a:not([class]):hover,
   }
 }
 
-@media (min-width: 1080px) {
+@media (min-width: 900px) {
   .admin-dashboard__kpis {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .admin-dashboard__kpis {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 }
 
@@ -9564,6 +9571,20 @@ main li > a:not([class]):hover,
 
 .admin-dashboard__kpi--agenda::before {
   background: #38bdf8;
+}
+
+.admin-dashboard__kpi--published::before {
+  background: #54c79a;
+}
+
+.admin-dashboard__kpi--draft::before {
+  background: rgb(var(--text-rgb) / 0.35);
+}
+
+.admin-dashboard__kpiHint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: rgb(var(--text-rgb) / 0.52);
 }
 
 .admin-dashboard__kpiLabel {
@@ -9734,6 +9755,175 @@ main li > a:not([class]):hover,
 
 .admin-dashboard__footnote {
   margin: 0;
+}
+
+.admin-dashboard__insights {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .admin-dashboard__insights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-dashboard__insightPanel {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  background: rgb(var(--surface-rgb) / 0.58);
+}
+
+.admin-dashboard__insightGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.admin-dashboard__insight {
+  border: 1px solid rgb(var(--text-rgb) / 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgb(var(--surface-rgb) / 0.42);
+}
+
+.admin-dashboard__insightLabel {
+  margin: 0;
+  font-size: 12px;
+  color: rgb(var(--text-rgb) / 0.62);
+}
+
+.admin-dashboard__insightValue {
+  margin: 6px 0 0;
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+}
+
+.admin-dashboard__insightHint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: rgb(var(--text-rgb) / 0.5);
+}
+
+.admin-dashboard__stats {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-dashboard__statsHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-dashboard__statsIntro {
+  margin: 6px 0 0;
+  max-width: 58ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(var(--text-rgb) / 0.62);
+}
+
+.admin-dashboard__charts {
+  display: grid;
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .admin-dashboard__charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.admin-dashboard__chartCard {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 14px 8px;
+  background: linear-gradient(
+    160deg,
+    rgb(var(--surface-rgb) / 0.78) 0%,
+    rgb(var(--surface-soft-rgb) / 0.42) 100%
+  );
+  min-height: 320px;
+}
+
+.admin-dashboard__chartHead {
+  margin-bottom: 8px;
+}
+
+.admin-dashboard__chartTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-dashboard__chartDesc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgb(var(--text-rgb) / 0.58);
+}
+
+.admin-dashboard__chartBody {
+  width: 100%;
+  min-height: 260px;
+}
+
+.admin-dashboard__chartSkeleton {
+  width: 100%;
+  height: 260px;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--text-rgb) / 0.05) 0%,
+    rgb(var(--text-rgb) / 0.1) 50%,
+    rgb(var(--text-rgb) / 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: admin-skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+.admin-dashboard__chartTooltip {
+  border: 1px solid rgb(var(--text-rgb) / 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgb(var(--surface-rgb) / 0.96);
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.28);
+}
+
+.admin-dashboard__chartTooltipLabel {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-dashboard__chartTooltipList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: rgb(var(--text-rgb) / 0.78);
+}
+
+.admin-dashboard__chartTooltipDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+.admin-dashboard .recharts-default-legend {
+  font-size: 12px !important;
+  color: rgb(var(--text-rgb) / 0.72) !important;
 }
 
 /* Admin: newsletter stats */
@@ -11530,5 +11720,314 @@ main li > a:not([class]):hover,
   .is-magnetic,
   .is-pressable {
     will-change: auto;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   AWWWARDS LAYER — Custom cursor · WebGL hero · 3D tilt · Premium polish
+   Ajouté séparément pour isoler les nouvelles features.
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Sélection de texte ── */
+::selection {
+  background: rgb(var(--accent-rgb) / 0.28);
+  color: var(--text);
+}
+
+/* ── Scrollbar fine amber ── */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--accent-rgb) / 0.32);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--accent-rgb) / 0.58);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CUSTOM CURSOR
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* Masquer le curseur natif dès que le custom est actif */
+.cursor-custom,
+.cursor-custom * {
+  cursor: none !important;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+/* ── Dot (suit exactement la souris) ── */
+.cursor-dot {
+  z-index: 9999;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  transition:
+    opacity 0.2s,
+    width 0.3s var(--ease-premium),
+    height 0.3s var(--ease-premium),
+    background 0.25s;
+}
+
+.cursor-dot[data-visible] { opacity: 1; }
+
+.cursor-dot[data-hover] {
+  width: 10px;
+  height: 10px;
+  background: var(--text);
+}
+
+.cursor-dot[data-press] {
+  width: 4px;
+  height: 4px;
+  opacity: 0.7;
+}
+
+/* ── Ring (lag de 90 ms environ via lerp 0.1) ── */
+.cursor-ring {
+  width: 44px;
+  height: 44px;
+  border: 1.5px solid rgb(var(--accent-rgb) / 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    opacity 0.35s,
+    width 0.4s var(--ease-premium),
+    height 0.4s var(--ease-premium),
+    border-color 0.3s,
+    background 0.3s;
+}
+
+.cursor-ring[data-visible] { opacity: 1; }
+
+.cursor-ring[data-hover] {
+  width: 56px;
+  height: 56px;
+  border-color: rgb(var(--accent-rgb) / 0.62);
+  background: rgb(var(--accent-rgb) / 0.06);
+}
+
+.cursor-ring[data-press] {
+  width: 30px;
+  height: 30px;
+  border-color: rgb(var(--accent-rgb) / 0.9);
+  background: rgb(var(--accent-rgb) / 0.16);
+}
+
+/* Label contextuel (data-cursor="Voir" sur les cards) */
+.cursor-ring[data-label]::after {
+  content: attr(data-label);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   THREE.JS HERO CANVAS
+══════════════════════════════════════════════════════════════════════════════ */
+
+.hero-webgl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;           /* devant le fond vidéo/image, derrière l'overlay */
+  pointer-events: none;
+  opacity: 0.42;
+  mix-blend-mode: screen;
+}
+
+[data-theme="light"] .hero-webgl {
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   3D CARD TILT — shimmer highlight suit la souris (MicroInteractions)
+══════════════════════════════════════════════════════════════════════════════ */
+
+/* Shimmer sur les cards tiltable */
+.contenus-card,
+.contenus-feature,
+.collab-biz__caseCard,
+.apropos-story__section {
+  position: relative;
+  overflow: hidden;
+}
+
+.contenus-card::after,
+.contenus-feature::after,
+.collab-biz__caseCard::after,
+.apropos-story__section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at var(--shimmer-x, 50%) var(--shimmer-y, 50%),
+    rgb(255 255 255 / 0.06) 0%,
+    transparent 58%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s;
+  z-index: 1;
+}
+
+.contenus-card:hover::after,
+.contenus-feature:hover::after,
+.collab-biz__caseCard:hover::after,
+.apropos-story__section:hover::after {
+  opacity: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   HERO TITLE — gradient subtle + ombre texte cinématique
+══════════════════════════════════════════════════════════════════════════════ */
+
+.home-hero__title {
+  text-shadow:
+    0 2px 24px rgb(0 0 0 / 0.45),
+    0 8px 56px rgb(0 0 0 / 0.22);
+}
+
+/* Highlight ambre sur le last name */
+.home-hero__nameSlot:last-child {
+  color: rgb(var(--accent-rgb) / 0.95);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   GRADIENT TEXT UTILITY
+══════════════════════════════════════════════════════════════════════════════ */
+
+.text-gradient-accent {
+  background: linear-gradient(
+    135deg,
+    var(--accent) 0%,
+    rgb(var(--accent-rgb) / 0.72) 60%,
+    var(--text) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   ENHANCED CARD HOVER — glow accent sur le border
+══════════════════════════════════════════════════════════════════════════════ */
+
+.contenus-card:hover,
+.contenus-feature:hover {
+  border-color: rgb(var(--accent-rgb) / 0.32) !important;
+  box-shadow:
+    0 20px 56px rgb(0 0 0 / 0.22),
+    0 0 0 1px rgb(var(--accent-rgb) / 0.12) inset;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SMOOTH SCROLL — respect <html> scroll-behavior override par Lenis
+══════════════════════════════════════════════════════════════════════════════ */
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   SECTION EYEBROW — trait animé premium
+══════════════════════════════════════════════════════════════════════════════ */
+
+.home-sectionEyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-sectionEyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), rgb(var(--accent-rgb) / 0.35));
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   CTA BLOCK — glow pulsé sur le bouton primary
+══════════════════════════════════════════════════════════════════════════════ */
+
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 0 22px rgb(var(--accent-rgb) / 0.28), 0 8px 32px rgb(0 0 0 / 0.32); }
+  50%       { box-shadow: 0 0 38px rgb(var(--accent-rgb) / 0.44), 0 8px 32px rgb(0 0 0 / 0.32); }
+}
+
+.btn-primary {
+  animation: ctaGlow 3.2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   FOOTER — blur glass background renforcé
+══════════════════════════════════════════════════════════════════════════════ */
+
+.site-footer {
+  backdrop-filter: blur(18px) saturate(1.3);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   MEDIA — coin radius premium sur les images éditoriales
+══════════════════════════════════════════════════════════════════════════════ */
+
+.contenus-card__thumb,
+.apropos-story__media {
+  border-radius: clamp(16px, 2vw, 26px);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION — désactiver les nouvelles animations
+══════════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot,
+  .cursor-ring,
+  .hero-webgl {
+    display: none !important;
+  }
+
+  .btn-primary {
+    animation: none;
   }
 }

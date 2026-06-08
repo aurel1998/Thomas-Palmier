@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Content, ContentType } from "../../types/content";
+import type { DashboardAnalytics } from "../../lib/dashboardAnalytics";
 import { publicationStatusLabel } from "../../lib/publicationStatus";
+import { DashboardCharts } from "./DashboardCharts";
 
 type ToastKind = "success" | "error" | "info";
 type PushToast = (kind: ToastKind, message: string) => void;
@@ -10,12 +12,15 @@ type PushToast = (kind: ToastKind, message: string) => void;
 type DashboardData = {
   stats: {
     contentsTotal: number;
+    contentsPublished: number;
+    contentsDraft: number;
     videos: number;
     articles: number;
     audios: number;
     subscribersActive: number;
     upcomingEvents: number;
   };
+  analytics: DashboardAnalytics;
   featured: Content | null;
   recentContents: Content[];
   recentSubscribers: {
@@ -58,7 +63,8 @@ type KpiItem = {
   id: string;
   label: string;
   value: number | string;
-  tone: "total" | "video" | "article" | "audio" | "newsletter" | "agenda";
+  hint?: string;
+  tone: "total" | "published" | "draft" | "video" | "article" | "audio" | "newsletter" | "agenda";
 };
 
 function KpiCard({ item, loading }: { item: KpiItem; loading: boolean }) {
@@ -68,14 +74,43 @@ function KpiCard({ item, loading }: { item: KpiItem; loading: boolean }) {
       {loading ? (
         <span className="admin-skeleton admin-skeleton--value" aria-hidden="true" />
       ) : (
-        <p className="admin-dashboard__kpiValue">{item.value}</p>
+        <>
+          <p className="admin-dashboard__kpiValue">{item.value}</p>
+          {item.hint ? <p className="admin-dashboard__kpiHint">{item.hint}</p> : null}
+        </>
       )}
     </article>
   );
 }
 
+function InsightCard({
+  label,
+  value,
+  hint,
+  loading,
+}: {
+  label: string;
+  value: number | string;
+  hint?: string;
+  loading: boolean;
+}) {
+  return (
+    <div className="admin-dashboard__insight">
+      <p className="admin-dashboard__insightLabel">{label}</p>
+      {loading ? (
+        <span className="admin-skeleton admin-skeleton--line short" aria-hidden="true" />
+      ) : (
+        <>
+          <p className="admin-dashboard__insightValue">{value}</p>
+          {hint ? <p className="admin-dashboard__insightHint">{hint}</p> : null}
+        </>
+      )}
+    </div>
+  );
+}
+
 /**
- * Tableau de bord admin — vue d'ensemble du site.
+ * Tableau de bord décisionnel — KPIs, statistiques graphiques et activité récente.
  */
 export function DashboardAdminPanel({
   apiFetch,
@@ -110,13 +145,31 @@ export function DashboardAdminPanel({
   }, [load]);
 
   const stats = data?.stats;
+  const analytics = data?.analytics;
   const kpis: KpiItem[] = [
-    { id: "total", label: "Contenus", value: stats?.contentsTotal ?? 0, tone: "total" },
+    { id: "total", label: "Contenus total", value: stats?.contentsTotal ?? 0, tone: "total" },
+    {
+      id: "published",
+      label: "Publiés",
+      value: stats?.contentsPublished ?? 0,
+      hint: `${stats?.contentsDraft ?? 0} brouillon(s)`,
+      tone: "published",
+    },
     { id: "video", label: "Vidéos", value: stats?.videos ?? 0, tone: "video" },
     { id: "article", label: "Publications", value: stats?.articles ?? 0, tone: "article" },
     { id: "audio", label: "Audios", value: stats?.audios ?? 0, tone: "audio" },
-    { id: "newsletter", label: "Abonnés actifs", value: stats?.subscribersActive ?? 0, tone: "newsletter" },
-    { id: "agenda", label: "Événements à venir", value: stats?.upcomingEvents ?? 0, tone: "agenda" },
+    {
+      id: "newsletter",
+      label: "Abonnés actifs",
+      value: stats?.subscribersActive ?? 0,
+      tone: "newsletter",
+    },
+    {
+      id: "agenda",
+      label: "Événements à venir",
+      value: stats?.upcomingEvents ?? 0,
+      tone: "agenda",
+    },
   ];
 
   const featured = data?.featured ?? null;
@@ -128,9 +181,9 @@ export function DashboardAdminPanel({
       <header className="admin-dashboard__head">
         <div>
           <p className="admin-dashboard__eyebrow">Administration</p>
-          <h2 className="admin-dashboard__title">Vue d&apos;ensemble</h2>
+          <h2 className="admin-dashboard__title">Tableau de bord décisionnel</h2>
           <p className="admin-dashboard__subtitle">
-            Contenus, newsletter et agenda — état du site en un coup d&apos;œil.
+            Pilotez vos contenus média, la newsletter et l&apos;agenda avec des indicateurs actionnables.
           </p>
         </div>
         <button
@@ -147,6 +200,87 @@ export function DashboardAdminPanel({
         {kpis.map((item) => (
           <KpiCard key={item.id} item={item} loading={loading} />
         ))}
+      </section>
+
+      <section className="admin-dashboard__insights" aria-label="Synthèse newsletter et agenda">
+        <article className="admin-dashboard__insightPanel">
+          <div className="admin-dashboard__sectionHead">
+            <h3 className="admin-dashboard__sectionTitle">Newsletter</h3>
+            <button type="button" className="admin-btn admin-btn--ghost" onClick={() => onOpenTab("newsletter")}>
+              Gérer
+            </button>
+          </div>
+          <div className="admin-dashboard__insightGrid">
+            <InsightCard
+              label="Abonnés actifs"
+              value={analytics?.newsletter.active ?? 0}
+              loading={loading}
+            />
+            <InsightCard
+              label="Inactifs"
+              value={analytics?.newsletter.inactive ?? 0}
+              loading={loading}
+            />
+            <InsightCard
+              label="Campagnes envoyées"
+              value={analytics?.newsletter.campaignsSent ?? 0}
+              loading={loading}
+            />
+            <InsightCard
+              label="Emails délivrés"
+              value={analytics?.newsletter.totalRecipientsReached ?? 0}
+              loading={loading}
+            />
+          </div>
+        </article>
+
+        <article className="admin-dashboard__insightPanel">
+          <div className="admin-dashboard__sectionHead">
+            <h3 className="admin-dashboard__sectionTitle">Agenda</h3>
+            <button type="button" className="admin-btn admin-btn--ghost" onClick={() => onOpenTab("agenda")}>
+              Gérer
+            </button>
+          </div>
+          <div className="admin-dashboard__insightGrid">
+            <InsightCard label="Total événements" value={analytics?.agenda.total ?? 0} loading={loading} />
+            <InsightCard label="Publiés" value={analytics?.agenda.published ?? 0} loading={loading} />
+            <InsightCard label="À venir" value={analytics?.agenda.upcoming ?? 0} loading={loading} />
+            <InsightCard
+              label="À la une"
+              value={analytics?.agenda.featured ?? 0}
+              hint={`${analytics?.agenda.past ?? 0} passé(s)`}
+              loading={loading}
+            />
+          </div>
+        </article>
+      </section>
+
+      <section className="admin-dashboard__stats" aria-labelledby="dashboard-stats-heading">
+        <div className="admin-dashboard__statsHead">
+          <div>
+            <h3 id="dashboard-stats-heading" className="admin-dashboard__sectionTitle">
+              Statistiques
+            </h3>
+            <p className="admin-dashboard__statsIntro">
+              Analysez la production éditoriale, la croissance newsletter et le rythme de publication.
+            </p>
+          </div>
+        </div>
+        {analytics ? (
+          <DashboardCharts analytics={analytics} loading={loading} />
+        ) : (
+          <DashboardCharts
+            analytics={{
+              contentsByType: [],
+              contentsByCategory: [],
+              subscribersByMonth: [],
+              contentsPublishedByMonth: [],
+              newsletter: { active: 0, inactive: 0, campaignsSent: 0, totalRecipientsReached: 0 },
+              agenda: { total: 0, published: 0, draft: 0, upcoming: 0, past: 0, featured: 0 },
+            }}
+            loading={loading}
+          />
+        )}
       </section>
 
       <section className="admin-dashboard__featured" aria-labelledby="dashboard-featured-heading">
@@ -190,11 +324,7 @@ export function DashboardAdminPanel({
               <p className="admin-dashboard__featuredMeta">
                 Publié le {dateFormatter.format(new Date(featured.created_at))}
               </p>
-              <button
-                type="button"
-                className="admin-btn"
-                onClick={() => onEditContent(featured)}
-              >
+              <button type="button" className="admin-btn" onClick={() => onEditContent(featured)}>
                 Modifier
               </button>
             </div>
@@ -295,7 +425,7 @@ export function DashboardAdminPanel({
       </div>
 
       <p className="admin-dashboard__footnote admin-field__hint">
-        Les compteurs contenus incluent les brouillons. Les listes et l&apos;événement à la une ne montrent que le
+        Les graphiques portent sur les 12 derniers mois. Les listes et l&apos;événement à la une ne montrent que le
         contenu <strong>{publicationStatusLabel("published").toLowerCase()}</strong>.
       </p>
     </div>

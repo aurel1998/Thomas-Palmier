@@ -29,6 +29,7 @@ import { ensureScrollTrigger, isReducedMotion, motion } from "../../lib/gsapMoti
  * Tous les effets respectent `prefers-reduced-motion: reduce` (aucune anim).
  */
 const SPOTLIGHT_SELECTOR = ".contenus-card, .contenus-feature, .admin-card";
+const TILT_SELECTOR = ".contenus-card, .contenus-feature, .collab-biz__caseCard, .apropos-story__section";
 const MAGNETIC_SELECTOR = ".is-magnetic";
 const PRESS_SELECTOR =
   ".is-pressable, .btn, .btn-primary, .btn-secondary, .admin-btn, " +
@@ -131,11 +132,52 @@ export function MicroInteractions() {
       });
     };
 
+    /* ── Tilt 3D sur les cards ── */
+    const tiltActive = new Map<HTMLElement, { x: ReturnType<typeof gsap.quickTo>; y: ReturnType<typeof gsap.quickTo> }>();
+
+    const getTiltEl = (target: EventTarget | null): HTMLElement | null => {
+      if (!target || !(target as HTMLElement).closest) return null;
+      return (target as HTMLElement).closest(TILT_SELECTOR) as HTMLElement | null;
+    };
+
+    const onTiltMove = (e: PointerEvent) => {
+      const el = getTiltEl(e.target);
+      if (!el) return;
+      if (!tiltActive.has(el)) {
+        tiltActive.set(el, {
+          x: gsap.quickTo(el, "rotationX", { duration: 0.28, ease: "power2.out" }),
+          y: gsap.quickTo(el, "rotationY", { duration: 0.28, ease: "power2.out" }),
+        });
+        gsap.set(el, { transformPerspective: 900, transformStyle: "preserve-3d" });
+      }
+      const rect = el.getBoundingClientRect();
+      const relX = (e.clientX - rect.left) / rect.width  - 0.5;
+      const relY = (e.clientY - rect.top)  / rect.height - 0.5;
+      const t = tiltActive.get(el)!;
+      t.x(relY * -10);
+      t.y(relX *  7);
+      /* shimmer highlight */
+      el.style.setProperty("--shimmer-x", `${(relX + 0.5) * 100}%`);
+      el.style.setProperty("--shimmer-y", `${(relY + 0.5) * 100}%`);
+    };
+
+    const onTiltLeave = (e: PointerEvent) => {
+      const el = getTiltEl(e.target);
+      if (!el) return;
+      const t = tiltActive.get(el);
+      if (!t) return;
+      t.x(0);
+      t.y(0);
+      tiltActive.delete(el);
+    };
+
     const finePointer = window.matchMedia("(pointer: fine)").matches;
     /* Sur tactile : pas de suivi global souris → moins de GSAP / getBoundingClientRect */
     if (finePointer) {
       document.addEventListener("pointermove", onPointerMoveCoalesced, { passive: true });
       document.addEventListener("pointerout", magLeave, { passive: true });
+      document.addEventListener("pointermove", onTiltMove, { passive: true });
+      document.addEventListener("pointerout", onTiltLeave, { passive: true });
     }
     document.addEventListener("pointerdown", pressDown, { passive: true });
     document.addEventListener("pointerup", pressUp, { passive: true });
@@ -146,10 +188,13 @@ export function MicroInteractions() {
       if (finePointer) {
         document.removeEventListener("pointermove", onPointerMoveCoalesced);
         document.removeEventListener("pointerout", magLeave);
+        document.removeEventListener("pointermove", onTiltMove);
+        document.removeEventListener("pointerout", onTiltLeave);
       }
       document.removeEventListener("pointerdown", pressDown);
       document.removeEventListener("pointerup", pressUp);
       document.removeEventListener("pointercancel", pressUp);
+      tiltActive.clear();
     };
   }, []);
 

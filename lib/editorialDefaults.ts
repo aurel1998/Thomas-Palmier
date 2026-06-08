@@ -1,5 +1,6 @@
 import { CREDIBILITY_AWARDS, CREDIBILITY_MEDIA, CREDIBILITY_PARTNERS } from "./credibility";
 import { HERO_HEADLINE, HERO_JOURNAL_LINE, HERO_POSITIONING, HERO_VIDEO_MP4_DEFAULT } from "./heroCopy";
+import { PROFILE_PORTRAIT_SRC } from "./profileAssets";
 import { HOME_PARTNER_LOGOS } from "./partners";
 import { SOCIAL, SOCIAL_LABELS, SOCIAL_LINK_ORDER } from "./social";
 import { getSiteName } from "./siteConfig";
@@ -17,7 +18,7 @@ import type {
 const SITE = getSiteName();
 
 export const DEFAULT_PROFILE: JournalistProfileDto = {
-  image_url: "/src/stade/im2.jpg",
+  image_url: PROFILE_PORTRAIT_SRC,
   display_name: HERO_HEADLINE,
   job_title: HERO_JOURNAL_LINE,
   tagline: HERO_POSITIONING,
