@@ -22,15 +22,8 @@ export type CredibilityLogoItem = {
 export const CREDIBILITY_AWARDS: CredibilityAward[] = [
   {
     id: "award-micro-or",
-    title: "Micro d’Or",
-    subtitle: "Radio sport — meilleure chronique",
-    year: "2026",
-  },
-  {
-    id: "award-prix-sport",
-    title: "Prix du journalisme sportif",
-    subtitle: "Catérique reportage terrain",
-    year: "2023",
+    title: "Lauréat du micro d’or pour demain",
+    year: "2024",
   },
 ];
 

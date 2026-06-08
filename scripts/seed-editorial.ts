@@ -11,8 +11,62 @@ import {
   DEFAULT_SOCIAL,
   DEFAULT_TIMELINE,
 } from "../lib/editorialDefaults";
+import { CREDIBILITY_AWARDS } from "../lib/credibility";
 import { upsertJournalistProfileRow, upsertSiteSettingsRow } from "../lib/editorialSingleton";
 import { prisma } from "../lib/prisma";
+
+/** Met à jour la récompense Micro d'or et retire les anciennes entrées de démo. */
+async function syncDefaultAwards() {
+  const defaultAward = CREDIBILITY_AWARDS[0];
+  if (!defaultAward) return;
+
+  await prisma.credibilityItem.deleteMany({
+    where: {
+      kind: "award",
+      OR: [
+        { title: { contains: "Prix du journalisme", mode: "insensitive" } },
+        { title: { contains: "journalisme sportif", mode: "insensitive" } },
+      ],
+    },
+  });
+
+  const existing = await prisma.credibilityItem.findMany({
+    where: { kind: "award" },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+  });
+
+  const micro =
+    existing.find((item) => /micro/i.test(item.title)) ?? existing[0] ?? null;
+
+  if (micro) {
+    await prisma.credibilityItem.update({
+      where: { id: micro.id },
+      data: {
+        title: defaultAward.title,
+        subtitle: defaultAward.subtitle ?? "",
+        year: defaultAward.year ?? "",
+        position: 1,
+        isActive: true,
+      },
+    });
+    const extraIds = existing.filter((item) => item.id !== micro.id).map((item) => item.id);
+    if (extraIds.length) {
+      await prisma.credibilityItem.deleteMany({ where: { id: { in: extraIds } } });
+    }
+    return;
+  }
+
+  await prisma.credibilityItem.create({
+    data: {
+      kind: "award",
+      title: defaultAward.title,
+      subtitle: defaultAward.subtitle ?? "",
+      year: defaultAward.year ?? "",
+      position: 1,
+      isActive: true,
+    },
+  });
+}
 
 async function main() {
   await upsertJournalistProfileRow({
@@ -69,6 +123,8 @@ async function main() {
       })),
     });
   }
+
+  await syncDefaultAwards();
 
   if (!counts[1]) {
     await prisma.timelineStep.createMany({

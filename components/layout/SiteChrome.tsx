@@ -3,7 +3,6 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { ClientFxBundle } from "../fx/ClientFxBundle";
-import { CustomCursor } from "../fx/CustomCursor";
 import { GsapRegister } from "../fx/GsapRegister";
 import { SmoothScroll } from "../fx/SmoothScroll";
 import { PageTransition } from "../page-transition";
@@ -45,7 +44,6 @@ export function SiteChrome({
       <GsapRegister />
       <SmoothScroll />
       <ClientFxBundle />
-      <CustomCursor />
       <SiteHeader profileImageSrc={profileImageSrc} socialLinks={socialLinks} />
       <PageTransition>{children}</PageTransition>
       <SiteFooter tagline={footerTagline} socialLinks={socialLinks} />

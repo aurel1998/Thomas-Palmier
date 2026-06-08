@@ -12,6 +12,7 @@ import {
 
 } from "../../lib/editorialServer";
 
+import { PROFILE_PORTRAIT_SRC } from "../../lib/profileAssets";
 import { buildPageMetadata } from "../../lib/seo";
 
 
@@ -49,7 +50,7 @@ export default async function AProposPage() {
 
   return (
     <AProposClient
-      profileImageUrl={profile.image_url?.trim() || ""}
+      profileImageUrl={profile.image_url?.trim() || PROFILE_PORTRAIT_SRC}
       displayName={profile.display_name}
       jobTitle={profile.job_title}
       tagline={profile.tagline}

@@ -12,6 +12,7 @@ import {
   pickStringArray,
 } from "./editorialDefaults";
 import { mapCaseRow, mapCredibilityRow, mapOfferRow, mapProfileRow, mapSiteRow, mapSocialRow, mapTimelineRow } from "./editorialMappers";
+import { pickPortraitUrl } from "./profileAssets";
 import { prisma } from "./prisma";
 import type {
   CollaborationCaseDto,
@@ -27,7 +28,7 @@ import type {
 
 function mergeProfile(raw: JournalistProfileDto): JournalistProfileDto {
   return {
-    image_url: pickString(raw.image_url, DEFAULT_PROFILE.image_url),
+    image_url: pickPortraitUrl(pickString(raw.image_url, DEFAULT_PROFILE.image_url)),
     display_name: pickString(raw.display_name, DEFAULT_PROFILE.display_name),
     job_title: pickString(raw.job_title, DEFAULT_PROFILE.job_title),
     tagline: pickString(raw.tagline, DEFAULT_PROFILE.tagline),

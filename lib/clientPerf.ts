@@ -9,7 +9,7 @@ export function prefersSaveData(): boolean {
 }
 
 /** Réseau ou device modeste : éviter un second contexte WebGL (hero). */
-/** Tactile principal : curseur custom + spotlight souris peu utiles — on évite le coût JS. */
+/** Tactile principal : effets souris peu utiles — on évite le coût JS. */
 export function prefersCoarsePointer(): boolean {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(pointer: coarse)").matches;
