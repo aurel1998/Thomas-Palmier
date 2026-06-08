@@ -32,8 +32,9 @@ supabase/
 # ancien emplacement logo (désormais public/logos/) — racine uniquement
 /src/
 
-# Vidéos locales lourdes (hero seul dans public/videos/)
-public/src/video/
+# Vidéos locales lourdes — seul fond.mp4 (hero) est versionné
+public/src/video/*
+!public/src/video/fond.mp4
 
 # fichiers uploadés en prod (structure versionnée via .gitkeep)
 public/uploads/**/*
