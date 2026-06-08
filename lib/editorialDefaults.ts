@@ -17,18 +17,18 @@ import type {
 const SITE = getSiteName();
 
 export const DEFAULT_PROFILE: JournalistProfileDto = {
-  image_url: "",
+  image_url: "/src/stade/im2.jpg",
   display_name: HERO_HEADLINE,
   job_title: HERO_JOURNAL_LINE,
   tagline: HERO_POSITIONING,
-  bio: "Production d'histoires sportives premium : contexte, angle, vérification et narration claire.",
+  bio: "Production d'histoires sportives premium : contexte, angle, vérification et narration claire. Reportages terrain, analyses tactiques et formats courts pour les médias et les marques.",
   bio_short:
     "Journaliste sportif indépendant, Thomas Palmier couvre le sport au plus près du terrain. Son approche mêle narration, contexte et regard critique pour transformer un match en récit.",
-  specialties: ["Football", "Analyse", "Reportage"],
+  specialties: ["Football", "Analyse tactique", "Reportage terrain", "Formats courts"],
   hero_video_url: HERO_VIDEO_MP4_DEFAULT,
-  hero_poster_url: "/src/stade/stade1.webp",
+  hero_poster_url: "/src/stade/im1.jpg",
   photo_caption: "Journaliste sport · terrain & analyse",
-  editorial_line: "Analyse, terrain, formats courts",
+  editorial_line: "Analyse, terrain, formats courts — le récit avant le score.",
   updated_at: null,
 };
 

@@ -21,14 +21,11 @@ import { FeatureContentCard } from "../../components/contenus/FeatureContentCard
 import { ContenuCard } from "../../components/contenus/ContenuCard";
 import { countByContentType } from "../../lib/catalogContentCopy";
 import { attachCategoryIds, resolveCatalogCategories } from "../../lib/resolveCategories";
-import { ENABLE_DEV_FALLBACKS } from "../../lib/runtime";
-
 const PAGE_SIZE = 24;
 
 async function withDevCatalogFallback(data: Content[]): Promise<Content[]> {
-  if (!ENABLE_DEV_FALLBACKS) return data;
-  const { enrichCatalogContents } = await import("../../lib/demoCatalog");
-  return enrichCatalogContents(data);
+  const { withDemoCatalogFallback } = await import("../../lib/demoCatalog");
+  return withDemoCatalogFallback(data);
 }
 
 type ContentApiResponse = {

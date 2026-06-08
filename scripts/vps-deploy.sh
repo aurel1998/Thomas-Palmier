@@ -43,11 +43,11 @@ npx prisma generate
 echo "==> Compte admin"
 npm run create-admin
 
-echo "==> Contenu éditorial (si base vide)"
-if npm run seed:editorial 2>/dev/null; then
-  echo "    Seed éditorial OK (ou déjà présent)."
+echo "==> Contenu démo soutenance (profil, catalogue, agenda)"
+if npm run seed:soutenance 2>/dev/null; then
+  echo "    Seed soutenance OK."
 else
-  echo "    Seed éditorial ignoré (optionnel)."
+  echo "    Seed soutenance ignoré (optionnel)."
 fi
 
 echo "==> Build Next.js"

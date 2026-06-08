@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import type { Content } from "../types/content";
 import { FEATURED_CONTENT_TAG } from "./contentCache";
+import { pickFeaturedStory } from "./demoCatalog";
 import { mapContentRow } from "./dbMappers";
 import { prisma } from "./prisma";
 
@@ -23,16 +24,26 @@ export function withoutFeaturedContent(contents: Content[], featured: Content | 
 }
 
 /** Charge le contenu à la une pour l'accueil (publié uniquement). */
+async function fetchFeaturedContent(): Promise<Content | null> {
+  try {
+    const row = await fetchFeaturedRow();
+    if (row) return mapContentRow(row);
+    return pickFeaturedStory([]);
+  } catch (error) {
+    console.error("[contents] fetchFeaturedContent:", (error as Error).message);
+    return pickFeaturedStory([]);
+  }
+}
+
 export async function getFeaturedContentServer(): Promise<Content | null> {
   try {
-    const row = await unstable_cache(fetchFeaturedRow, ["featured-content"], {
+    return unstable_cache(fetchFeaturedContent, ["featured-content"], {
       tags: [FEATURED_CONTENT_TAG],
       revalidate: 120,
     })();
-    return row ? mapContentRow(row) : null;
   } catch (error) {
     console.error("[contents] getFeaturedContentServer:", (error as Error).message);
-    return null;
+    return pickFeaturedStory([]);
   }
 }
 

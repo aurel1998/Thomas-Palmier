@@ -1,5 +1,16 @@
 import { unstable_cache } from "next/cache";
 import { EDITORIAL_CACHE_TAG } from "./editorialCache";
+import {
+  DEFAULT_CASES,
+  DEFAULT_CREDIBILITY,
+  DEFAULT_OFFERS,
+  DEFAULT_PROFILE,
+  DEFAULT_SITE,
+  DEFAULT_SOCIAL,
+  DEFAULT_TIMELINE,
+  pickString,
+  pickStringArray,
+} from "./editorialDefaults";
 import { mapCaseRow, mapCredibilityRow, mapOfferRow, mapProfileRow, mapSiteRow, mapSocialRow, mapTimelineRow } from "./editorialMappers";
 import { prisma } from "./prisma";
 import type {
@@ -14,40 +25,44 @@ import type {
   TimelineStepDto,
 } from "../types/editorial";
 
-const EMPTY_PROFILE: JournalistProfileDto = {
-  image_url: "",
-  display_name: "",
-  job_title: "",
-  tagline: "",
-  bio: "",
-  bio_short: "",
-  specialties: [],
-  hero_video_url: "",
-  hero_poster_url: "",
-  photo_caption: "",
-  editorial_line: "",
-  updated_at: null,
-};
+function mergeProfile(raw: JournalistProfileDto): JournalistProfileDto {
+  return {
+    image_url: pickString(raw.image_url, DEFAULT_PROFILE.image_url),
+    display_name: pickString(raw.display_name, DEFAULT_PROFILE.display_name),
+    job_title: pickString(raw.job_title, DEFAULT_PROFILE.job_title),
+    tagline: pickString(raw.tagline, DEFAULT_PROFILE.tagline),
+    bio: pickString(raw.bio, DEFAULT_PROFILE.bio),
+    bio_short: pickString(raw.bio_short, DEFAULT_PROFILE.bio_short),
+    specialties: pickStringArray(raw.specialties, DEFAULT_PROFILE.specialties),
+    hero_video_url: pickString(raw.hero_video_url, DEFAULT_PROFILE.hero_video_url),
+    hero_poster_url: pickString(raw.hero_poster_url, DEFAULT_PROFILE.hero_poster_url),
+    photo_caption: pickString(raw.photo_caption, DEFAULT_PROFILE.photo_caption),
+    editorial_line: pickString(raw.editorial_line, DEFAULT_PROFILE.editorial_line),
+    updated_at: raw.updated_at,
+  };
+}
 
-const EMPTY_SITE: SiteSettingsDto = {
-  footer_tagline: "",
-  contact_intro: "",
-  contact_role: "",
-  newsletter_eyebrow: "",
-  newsletter_title: "",
-  home_about_eyebrow: "",
-  home_about_title: "",
-  collaborer_eyebrow: "",
-  collaborer_hero_title: "",
-  collaborer_hero_subtitle: "",
-  collaborer_cta_label: "",
-  collaborer_cta_href: "/contact",
-  collaborer_closing_title: "",
-  updated_at: null,
-};
+function mergeSite(raw: SiteSettingsDto): SiteSettingsDto {
+  return {
+    footer_tagline: pickString(raw.footer_tagline, DEFAULT_SITE.footer_tagline),
+    contact_intro: pickString(raw.contact_intro, DEFAULT_SITE.contact_intro),
+    contact_role: pickString(raw.contact_role, DEFAULT_SITE.contact_role),
+    newsletter_eyebrow: pickString(raw.newsletter_eyebrow, DEFAULT_SITE.newsletter_eyebrow),
+    newsletter_title: pickString(raw.newsletter_title, DEFAULT_SITE.newsletter_title),
+    home_about_eyebrow: pickString(raw.home_about_eyebrow, DEFAULT_SITE.home_about_eyebrow),
+    home_about_title: pickString(raw.home_about_title, DEFAULT_SITE.home_about_title),
+    collaborer_eyebrow: pickString(raw.collaborer_eyebrow, DEFAULT_SITE.collaborer_eyebrow),
+    collaborer_hero_title: pickString(raw.collaborer_hero_title, DEFAULT_SITE.collaborer_hero_title),
+    collaborer_hero_subtitle: pickString(raw.collaborer_hero_subtitle, DEFAULT_SITE.collaborer_hero_subtitle),
+    collaborer_cta_label: pickString(raw.collaborer_cta_label, DEFAULT_SITE.collaborer_cta_label),
+    collaborer_cta_href: pickString(raw.collaborer_cta_href, DEFAULT_SITE.collaborer_cta_href),
+    collaborer_closing_title: pickString(raw.collaborer_closing_title, DEFAULT_SITE.collaborer_closing_title),
+    updated_at: raw.updated_at,
+  };
+}
 
 function profileFromRow(row: ReturnType<typeof mapProfileRow>): JournalistProfileDto {
-  return {
+  return mergeProfile({
     image_url: row.image_url ?? "",
     display_name: row.display_name ?? "",
     job_title: row.job_title ?? "",
@@ -60,11 +75,11 @@ function profileFromRow(row: ReturnType<typeof mapProfileRow>): JournalistProfil
     photo_caption: row.photo_caption ?? "",
     editorial_line: row.editorial_line ?? "",
     updated_at: row.updated_at,
-  };
+  });
 }
 
 function siteFromRow(row: ReturnType<typeof mapSiteRow>): SiteSettingsDto {
-  return {
+  return mergeSite({
     footer_tagline: row.footer_tagline ?? "",
     contact_intro: row.contact_intro ?? "",
     contact_role: row.contact_role ?? "",
@@ -79,15 +94,15 @@ function siteFromRow(row: ReturnType<typeof mapSiteRow>): SiteSettingsDto {
     collaborer_cta_href: row.collaborer_cta_href || "/contact",
     collaborer_closing_title: row.collaborer_closing_title ?? "",
     updated_at: row.updated_at,
-  };
+  });
 }
 
 async function fetchJournalistProfile(): Promise<JournalistProfileDto> {
   try {
     const row = await prisma.journalistProfile.findFirst();
-    return row ? profileFromRow(mapProfileRow(row)) : EMPTY_PROFILE;
+    return row ? profileFromRow(mapProfileRow(row)) : DEFAULT_PROFILE;
   } catch {
-    return EMPTY_PROFILE;
+    return DEFAULT_PROFILE;
   }
 }
 
@@ -101,9 +116,9 @@ export async function getJournalistProfileServer(): Promise<JournalistProfileDto
 async function fetchSiteSettings(): Promise<SiteSettingsDto> {
   try {
     const row = await prisma.siteSettings.findFirst();
-    return row ? siteFromRow(mapSiteRow(row)) : EMPTY_SITE;
+    return row ? siteFromRow(mapSiteRow(row)) : DEFAULT_SITE;
   } catch {
-    return EMPTY_SITE;
+    return DEFAULT_SITE;
   }
 }
 
@@ -126,9 +141,19 @@ export async function getCredibilityItemsServer(opts?: {
       },
       orderBy: [{ position: "asc" }, { name: "asc" }],
     });
-    return rows.map(mapCredibilityRow);
+    const mapped = rows.map(mapCredibilityRow);
+    if (!mapped.length) {
+      return DEFAULT_CREDIBILITY.filter(
+        (item) =>
+          (!opts?.kind || item.kind === opts.kind) && (!opts?.activeOnly || item.is_active)
+      );
+    }
+    return mapped;
   } catch {
-    return [];
+    return DEFAULT_CREDIBILITY.filter(
+      (item) =>
+        (!opts?.kind || item.kind === opts.kind) && (!opts?.activeOnly || item.is_active)
+    );
   }
 }
 
@@ -137,9 +162,9 @@ export async function getTimelineStepsServer(): Promise<TimelineStepDto[]> {
     const rows = await prisma.timelineStep.findMany({
       orderBy: [{ position: "asc" }, { period: "asc" }],
     });
-    return rows.map(mapTimelineRow);
+    return rows.length ? rows.map(mapTimelineRow) : DEFAULT_TIMELINE;
   } catch {
-    return [];
+    return DEFAULT_TIMELINE;
   }
 }
 
@@ -149,9 +174,9 @@ async function fetchSocialLinks(activeOnly: boolean): Promise<SocialLinkDto[]> {
       where: activeOnly ? { isActive: true } : undefined,
       orderBy: [{ position: "asc" }, { label: "asc" }],
     });
-    return rows.map(mapSocialRow);
+    return rows.length ? rows.map(mapSocialRow) : activeOnly ? DEFAULT_SOCIAL : DEFAULT_SOCIAL;
   } catch {
-    return [];
+    return DEFAULT_SOCIAL;
   }
 }
 
@@ -168,9 +193,9 @@ export async function getCollaborationOffersServer(): Promise<CollaborationOffer
     const rows = await prisma.collaborationOffer.findMany({
       orderBy: [{ position: "asc" }, { title: "asc" }],
     });
-    return rows.map(mapOfferRow);
+    return rows.length ? rows.map(mapOfferRow) : DEFAULT_OFFERS;
   } catch {
-    return [];
+    return DEFAULT_OFFERS;
   }
 }
 
@@ -179,9 +204,9 @@ export async function getCollaborationCasesServer(): Promise<CollaborationCaseDt
     const rows = await prisma.collaborationCase.findMany({
       orderBy: [{ position: "asc" }, { number: "asc" }],
     });
-    return rows.map(mapCaseRow);
+    return rows.length ? rows.map(mapCaseRow) : DEFAULT_CASES;
   } catch {
-    return [];
+    return DEFAULT_CASES;
   }
 }
 

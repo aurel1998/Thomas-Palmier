@@ -1,13 +1,10 @@
 /**
- * Vidéo de fond du hero — `/public/videos/hero.mp4`.
- * Le paramètre `?v=` est un cache-buster : il force le navigateur à retélécharger
- * la vidéo quand on change physiquement le fichier (sinon il garde l'ancienne en cache).
- * Incrémenter la valeur à chaque fois qu'on remplace `hero.mp4` côté disque.
+ * Vidéo de fond du hero — fichiers dans `/public/src/stade/`.
+ * Le paramètre `?v=` force le rechargement navigateur après remplacement du fichier.
  */
-export const HERO_VIDEO_MP4_DEFAULT = "/videos/hero.mp4?v=3";
+export const HERO_VIDEO_MP4_DEFAULT = "/src/stade/15816491_3840_2160_25fps.mp4?v=1";
 
-/** Secours : même fichier — évite toute bascule visuelle vers une autre vidéo. */
-export const HERO_VIDEO_MP4_FALLBACK = "/videos/hero.mp4?v=3";
+export const HERO_VIDEO_MP4_FALLBACK = "/src/stade/13423891_3840_2160_24fps.mp4?v=1";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";
@@ -16,4 +13,4 @@ export const HERO_HEADLINE = "Thomas Palmier";
 export const HERO_JOURNAL_LINE = "Journaliste sportif";
 
 /** Phrase courte de positionnement éditorial. */
-export const HERO_POSITIONING = "Le sport raconté au plus près.";
+export const HERO_POSITIONING = "Le sport raconté au plus près du terrain.";

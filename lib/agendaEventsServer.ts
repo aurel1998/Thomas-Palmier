@@ -3,7 +3,6 @@ import { AGENDA_EVENTS, type AgendaEvent } from "./agendaEvents";
 import { AGENDA_CACHE_TAG } from "./agendaCache";
 import { mapAgendaRow } from "./dbMappers";
 import { prisma } from "./prisma";
-import { ENABLE_DEV_FALLBACKS } from "./runtime";
 
 async function fetchAgendaEventsFromDb(): Promise<AgendaEvent[]> {
   try {
@@ -11,9 +10,10 @@ async function fetchAgendaEventsFromDb(): Promise<AgendaEvent[]> {
       where: { status: "published" },
       orderBy: [{ isFeatured: "desc" }, { date: "asc" }],
     });
-    return data.map(mapAgendaRow);
+    const mapped = data.map(mapAgendaRow);
+    return mapped.length > 0 ? mapped : AGENDA_EVENTS;
   } catch {
-    return ENABLE_DEV_FALLBACKS ? AGENDA_EVENTS : [];
+    return AGENDA_EVENTS;
   }
 }
 

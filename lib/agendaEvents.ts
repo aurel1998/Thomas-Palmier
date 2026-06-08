@@ -18,16 +18,17 @@ export type AgendaEvent = {
 export const AGENDA_EVENTS: AgendaEvent[] = [
   {
     id: "fallback-1",
-    date: "2026-05-24T20:45:00",
+    date: "2026-06-12T20:45:00",
     title: "Soirée Ligue 1 — débrief plateau",
     location: "RMC Sport",
     status: "published",
+    is_featured: true,
     description:
       "Analyse en direct après les matchs : temps forts, polémiques et angles éditoriaux pour la semaine.",
   },
   {
     id: "fallback-2",
-    date: "2026-05-28T18:00:00",
+    date: "2026-06-18T18:00:00",
     title: "Reportage terrain — activation club",
     location: "Île-de-France",
     status: "published",
@@ -35,15 +36,15 @@ export const AGENDA_EVENTS: AgendaEvent[] = [
   },
   {
     id: "fallback-3",
-    date: "2026-06-02T12:30:00",
-    title: "Live Twitter Spaces — mercato & coulisses",
+    date: "2026-06-22T12:30:00",
+    title: "Live — mercato & coulisses",
     location: "En ligne",
     status: "published",
     description: "Échange en direct avec la communauté sur le mercato et les coulisses du métier.",
   },
   {
     id: "fallback-4",
-    date: "2026-06-08T19:00:00",
+    date: "2026-06-28T19:00:00",
     title: "Table ronde — récit sportif & médias",
     location: "Paris",
     status: "published",
@@ -51,7 +52,7 @@ export const AGENDA_EVENTS: AgendaEvent[] = [
   },
   {
     id: "fallback-5",
-    date: "2026-06-14T15:00:00",
+    date: "2026-07-05T15:00:00",
     title: "Finale — couverture multi-formats",
     location: "Stade",
     status: "published",
