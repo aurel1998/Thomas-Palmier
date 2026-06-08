@@ -270,78 +270,92 @@ export function CollaborerClient({
       </header>
 
       <div className="container collab-biz__container">
-        <section className="collab-biz__section collab-biz__offers">
-          <header className="collab-biz__head collab-biz__head--row" data-collab-reveal>
-            <p className="home-sectionEyebrow">Formats</p>
-            <h2>Ce qu’on produit</h2>
-          </header>
-          <div className="collab-biz__bento">
-            {offers.map((offer, i) => (
-              <article
-                key={offer.id}
-                className={`collab-biz__bentoCell collab-biz__bentoCell--${i + 1}`}
-                data-collab-reveal
-              >
-                <span className="collab-biz__bentoIndex">0{i + 1}</span>
-                <h3>{offer.title}</h3>
-                <p className="collab-biz__bentoTag">{offer.tag}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="collab-biz__section collab-biz__proof">
-          <header className="collab-biz__head collab-biz__head--row" data-collab-reveal>
-            <div>
-              <p className="home-sectionEyebrow">Écosystème</p>
-              <h2>Médias &amp; partenaires</h2>
-            </div>
-            <ul className="collab-biz__awards" aria-label="Récompenses">
-              {awards.map((a) => (
-                <li key={a.id}>
-                  <span className="collab-biz__awardYear">{a.year}</span>
-                  <span>{a.title}</span>
-                </li>
+        {offers.length > 0 && (
+          <section className="collab-biz__section collab-biz__offers">
+            <header className="collab-biz__head collab-biz__head--row" data-collab-reveal>
+              <p className="home-sectionEyebrow">Formats</p>
+              <h2>Ce qu’on produit</h2>
+            </header>
+            <div className="collab-biz__bento">
+              {offers.map((offer, i) => (
+                <article
+                  key={offer.id}
+                  className={`collab-biz__bentoCell collab-biz__bentoCell--${i + 1}`}
+                  data-collab-reveal
+                  aria-label={offer.title}
+                >
+                  <span className="collab-biz__bentoIndex" aria-hidden="true">0{i + 1}</span>
+                  <h3>{offer.title}</h3>
+                  <p className="collab-biz__bentoTag">{offer.tag}</p>
+                </article>
               ))}
-            </ul>
-          </header>
-          <div className="collab-biz__logoWall">
-            {logoWall.map((item) => (
-              <div key={item.id} className="collab-biz__logoCell">
-                <BrandLogo
-                  name={item.name}
-                  logoSrc={item.logoSrc}
-                  initials={item.initials}
-                  className="brand-logo--cell"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
-        <section className="collab-biz__section collab-biz__cases">
-          <header className="collab-biz__head" data-collab-reveal>
-            <p className="home-sectionEyebrow">Résultats</p>
-            <h2>Exemples de collaborations</h2>
-            <p className="collab-biz__casesIntro muted">
-              Objectif, format produit et bilan chiffré — pour vous projeter sur un projet similaire.
-            </p>
-          </header>
-          <div className="collab-biz__casesTrack">
-            {cases.map((c) => (
-              <article key={c.id} className="collab-biz__caseCard" data-collab-reveal>
-                <span className="collab-biz__caseN">{c.number}</span>
-                <h3>{c.title}</h3>
-                <p className="collab-biz__caseFormat">{c.format}</p>
-                {c.note ? <p className="collab-biz__caseDetail muted">{c.note}</p> : null}
-              </article>
-            ))}
-          </div>
-        </section>
+        {(logoWall.length > 0 || awards.length > 0) && (
+          <section className="collab-biz__section collab-biz__proof">
+            <header className="collab-biz__head collab-biz__head--row" data-collab-reveal>
+              <div>
+                <p className="home-sectionEyebrow">Écosystème</p>
+                <h2>Médias &amp; partenaires</h2>
+              </div>
+              {awards.length > 0 && (
+                <ul className="collab-biz__awards" aria-label="Récompenses">
+                  {awards.map((a) => (
+                    <li key={a.id}>
+                      <span className="collab-biz__awardYear">{a.year}</span>
+                      <span>{a.title}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </header>
+            {logoWall.length > 0 && (
+              <div className="collab-biz__logoWall">
+                {logoWall.map((item) => (
+                  <div key={item.id} className="collab-biz__logoCell">
+                    <BrandLogo
+                      name={item.name}
+                      logoSrc={item.logoSrc}
+                      initials={item.initials}
+                      className="brand-logo--cell"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {cases.length > 0 && (
+          <section className="collab-biz__section collab-biz__cases">
+            <header className="collab-biz__head" data-collab-reveal>
+              <p className="home-sectionEyebrow">Résultats</p>
+              <h2>Exemples de collaborations</h2>
+              <p className="collab-biz__casesIntro muted">
+                Objectif, format produit et bilan chiffré — pour vous projeter sur un projet similaire.
+              </p>
+            </header>
+            <div className="collab-biz__casesTrack">
+              {cases.map((c) => (
+                <article key={c.id} className="collab-biz__caseCard" data-collab-reveal>
+                  <span className="collab-biz__caseN">{c.number}</span>
+                  <h3>{c.title}</h3>
+                  <p className="collab-biz__caseFormat">{c.format}</p>
+                  {c.note ? <p className="collab-biz__caseNote">{c.note}</p> : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="collab-biz__section collab-biz__ctaWrap">
           <div className="collab-biz__cta" data-collab-reveal>
-            <h2>{closingTitle}</h2>
+            <div>
+              <p className="collab-biz__ctaEyebrow">Prochain projet</p>
+              <h2>{closingTitle}</h2>
+            </div>
             <Link
               id="collabCtaBtn"
               href={ctaHref}

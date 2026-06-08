@@ -176,7 +176,7 @@ export default function MonSitePage() {
           undefined,
           4500
         );
-        window.setTimeout(() => router.replace("/login?redirect=/monsite"), 900);
+        window.setTimeout(() => router.replace("/monsite"), 900);
       }
       return response;
     },

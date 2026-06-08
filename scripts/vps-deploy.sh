@@ -16,7 +16,7 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-if grep -qE 'CHANGEME' .env; then
+if grep -v '^[[:space:]]*#' .env | grep -qE 'CHANGEME'; then
   echo ""
   echo "Erreur : des valeurs CHANGEME restent dans .env."
   echo "Ouvre .env et remplace :"
@@ -27,13 +27,14 @@ if grep -qE 'CHANGEME' .env; then
   exit 1
 fi
 
-export NODE_ENV=production
-
 echo "==> Dossiers uploads"
 mkdir -p public/uploads/images public/uploads/audio logs backups
 
 echo "==> Dépendances"
-npm ci
+# devDependencies requises pour le build TypeScript (Next.js)
+npm ci --include=dev
+
+export NODE_ENV=production
 
 echo "==> Base de données"
 npx prisma migrate deploy
@@ -43,7 +44,7 @@ echo "==> Compte admin"
 npm run create-admin
 
 echo "==> Contenu éditorial (si base vide)"
-if npx tsx scripts/seed-editorial.ts 2>/dev/null; then
+if npm run seed:editorial 2>/dev/null; then
   echo "    Seed éditorial OK (ou déjà présent)."
 else
   echo "    Seed éditorial ignoré (optionnel)."

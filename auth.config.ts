@@ -5,7 +5,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const authConfig = {
   secret: process.env.JWT_SECRET ?? process.env.AUTH_SECRET,
-  pages: { signIn: "/login" },
+  pages: { signIn: "/monsite" },
   providers: [],
   trustHost: true,
   useSecureCookies: isProduction,

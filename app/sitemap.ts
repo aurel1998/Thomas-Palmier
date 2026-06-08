@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { id: true, updatedAt: true },
       orderBy: { updatedAt: "desc" },
     });
-    contentEntries = contents.map((item) => ({
+    contentEntries = contents.map((item: { id: string; updatedAt: Date }) => ({
       url: `${base}/mes-contenus/${item.id}`,
       lastModified: item.updatedAt,
       changeFrequency: "monthly" as const,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Content } from "../../../types/content";
 import { requireAdmin } from "../../../lib/apiAuth";
-import { mapContentRow } from "../../../lib/dbMappers";
+import { mapContentRow, type ContentRow } from "../../../lib/dbMappers";
 import { prisma } from "../../../lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -57,17 +57,18 @@ export async function GET() {
       }),
     ]);
 
-    const videos = contents.filter((c) => c.type === "video").length;
-    const articles = contents.filter((c) => c.type === "article").length;
-    const audios = contents.filter((c) => c.type === "audio").length;
+    const rows = contents as ContentRow[];
+    const videos = rows.filter((c) => c.type === "video").length;
+    const articles = rows.filter((c) => c.type === "article").length;
+    const audios = rows.filter((c) => c.type === "audio").length;
 
-    const published = contents.filter((c) => c.status === "published");
+    const published = rows.filter((c) => c.status === "published");
     const featuredRow = published.find((c) => c.isFeatured) ?? null;
     const recentContents = published.slice(0, 5).map(mapContentRow) as Content[];
 
     const payload: DashboardResponse = {
       stats: {
-        contentsTotal: contents.length,
+        contentsTotal: rows.length,
         videos,
         articles,
         audios,
@@ -76,7 +77,14 @@ export async function GET() {
       },
       featured: featuredRow ? (mapContentRow(featuredRow) as Content) : null,
       recentContents,
-      recentSubscribers: recentSubscribers.map((s) => ({
+      recentSubscribers: recentSubscribers.map(
+        (s: {
+          id: string;
+          email: string;
+          fullName: string | null;
+          isActive: boolean;
+          subscribedAt: Date;
+        }) => ({
         id: s.id,
         email: s.email,
         fullName: s.fullName,

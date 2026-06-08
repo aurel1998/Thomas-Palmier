@@ -21,7 +21,7 @@ type SubcategoryRow = {
   createdAt: Date;
 };
 
-type ContentRow = {
+export type ContentRow = {
   id: string;
   title: string;
   type: "video" | "article" | "audio";

@@ -51,8 +51,12 @@ export default async function AProposPage() {
     <AProposClient
       profileImageUrl={profile.image_url?.trim() || ""}
       displayName={profile.display_name}
+      jobTitle={profile.job_title}
+      tagline={profile.tagline}
       photoCaption={profile.photo_caption}
       bio={profile.bio}
+      specialties={profile.specialties}
+      editorialLine={profile.editorial_line}
       timeline={timeline}
       awards={awards}
       media={media}

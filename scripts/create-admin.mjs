@@ -3,8 +3,12 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
-const prisma = new PrismaClient();
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 function generatePassword() {
   return randomBytes(18).toString("base64").replace(/[+/=]/g, "").slice(0, 20) + "!2";
@@ -56,4 +60,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

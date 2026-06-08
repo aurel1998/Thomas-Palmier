@@ -49,8 +49,8 @@ export async function GET() {
       getNewsletterCampaignStats(),
       getRecentNewsletterCampaigns(12),
     ]);
-    const subscribers = rows.map(mapSubscriber);
-    const active = subscribers.filter((s) => s.isActive).length;
+    const subscribers: SubscriberDto[] = rows.map(mapSubscriber);
+    const active = subscribers.filter((s: SubscriberDto) => s.isActive).length;
     const inactive = subscribers.length - active;
 
     return NextResponse.json(

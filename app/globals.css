@@ -6954,16 +6954,49 @@ main li > a:not([class]):hover,
   color: rgb(var(--text-rgb) / 0.64);
 }
 
-.apropos-story__pillars {
+.apropos-story__bio {
   margin: 0;
-  padding-left: 18px;
-  display: grid;
+  color: rgb(var(--text-rgb) / 0.82);
+  line-height: 1.72;
+  font-size: clamp(15px, 1.5vw, 17px);
+}
+
+.apropos-story__bio + .apropos-story__bio {
+  margin-top: 12px;
+}
+
+.apropos-story__editorial {
+  margin: 0;
+  padding: 14px 18px;
+  border-left: 3px solid rgb(var(--accent-rgb) / 0.7);
+  border-radius: 0 12px 12px 0;
+  background: rgb(var(--accent-rgb) / 0.06);
+  color: rgb(var(--text-rgb) / 0.9);
+  font-family: var(--font-editorial-serif);
+  font-size: clamp(16px, 1.6vw, 19px);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.apropos-story__pillars {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .apropos-story__pillars li {
-  color: rgb(var(--text-rgb) / 0.8);
-  line-height: 1.62;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--text-rgb) / 0.14);
+  background: rgb(var(--surface-rgb) / 0.6);
+  color: rgb(var(--text-rgb) / 0.82);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
 }
 
 .apropos-layout {

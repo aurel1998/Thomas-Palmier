@@ -16,8 +16,12 @@ import type { CredibilityItemDto, TimelineStepDto } from "../../types/editorial"
 type AProposClientProps = {
   profileImageUrl: string;
   displayName?: string;
+  jobTitle?: string;
+  tagline?: string;
   photoCaption?: string;
   bio?: string;
+  specialties?: string[];
+  editorialLine?: string;
   timeline: TimelineStepDto[];
   awards: CredibilityItemDto[];
   media: CredibilityItemDto[];
@@ -26,8 +30,12 @@ type AProposClientProps = {
 export function AProposClient({
   profileImageUrl,
   displayName = "",
+  jobTitle = "",
+  tagline = "",
   photoCaption = "",
   bio,
+  specialties = [],
+  editorialLine = "",
   timeline,
   awards,
   media,
@@ -100,17 +108,39 @@ export function AProposClient({
           ) : null}
 
           <div className="apropos-story__narrative">
-            {bio ? (
+            {(bio || tagline || specialties.length > 0) && (
               <section className="apropos-story__section apropos-story__step apropos-story__intro" aria-labelledby="apropos-bio">
                 <div className="apropos-story__sectionHead">
                   <p className="home-sectionEyebrow">Portrait</p>
                   <h2 id="apropos-bio" className="apropos-story__sectionTitle">
-                    Biographie
+                    {jobTitle || "Biographie"}
+                  </h2>
+                  {tagline && <p className="apropos-story__lead">{tagline}</p>}
+                </div>
+                {bio && bio.split(/\n\n+/).map((paragraph, i) => (
+                  <p key={i} className="apropos-story__bio">{paragraph}</p>
+                ))}
+                {specialties.length > 0 && (
+                  <ul className="apropos-story__pillars" aria-label="Spécialités">
+                    {specialties.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+
+            {editorialLine && (
+              <section className="apropos-story__section apropos-story__step" aria-labelledby="apropos-editorial">
+                <div className="apropos-story__sectionHead">
+                  <p className="home-sectionEyebrow">Ligne éditoriale</p>
+                  <h2 id="apropos-editorial" className="apropos-story__sectionTitle">
+                    Approche
                   </h2>
                 </div>
-                <p className="apropos-story__bio">{bio}</p>
+                <blockquote className="apropos-story__editorial">{editorialLine}</blockquote>
               </section>
-            ) : null}
+            )}
 
             {timeline.length > 0 ? (
               <section className="apropos-story__section apropos-story__step" aria-labelledby="apropos-timeline">

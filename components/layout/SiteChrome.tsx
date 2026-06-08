@@ -16,7 +16,7 @@ type SiteChromeProps = {
   socialLinks?: SocialLinkDto[];
 };
 
-const MINIMAL_CHROME_PREFIXES = ["/monsite", "/login"];
+const MINIMAL_CHROME_PREFIXES = ["/monsite"];
 
 function isMinimalChrome(pathname: string): boolean {
   return MINIMAL_CHROME_PREFIXES.some(
