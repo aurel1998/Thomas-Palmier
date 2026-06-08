@@ -2,6 +2,7 @@
  * Initialise le contenu éditorial en base depuis les valeurs par défaut.
  * Usage : npx tsx scripts/seed-editorial.ts
  */
+import "dotenv/config";
 import {
   DEFAULT_CASES,
   DEFAULT_CREDIBILITY,
