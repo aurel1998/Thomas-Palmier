@@ -1,7 +1,6 @@
 import { unstable_cache } from "next/cache";
 import type { Content } from "../types/content";
 import { CONTENT_CACHE_TAG } from "./contentCache";
-import { withDemoCatalogFallback } from "./demoCatalog";
 import { mapContentRow } from "./dbMappers";
 import { prisma } from "./prisma";
 
@@ -14,10 +13,10 @@ async function fetchPublishedContentsForHome(limit: number): Promise<Content[]> 
       orderBy: { createdAt: "desc" },
       take: Math.max(1, Math.min(limit, 48)),
     });
-    return withDemoCatalogFallback(data.map(mapContentRow));
+    return data.map(mapContentRow);
   } catch (error) {
     console.error("[contents] fetchPublishedContentsForHome:", (error as Error).message);
-    return withDemoCatalogFallback([]);
+    return [];
   }
 }
 
@@ -32,7 +31,7 @@ export async function getContentsForHomeServer(limit = 48): Promise<Content[]> {
     )();
   } catch (error) {
     console.error("[contents] getContentsForHomeServer:", (error as Error).message);
-    return withDemoCatalogFallback([]);
+    return [];
   }
 }
 
