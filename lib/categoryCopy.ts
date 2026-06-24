@@ -73,5 +73,5 @@ export function categoryTabAriaLabel(
 
 /** Introduction du hub catalogue (niveau catégories). */
 export function catalogHubIntro(): string {
-  return "Les dernières vidéos sont accessibles directement ci-dessous — ou explorez par catégorie et rubrique.";
+  return "Reportages, interviews et réactions — cliquez sur une vidéo pour la regarder.";
 }

@@ -7,7 +7,7 @@ import type { Subcategory } from "../../types/subcategory";
 import { summarizeContentMix } from "../../lib/catalogContentCopy";
 import { catalogHubIntro, categoryCatalogLede, categoryChipLabel } from "../../lib/categoryCopy";
 import { FIXED_CATEGORY_IDS } from "../../lib/fixedCategories";
-import { CatalogLandingSpotlight } from "./CatalogLandingSpotlight";
+import { CatalogVideoGallery } from "./CatalogVideoGallery";
 import { CatalogVideoThumb } from "./CatalogVideoThumb";
 import {
   markForCatalogSlug,
@@ -32,7 +32,6 @@ type CatalogHubProps = {
   onSelectSubcategory: (subcategoryId: string) => void;
   onBackToCategories: () => void;
   onBackToSubcategories: () => void;
-  onOpenContents: (categoryId: string, subcategoryId: string) => void;
   children?: ReactNode;
 };
 
@@ -54,7 +53,6 @@ export function CatalogHub({
   onSelectSubcategory,
   onBackToCategories,
   onBackToSubcategories,
-  onOpenContents,
   children,
 }: CatalogHubProps) {
   const subcategoriesByCategory = new Map<string, Subcategory[]>();
@@ -89,7 +87,7 @@ export function CatalogHub({
       ? selectedSubcategory.name
       : level === "subcategories" && selectedCategory
         ? categoryChipLabel(selectedCategory)
-        : "Contenus";
+        : "Vidéos";
 
   const pageLede =
     level === "contents" && selectedSubcategory
@@ -103,7 +101,7 @@ export function CatalogHub({
         : catalogHubIntro();
 
   const publishedVideos = items
-    .filter((item) => item.type === "video" && item.status === "published")
+    .filter((item) => item.type === "video")
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
   const landingFeatured =
@@ -166,17 +164,16 @@ export function CatalogHub({
 
       {level === "categories" ? (
         <>
-          <CatalogLandingSpotlight
+          <CatalogVideoGallery
             featured={landingFeatured}
-            recentVideos={publishedVideos}
+            videos={publishedVideos}
             tvSubcategories={tvSubcategories}
             isLoading={isLoading}
-            onOpenTvCategory={() => onSelectCategory(FIXED_CATEGORY_IDS.tv)}
-            onOpenRubrique={(subId) => onOpenContents(FIXED_CATEGORY_IDS.tv, subId)}
           />
 
-          <h2 className="catalog-tierHeading">Explorer par catégorie</h2>
-          <div className="catalog-tier catalog-tier--categories" role="list" aria-label="Catégories">
+          <details className="catalog-otherFormats">
+            <summary className="catalog-otherFormats__summary">Autres formats éditoriaux</summary>
+            <div className="catalog-tier catalog-tier--categories" role="list" aria-label="Catégories">
           {categories.map((category) => {
             const slug = slugForCategory(category);
             const tone = toneForCatalogSlug(slug);
@@ -216,7 +213,8 @@ export function CatalogHub({
               </button>
             );
           })}
-          </div>
+            </div>
+          </details>
         </>
       ) : null}
 

@@ -22,6 +22,7 @@ import { ContenuCard } from "../../components/contenus/ContenuCard";
 import { countByContentType } from "../../lib/catalogContentCopy";
 import { attachCategoryIds, resolveCatalogCategories } from "../../lib/resolveCategories";
 const PAGE_SIZE = 24;
+const CATALOG_STATS_LIMIT = 64;
 
 async function withDevCatalogFallback(
   data: Content[],
@@ -40,10 +41,11 @@ type ContentApiResponse = {
 
 function buildContentQuery(
   offset: number,
-  opts?: { stats?: boolean; subcategoryId?: string | null }
+  opts?: { stats?: boolean; subcategoryId?: string | null; limit?: number }
 ): string {
   const params = new URLSearchParams();
-  params.set("limit", String(PAGE_SIZE));
+  const limit = opts?.limit ?? PAGE_SIZE;
+  params.set("limit", String(limit));
   params.set("offset", String(offset));
   if (opts?.stats) params.set("stats", "1");
   if (opts?.subcategoryId) params.set("subcategory_id", opts.subcategoryId);
@@ -154,7 +156,9 @@ function MesContenusCatalog() {
       setCategories(resolvedCategories);
 
       try {
-        const response = await fetch(buildContentQuery(0, { stats: true }), { cache: "no-store" });
+        const response = await fetch(buildContentQuery(0, { stats: true, limit: CATALOG_STATS_LIMIT }), {
+          cache: "no-store",
+        });
         const result = (await response.json()) as ContentApiResponse;
         if (!isMounted) return;
         if (Array.isArray(result.data)) {
@@ -535,7 +539,6 @@ function MesContenusCatalog() {
           onBackToSubcategories={() => {
             if (selectedCategoryId) goToSubcategories(selectedCategoryId);
           }}
-          onOpenContents={goToContents}
         >
           {showEmptyGlobal ? (
             <p className="contenus-empty muted">Les premiers contenus arrivent bientôt.</p>

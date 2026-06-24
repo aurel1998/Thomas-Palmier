@@ -8,7 +8,7 @@ type FeatureStorySectionProps = {
 };
 
 /**
- * Mise en avant éditoriale — contenu principal du moment (accueil + catalogue).
+ * Mise en avant éditoriale — contenu principal du moment sur l'accueil.
  */
 export function FeatureStorySection({ item }: FeatureStorySectionProps) {
   return (
@@ -18,10 +18,10 @@ export function FeatureStorySection({ item }: FeatureStorySectionProps) {
           <div>
             <p className="home-sectionEyebrow">À la une</p>
             <h2 id="home-feature-story-heading" className="home-sectionTitle">
-              Feature story
+              Le format du moment
             </h2>
             <p className="home-une__lede muted">
-              Le récit principal du moment — sélectionné depuis l&apos;administration.
+              Reportages, interviews et réactions — directement depuis le terrain.
             </p>
           </div>
           <div className="home-sectionRule" aria-hidden="true" />
