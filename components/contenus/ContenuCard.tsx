@@ -8,7 +8,6 @@ import { AudioPlayer } from "../media/AudioPlayer";
 import { ContentImage } from "../media/ContentImage";
 import { VideoPlayer } from "../media/VideoPlayer";
 import { articleExcerpt, plainBodyTeaser } from "../../lib/articleExcerpt";
-import { getHybridVideoTeaser } from "../../lib/hybridContent";
 import { extractYouTubeId } from "../../lib/youtube";
 import { isReducedMotion, motion } from "../../lib/gsapMotion";
 
@@ -32,9 +31,7 @@ export function ContenuCard({ item, intentRail }: { item: Content; intentRail?: 
   const ytId = isVideo ? extractYouTubeId(item.content) : null;
   const canPreview = isVideo && !ytId && Boolean(item.content);
   const excerpt = isArticle ? articleExcerpt(item.content) : "";
-  const videoTeaser = isVideo
-    ? getHybridVideoTeaser(item.content) || (!ytId ? plainBodyTeaser(item.content, 100) : "")
-    : "";
+  const videoTeaser = isVideo ? plainBodyTeaser(item.content, 100) : "";
 
   useEffect(() => {
     if (isAudio) return;
