@@ -77,7 +77,7 @@ function toIsoDate(uploadDate) {
 }
 
 function contentId(index) {
-  const n = String(index + 1).padStart(6, "0");
+  const n = String(index + 1).padStart(12, "0");
   return `e0000001-0001-4001-8001-${n}`;
 }
 
