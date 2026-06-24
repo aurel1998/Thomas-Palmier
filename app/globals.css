@@ -5448,6 +5448,32 @@ main li > a:not([class]):hover,
   background: rgb(var(--accent-rgb) / 0.08);
 }
 
+.catalog-spotlight__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: clamp(20px, 3vw, 28px) 0;
+}
+
+.catalog-spotlight__ytLink {
+  display: inline-flex;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--accent-rgb) / 0.35);
+  background: rgb(var(--accent-rgb) / 0.08);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.catalog-spotlight__ytLink:hover {
+  background: rgb(var(--accent-rgb) / 0.14);
+  border-color: rgb(var(--accent-rgb) / 0.5);
+}
+
 .catalog-spotlight__heading--sr {
   position: absolute;
   width: 1px;

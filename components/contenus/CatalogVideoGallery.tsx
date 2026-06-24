@@ -40,9 +40,19 @@ export function CatalogVideoGallery({
 
   if (!featured && videos.length === 0) {
     return (
-      <p className="contenus-empty muted">
-        Les premières vidéos seront bientôt disponibles ici.
-      </p>
+      <div className="catalog-spotlight__empty">
+        <p className="contenus-empty muted">
+          Le catalogue vidéo est en cours de mise en ligne.
+        </p>
+        <a
+          href="https://www.youtube.com/@thomaspalmiertv"
+          className="catalog-spotlight__ytLink"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Voir les vidéos sur YouTube
+        </a>
+      </div>
     );
   }
 

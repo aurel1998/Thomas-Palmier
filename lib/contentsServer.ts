@@ -35,6 +35,22 @@ export async function getContentsForHomeServer(limit = 48): Promise<Content[]> {
   }
 }
 
+/** Catalogue /mes-contenus : contenus publiés récents (SSR, max 64). */
+export async function getCatalogContentsServer(limit = 64): Promise<Content[]> {
+  try {
+    const clamped = Math.max(1, Math.min(limit, 100));
+    const data = await prisma.content.findMany({
+      where: { status: "published" },
+      orderBy: { createdAt: "desc" },
+      take: clamped,
+    });
+    return data.map(mapContentRow);
+  } catch (error) {
+    console.error("[contents] getCatalogContentsServer:", (error as Error).message);
+    return [];
+  }
+}
+
 
 
 /**
