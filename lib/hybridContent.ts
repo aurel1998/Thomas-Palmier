@@ -85,6 +85,21 @@ export function buildHybridBlocks(item: Content): HybridBlock[] {
   return [{ type: "text", body: item.content, title: "Lecture" }];
 }
 
+/** Extrait un chapô court depuis un document hybride vidéo (cartes catalogue). */
+export function getHybridVideoTeaser(content: string, maxLen = 140): string {
+  try {
+    const parsed = JSON.parse(content) as HybridDocument;
+    if (!Array.isArray(parsed.blocks)) return "";
+    const textBlock = parsed.blocks.find((b) => b.type === "text" && b.body.trim());
+    if (!textBlock || textBlock.type !== "text") return "";
+    const body = textBlock.body.replace(/\s+/g, " ").trim();
+    if (body.length <= maxLen) return body;
+    return `${body.slice(0, maxLen - 1).trim()}…`;
+  } catch {
+    return "";
+  }
+}
+
 /** Découpe un bloc texte long en paragraphes lisibles (articles de presse). */
 export function toParagraphs(text: string): string[] {
   const cleaned = text.replace(/<[^>]*>/g, " ").trim();
@@ -105,4 +120,22 @@ export function toParagraphs(text: string): string[] {
   }
 
   return [cleaned.replace(/\s+/g, " ").trim()];
+}
+
+/** Construit un document hybride vidéo YouTube + texte éditorial. */
+export function buildYouTubeVideoDocument(opts: {
+  youtubeId: string;
+  title: string;
+  lede?: string;
+  body?: string;
+}): string {
+  const url = `https://www.youtube.com/watch?v=${opts.youtubeId}`;
+  const blocks: HybridBlock[] = [{ type: "video", src: url, title: opts.title }];
+  if (opts.lede?.trim()) {
+    blocks.push({ type: "text", title: "En bref", body: opts.lede.trim() });
+  }
+  if (opts.body?.trim()) {
+    blocks.push({ type: "text", title: "Contexte", body: opts.body.trim() });
+  }
+  return JSON.stringify({ blocks });
 }

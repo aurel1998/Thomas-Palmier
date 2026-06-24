@@ -23,19 +23,13 @@ const YT_HOSTS = new Set<string>([
 ]);
 
 const YT_ID_REGEX = /^[a-zA-Z0-9_-]{11}$/;
+const YT_LOOSE_ID_REGEX = /(?:youtu\.be\/|v=|embed\/|shorts\/|\/v\/)([a-zA-Z0-9_-]{11})/;
 
 function isValidId(id: string | null | undefined): id is string {
   return !!id && YT_ID_REGEX.test(id);
 }
 
-/**
- * Renvoie l'ID YouTube d'une URL, ou null si ce n'est pas une URL YouTube valide.
- */
-export function extractYouTubeId(input: string): string | null {
-  if (!input) return null;
-  const trimmed = input.trim();
-
-  // ID brut ?
+function parseYouTubeIdFromUrl(trimmed: string): string | null {
   if (isValidId(trimmed)) return trimmed;
 
   let url: URL;
@@ -48,17 +42,14 @@ export function extractYouTubeId(input: string): string | null {
   const host = url.hostname.toLowerCase();
   if (!YT_HOSTS.has(host)) return null;
 
-  // youtu.be/ID
   if (host.endsWith("youtu.be")) {
     const id = url.pathname.replace(/^\//, "").split("/")[0] ?? "";
     return isValidId(id) ? id : null;
   }
 
-  // youtube.com/watch?v=ID
   const v = url.searchParams.get("v");
   if (isValidId(v)) return v;
 
-  // youtube.com/shorts/ID | /embed/ID | /v/ID
   const parts = url.pathname.split("/").filter(Boolean);
   for (const key of ["shorts", "embed", "v", "live"]) {
     const i = parts.indexOf(key);
@@ -69,6 +60,58 @@ export function extractYouTubeId(input: string): string | null {
   }
 
   return null;
+}
+
+function parseYouTubeIdFromHybridJson(trimmed: string): string | null {
+  if (!trimmed.startsWith("{")) return null;
+  try {
+    const parsed = JSON.parse(trimmed) as { blocks?: unknown[] };
+    if (!Array.isArray(parsed.blocks)) return null;
+    for (const block of parsed.blocks) {
+      if (!block || typeof block !== "object") continue;
+      const record = block as { type?: unknown; src?: unknown };
+      if (record.type !== "video" || typeof record.src !== "string") continue;
+      const id = parseYouTubeIdFromUrl(record.src.trim()) ?? parseYouTubeIdLoose(record.src);
+      if (id) return id;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function parseYouTubeIdLoose(input: string): string | null {
+  const match = input.match(YT_LOOSE_ID_REGEX);
+  const id = match?.[1];
+  return isValidId(id) ? id : null;
+}
+
+/**
+ * Renvoie l'ID YouTube d'une URL, d'un document hybride JSON ou d'une chaîne contenant un lien.
+ */
+export function extractYouTubeId(input: string): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+
+  return (
+    parseYouTubeIdFromUrl(trimmed) ??
+    parseYouTubeIdFromHybridJson(trimmed) ??
+    parseYouTubeIdLoose(trimmed)
+  );
+}
+
+/** URL de lecture pour le player (YouTube ou MP4), y compris depuis un JSON hybride. */
+export function resolveVideoMediaSource(content: string): string {
+  const trimmed = content.trim();
+  const id = extractYouTubeId(trimmed);
+  if (!id) return trimmed;
+
+  if (trimmed.startsWith("http") && !trimmed.startsWith("{")) {
+    const fromUrl = parseYouTubeIdFromUrl(trimmed);
+    if (fromUrl === id) return trimmed;
+  }
+
+  return `https://www.youtube.com/watch?v=${id}`;
 }
 
 export function isYouTubeUrl(input: string): boolean {

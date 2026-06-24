@@ -9,6 +9,7 @@ import {
   extractYouTubeId,
   getYouTubeEmbedUrl,
   getYouTubeThumbnail,
+  resolveVideoMediaSource,
 } from "../../lib/youtube";
 import { normalizeMediaSource } from "../../lib/mediaSource";
 import { ContentImage } from "./ContentImage";
@@ -179,7 +180,7 @@ export function VideoPlayer({
   autoplay = false,
   hidePlayButton = false,
 }: VideoPlayerProps) {
-  const mediaSrc = normalizeMediaSource(src);
+  const mediaSrc = resolveVideoMediaSource(normalizeMediaSource(src));
   const ytId = extractYouTubeId(mediaSrc);
   const thumb = poster || (ytId ? getYouTubeThumbnail(ytId, "max") : undefined);
   const [playingInline, setPlayingInline] = useState(false);
