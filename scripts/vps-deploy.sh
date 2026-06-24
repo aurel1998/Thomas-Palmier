@@ -43,7 +43,11 @@ npx prisma generate
 echo "==> Compte admin"
 npm run create-admin
 
-echo "==> Contenu démo soutenance (profil, catalogue, agenda)"
+echo "==> Catalogue (catégories + vidéos YouTube)"
+npm run seed:catalog
+npm run seed:youtube
+
+echo "==> Contenu démo soutenance (profil, agenda)"
 if npm run seed:soutenance 2>/dev/null; then
   echo "    Seed soutenance OK."
 else

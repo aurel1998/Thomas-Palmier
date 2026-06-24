@@ -3,9 +3,7 @@
  * Usage : node scripts/seed-soutenance-content.mjs
  */
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { createPrisma } from "./lib/create-prisma.mjs";
 
 const CATEGORIES = [
   {
@@ -65,9 +63,7 @@ const EVENTS = [
   },
 ];
 
-const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const { prisma, pool } = createPrisma();
 
 async function main() {
   for (const cat of CATEGORIES) {
