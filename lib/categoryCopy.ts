@@ -73,5 +73,5 @@ export function categoryTabAriaLabel(
 
 /** Introduction du hub catalogue (niveau catégories). */
 export function catalogHubIntro(): string {
-  return "Reportages, interviews et réactions — cliquez sur une vidéo pour la regarder.";
+  return "Parcourez les univers éditoriaux et les rubriques TV — les vidéos sont accessibles directement ci-dessous.";
 }

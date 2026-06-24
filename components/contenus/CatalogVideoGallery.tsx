@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Content } from "../../types/content";
 import type { Subcategory } from "../../types/subcategory";
 import { FeatureContentCard } from "./FeatureContentCard";
 import { CatalogVideoThumb } from "./CatalogVideoThumb";
+import { CatalogRubriqueRail } from "./CatalogRubriqueRail";
 
 type CatalogVideoGalleryProps = {
   featured: Content | null;
@@ -14,7 +15,7 @@ type CatalogVideoGalleryProps = {
 };
 
 /**
- * Accueil catalogue : toutes les vidéos visibles, filtre rubrique sans changer de page.
+ * Accueil catalogue : rubriques visibles + toutes les vidéos en grille (filtrable).
  */
 export function CatalogVideoGallery({
   featured,
@@ -23,12 +24,20 @@ export function CatalogVideoGallery({
   isLoading,
 }: CatalogVideoGalleryProps) {
   const [rubriqueId, setRubriqueId] = useState<string>("all");
+  const gridRef = useRef<HTMLElement | null>(null);
 
   const filteredVideos = useMemo(() => {
     const base = featured ? videos.filter((v) => v.id !== featured.id) : videos;
     if (rubriqueId === "all") return base;
     return base.filter((v) => v.subcategory_id === rubriqueId);
   }, [videos, featured, rubriqueId]);
+
+  const handleRubriqueSelect = (id: string) => {
+    setRubriqueId(id);
+    requestAnimationFrame(() => {
+      gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   if (isLoading) {
     return (
@@ -58,50 +67,29 @@ export function CatalogVideoGallery({
 
   return (
     <div className="catalog-spotlight catalog-spotlight--gallery">
+      <CatalogRubriqueRail
+        rubriques={tvSubcategories}
+        videos={videos}
+        activeRubriqueId={rubriqueId}
+        onSelectRubrique={handleRubriqueSelect}
+      />
+
       {featured ? (
         <section className="catalog-spotlight__featured" aria-label="À la une">
           <FeatureContentCard item={featured} />
         </section>
       ) : null}
 
-      {tvSubcategories.length > 0 ? (
-        <div
-          className="catalog-formatFilter catalog-formatFilter--rubriques"
-          role="tablist"
-          aria-label="Filtrer par rubrique TV"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={rubriqueId === "all"}
-            className={`catalog-formatFilter__chip${rubriqueId === "all" ? " is-active" : ""}`}
-            onClick={() => setRubriqueId("all")}
-          >
-            Toutes ({videos.length})
-          </button>
-          {tvSubcategories.map((sub) => {
-            const count = videos.filter((v) => v.subcategory_id === sub.id).length;
-            if (count === 0) return null;
-            return (
-              <button
-                key={sub.id}
-                type="button"
-                role="tab"
-                aria-selected={rubriqueId === sub.id}
-                className={`catalog-formatFilter__chip${rubriqueId === sub.id ? " is-active" : ""}`}
-                onClick={() => setRubriqueId(sub.id)}
-              >
-                {sub.name} ({count})
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-
       {filteredVideos.length > 0 ? (
-        <section className="catalog-spotlight__recent" aria-labelledby="catalog-all-videos">
-          <h2 id="catalog-all-videos" className="catalog-spotlight__heading catalog-spotlight__heading--sr">
-            Vidéos
+        <section
+          ref={gridRef}
+          className="catalog-spotlight__recent"
+          aria-labelledby="catalog-all-videos"
+        >
+          <h2 id="catalog-all-videos" className="catalog-sectionHeading">
+            {rubriqueId === "all"
+              ? "Toutes les vidéos"
+              : (tvSubcategories.find((s) => s.id === rubriqueId)?.name ?? "Vidéos")}
           </h2>
           <div className="catalog-spotlight__grid" role="list">
             {filteredVideos.map((item) => (

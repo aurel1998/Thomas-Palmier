@@ -8,9 +8,9 @@ import { summarizeContentMix } from "../../lib/catalogContentCopy";
 import { catalogHubIntro, categoryCatalogLede, categoryChipLabel } from "../../lib/categoryCopy";
 import { FIXED_CATEGORY_IDS } from "../../lib/fixedCategories";
 import { CatalogVideoGallery } from "./CatalogVideoGallery";
+import { CatalogCategoryStrip } from "./CatalogCategoryStrip";
 import { CatalogVideoThumb } from "./CatalogVideoThumb";
 import {
-  markForCatalogSlug,
   slugFromCategoryName,
   toneForCatalogSlug,
   type CatalogCategorySlug,
@@ -87,7 +87,7 @@ export function CatalogHub({
       ? selectedSubcategory.name
       : level === "subcategories" && selectedCategory
         ? categoryChipLabel(selectedCategory)
-        : "Vidéos";
+        : "Contenus";
 
   const pageLede =
     level === "contents" && selectedSubcategory
@@ -119,6 +119,17 @@ export function CatalogHub({
     : [];
 
   const categoryVideoStrip = categoryVideos.slice(0, 6);
+
+  const handleCategorySelect = (categoryId: string) => {
+    if (categoryId === FIXED_CATEGORY_IDS.tv) {
+      document.getElementById("catalog-rubriques-heading")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      return;
+    }
+    onSelectCategory(categoryId);
+  };
 
   return (
     <>
@@ -164,57 +175,26 @@ export function CatalogHub({
 
       {level === "categories" ? (
         <>
+          <CatalogCategoryStrip
+            categories={categories}
+            itemsByCategory={itemsByCategory}
+            rubriqueCountByCategory={
+              new Map(
+                categories.map((cat) => [
+                  cat.id,
+                  (subcategoriesByCategory.get(cat.id) ?? []).length,
+                ])
+              )
+            }
+            onSelectCategory={handleCategorySelect}
+          />
+
           <CatalogVideoGallery
             featured={landingFeatured}
             videos={publishedVideos}
             tvSubcategories={tvSubcategories}
             isLoading={isLoading}
           />
-
-          <details className="catalog-otherFormats">
-            <summary className="catalog-otherFormats__summary">Autres formats éditoriaux</summary>
-            <div className="catalog-tier catalog-tier--categories" role="list" aria-label="Catégories">
-          {categories.map((category) => {
-            const slug = slugForCategory(category);
-            const tone = toneForCatalogSlug(slug);
-            const mark = markForCatalogSlug(slug);
-            const rubriqueCount = subcategoriesByCategory.get(category.id)?.length ?? 0;
-            const categoryItems = itemsByCategory.get(category.id) ?? [];
-            const contentMix = summarizeContentMix(categoryItems);
-            return (
-              <button
-                key={category.id}
-                type="button"
-                role="listitem"
-                className="catalog-tierCard"
-                data-category-slug={slug}
-                data-tone={tone}
-                onClick={() => onSelectCategory(category.id)}
-              >
-                {mark ? (
-                  <span className="catalog-tierCard__mark" aria-hidden="true">
-                    {mark}
-                  </span>
-                ) : null}
-                <span className="catalog-tierCard__eyebrow">Catégorie</span>
-                <span className="catalog-tierCard__title">{categoryChipLabel(category)}</span>
-                <span className="catalog-tierCard__desc">
-                  {category.description?.trim() || categoryCatalogLede(category, categoryItems.length)}
-                </span>
-                <span className="catalog-tierCard__meta">
-                  {rubriqueCount > 0
-                    ? `${rubriqueCount} rubrique${rubriqueCount > 1 ? "s" : ""}`
-                    : "Aucune rubrique"}
-                  {categoryItems.length > 0 ? ` · ${contentMix}` : ""}
-                </span>
-                <span className="catalog-tierCard__cta" aria-hidden="true">
-                  Explorer
-                </span>
-              </button>
-            );
-          })}
-            </div>
-          </details>
         </>
       ) : null}
 
