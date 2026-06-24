@@ -23,9 +23,12 @@ import { countByContentType } from "../../lib/catalogContentCopy";
 import { attachCategoryIds, resolveCatalogCategories } from "../../lib/resolveCategories";
 const PAGE_SIZE = 24;
 
-async function withDevCatalogFallback(data: Content[]): Promise<Content[]> {
+async function withDevCatalogFallback(
+  data: Content[],
+  opts?: { subcategoryId?: string | null; siteUsesDemo?: boolean }
+): Promise<Content[]> {
   const { withDemoCatalogFallback } = await import("../../lib/demoCatalog");
-  return withDemoCatalogFallback(data);
+  return withDemoCatalogFallback(data, opts);
 }
 
 type ContentApiResponse = {
@@ -116,9 +119,14 @@ function MesContenusCatalog() {
         const response = await fetch("/api/subcategories", { cache: "no-store" });
         const json = (await response.json()) as { data?: Subcategory[] };
         if (!isMounted) return;
-        setSubcategories(Array.isArray(json.data) ? json.data : []);
+        const apiSubs = Array.isArray(json.data) ? json.data : [];
+        const { withDemoSubcategoriesFallback } = await import("../../lib/demoSubcategories");
+        setSubcategories(withDemoSubcategoriesFallback(apiSubs));
       } catch {
-        if (isMounted) setSubcategories([]);
+        if (isMounted) {
+          const { withDemoSubcategoriesFallback } = await import("../../lib/demoSubcategories");
+          setSubcategories(withDemoSubcategoriesFallback([]));
+        }
       } finally {
         if (isMounted) setLoadingSubcategories(false);
       }
@@ -150,17 +158,17 @@ function MesContenusCatalog() {
         const result = (await response.json()) as ContentApiResponse;
         if (!isMounted) return;
         if (Array.isArray(result.data)) {
-          const source = await withDevCatalogFallback(result.data);
+          const source = await withDevCatalogFallback(result.data, { siteUsesDemo: usingFallback });
           const merged = attachCategoryIds(source, resolvedCategories);
           setUsingFallback(ENABLE_DEV_FALLBACKS && result.data.length === 0 && merged.length > 0);
           setItems(merged);
           setTotal(typeof result.total === "number" ? result.total : merged.length);
         } else {
-          const source = await withDevCatalogFallback([]);
+          const source = await withDevCatalogFallback([], { siteUsesDemo: true });
           setItems(attachCategoryIds(source, resolvedCategories));
         }
       } catch {
-        const source = await withDevCatalogFallback([]);
+        const source = await withDevCatalogFallback([], { siteUsesDemo: true });
         setItems(attachCategoryIds(source, resolvedCategories));
       } finally {
         if (isMounted) setIsLoading(false);
@@ -190,17 +198,30 @@ function MesContenusCatalog() {
         const result = (await response.json()) as ContentApiResponse;
         if (!isMounted) return;
         if (Array.isArray(result.data)) {
-          const source = await withDevCatalogFallback(result.data);
+          const source = await withDevCatalogFallback(result.data, {
+            subcategoryId: selectedSubcategoryId,
+            siteUsesDemo: usingFallback,
+          });
           const merged = attachCategoryIds(source, categories);
           setContentsItems(merged);
           setOffset(result.data.length);
           setHasMore(Boolean(result.hasMore) && result.data.length > 0);
         } else {
-          setContentsItems([]);
+          const source = await withDevCatalogFallback([], {
+            subcategoryId: selectedSubcategoryId,
+            siteUsesDemo: usingFallback,
+          });
+          setContentsItems(attachCategoryIds(source, categories));
           setHasMore(false);
         }
       } catch {
-        if (isMounted) setContentsItems([]);
+        if (isMounted) {
+          const source = await withDevCatalogFallback([], {
+            subcategoryId: selectedSubcategoryId,
+            siteUsesDemo: usingFallback,
+          });
+          setContentsItems(attachCategoryIds(source, categories));
+        }
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -209,7 +230,7 @@ function MesContenusCatalog() {
     return () => {
       isMounted = false;
     };
-  }, [catalogLevel, selectedSubcategoryId, categories]);
+  }, [catalogLevel, selectedSubcategoryId, categories, usingFallback]);
 
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore || usingFallback || catalogLevel !== "contents" || !selectedSubcategoryId) {

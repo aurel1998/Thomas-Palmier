@@ -44,6 +44,7 @@ export function HeroSection({
 
   const [mounted, setMounted] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const [currentVideoSrc, setCurrentVideoSrc] = useState(videoSrc ?? "");
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function HeroSection({
   useEffect(() => {
     setCurrentVideoSrc(videoSrc ?? "");
     setVideoFailed(false);
+    setVideoReady(false);
   }, [videoSrc]);
 
   const hasVideo = Boolean(currentVideoSrc?.trim());
@@ -66,16 +68,56 @@ export function HeroSection({
   };
 
   useEffect(() => {
-    if (!showVideo) return;
-    const v = videoRef.current;
-    if (!v) return;
-    const p = v.play();
-    if (p && typeof p.catch === "function") {
-      // Certains navigateurs refusent parfois l'autoplay même en muted :
-      // on garde la vidéo affichée au lieu de forcer un fallback image.
-      p.catch(() => {});
+    if (!showVideo) {
+      setVideoReady(false);
+      return;
     }
-  }, [showVideo, backdropSrc, currentVideoSrc]);
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.disablePictureInPicture = true;
+
+    const tryPlay = () => {
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {});
+      }
+    };
+
+    const onCanPlay = () => {
+      setVideoReady(true);
+      tryPlay();
+    };
+
+    const onWaiting = () => setVideoReady(false);
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        video.pause();
+        return;
+      }
+      tryPlay();
+    };
+
+    tryPlay();
+    video.addEventListener("canplay", onCanPlay);
+    video.addEventListener("canplaythrough", onCanPlay);
+    video.addEventListener("waiting", onWaiting);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      video.removeEventListener("canplay", onCanPlay);
+      video.removeEventListener("canplaythrough", onCanPlay);
+      video.removeEventListener("waiting", onWaiting);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [showVideo, currentVideoSrc]);
 
   useLayoutEffect(() => {
     const root = sectionRef.current;
@@ -111,9 +153,8 @@ export function HeroSection({
     gsap.set(media, {
       scale: 1.14,
       y: 56,
-      filter: "brightness(0.48) saturate(1.12) contrast(1.14)",
     });
-    gsap.set(overlay, { opacity: 0.28 });
+    gsap.set(overlay, { opacity: 0.42 });
     if (vignette) gsap.set(vignette, { opacity: 0.12, scale: 1.08 });
     if (grain.length) gsap.set(grain, { opacity: 0.001 });
     gsap.set(headline, { opacity: 0.001 });
@@ -161,7 +202,6 @@ export function HeroSection({
           {
             scale: 1,
             y: 0,
-            filter: "brightness(1) saturate(1.08) contrast(1.05)",
             duration: motionPresets.hero.reveal,
             ease: motion.ease.outExpo,
           },
@@ -393,23 +433,7 @@ export function HeroSection({
   return (
     <section ref={sectionRef} className="home-hero" aria-label="Accueil — hero">
       <div ref={mediaRef} className="home-hero__media">
-        {showVideo ? (
-          <video
-            ref={videoRef}
-            key={currentVideoSrc}
-            className="home-hero__video"
-            poster={posterSrc}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            autoPlay={showVideo}
-            aria-hidden
-            onError={handleVideoError}
-          >
-            <source src={currentVideoSrc} type="video/mp4" />
-          </video>
-        ) : hasPoster ? (
+        {hasPoster ? (
           <ContentImage
             key={posterSrc}
             src={posterSrc!}
@@ -418,12 +442,32 @@ export function HeroSection({
             priority
             quality={85}
             sizes="100vw"
-            className="home-hero__video home-hero__video--static"
+            className={`home-hero__video home-hero__video--static${showVideo && videoReady ? " is-hidden" : ""}`}
           />
+        ) : null}
+        {showVideo ? (
+          <div className={`home-hero__videoLayer${videoReady ? " is-ready" : ""}`}>
+            <video
+              ref={videoRef}
+              key={currentVideoSrc}
+              className="home-hero__video"
+              poster={posterSrc}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              autoPlay
+              disablePictureInPicture
+              aria-hidden
+              onError={handleVideoError}
+            >
+              <source src={currentVideoSrc} type="video/mp4" />
+            </video>
+          </div>
         ) : null}
       </div>
 
-      <HeroWebGL />
+      <HeroWebGL videoActive={showVideo} />
       <div ref={overlayRef} className="home-hero__overlay" />
       <div className="home-hero__vignette" aria-hidden="true" />
       <div className="home-hero__grain" aria-hidden="true" />

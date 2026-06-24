@@ -1493,6 +1493,27 @@ main li > a:not([class]):hover,
   isolation: isolate;
 }
 
+.home-hero__videoLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.55s ease;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.home-hero__videoLayer.is-ready {
+  opacity: 1;
+}
+
+.home-hero__video--static.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
 .home-hero__media .home-hero__video,
 .home-hero__media .home-hero__video--static {
   z-index: 0;
@@ -1509,9 +1530,8 @@ main li > a:not([class]):hover,
   height: 100%;
   object-fit: cover;
   object-position: center 42%;
-  transform-origin: center center;
-  transform: scale(1);
-  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   filter: saturate(1.04) contrast(1.03);
 }
 
@@ -4712,10 +4732,10 @@ main li > a:not([class]):hover,
  * Mes contenus — hub catalogue (4 lignes éditoriales + teintes par catégorie)
  * ------------------------------------------------------------------------- */
 .mes-contenus-page.catalog-hub {
-  --catalog-tone-0-rgb: 88 150 228;
-  --catalog-tone-1-rgb: 168 132 210;
-  --catalog-tone-2-rgb: 228 156 118;
-  --catalog-tone-3-rgb: 108 188 168;
+  --catalog-tone-0-rgb: 218 128 88;
+  --catalog-tone-1-rgb: 88 132 228;
+  --catalog-tone-2-rgb: 148 138 128;
+  --catalog-tone-3-rgb: 228 96 148;
 }
 
 .mes-contenus-page.catalog-hub::before {
@@ -5000,22 +5020,22 @@ main li > a:not([class]):hover,
   color: rgb(var(--text-rgb) / 0.98);
 }
 
-.catalog-hub .mes-canal__chip[data-category-slug="webcontenus"].is-active {
+.catalog-hub .mes-canal__chip[data-category-slug="radio"].is-active {
   border-color: rgb(var(--catalog-tone-0-rgb) / 0.55);
   background: rgb(var(--catalog-tone-0-rgb) / 0.14);
 }
 
-.catalog-hub .mes-canal__chip[data-category-slug="media"].is-active {
+.catalog-hub .mes-canal__chip[data-category-slug="tv"].is-active {
   border-color: rgb(var(--catalog-tone-1-rgb) / 0.55);
   background: rgb(var(--catalog-tone-1-rgb) / 0.14);
 }
 
-.catalog-hub .mes-canal__chip[data-category-slug="animations"].is-active {
+.catalog-hub .mes-canal__chip[data-category-slug="presse"].is-active {
   border-color: rgb(var(--catalog-tone-2-rgb) / 0.55);
   background: rgb(var(--catalog-tone-2-rgb) / 0.14);
 }
 
-.catalog-hub .mes-canal__chip[data-category-slug="elements"].is-active {
+.catalog-hub .mes-canal__chip[data-category-slug="reseaux"].is-active {
   border-color: rgb(var(--catalog-tone-3-rgb) / 0.55);
   background: rgb(var(--catalog-tone-3-rgb) / 0.14);
 }
@@ -5086,7 +5106,13 @@ main li > a:not([class]):hover,
 }
 
 .catalog-tier--categories {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 640px) {
+  .catalog-tier--categories {
+    grid-template-columns: 1fr;
+  }
 }
 
 .catalog-tier--subcategories {
@@ -5152,12 +5178,27 @@ main li > a:not([class]):hover,
   color: rgb(var(--muted-rgb) / 0.9);
 }
 
+.catalog-tierCard__mark {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgb(var(--text-rgb) / 0.1);
+  background: rgb(var(--surface-rgb) / 0.55);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: rgb(var(--muted-rgb) / 0.95);
+}
+
 .catalog-tierCard__title {
   font-family: var(--font-display);
-  font-size: clamp(20px, 2.4vw, 26px);
+  font-size: clamp(18px, 2.2vw, 24px);
   font-weight: 800;
   letter-spacing: -0.03em;
-  line-height: 1.12;
+  line-height: 1.15;
+  padding-right: 72px;
 }
 
 .catalog-tierCard--sub .catalog-tierCard__title {
@@ -11758,15 +11799,13 @@ main li > a:not([class]):hover,
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 1;           /* devant le fond vidéo/image, derrière l'overlay */
+  z-index: 1;
   pointer-events: none;
-  opacity: 0.42;
-  mix-blend-mode: screen;
+  opacity: 0.34;
 }
 
 [data-theme="light"] .hero-webgl {
-  opacity: 0.22;
-  mix-blend-mode: multiply;
+  opacity: 0.18;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════

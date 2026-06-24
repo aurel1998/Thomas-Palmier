@@ -10,26 +10,26 @@ import pg from "pg";
 const CATEGORIES = [
   {
     id: "a0000001-0001-4001-8001-000000000001",
-    name: "Webcontenus",
-    description: "Articles, dossiers et formats pensés pour le web.",
+    name: "Radio",
+    description: "Chroniques, interviews et magazines — explorez par rubrique.",
     position: 1,
   },
   {
     id: "a0000001-0001-4001-8001-000000000002",
-    name: "Média",
-    description: "Vidéos, audio et formats broadcast au catalogue.",
+    name: "TV",
+    description: "Reportages, directs et formats télévisuels — classés par rubrique.",
     position: 2,
   },
   {
     id: "a0000001-0001-4001-8001-000000000003",
-    name: "Animations",
-    description: "Motion, séquences animées et formats courts dynamiques.",
+    name: "Presse écrite/web",
+    description: "Articles, enquêtes et publications numériques — par rubrique.",
     position: 3,
   },
   {
     id: "a0000001-0001-4001-8001-000000000004",
-    name: "Éléments",
-    description: "Modules, vignettes et fragments éditoriaux.",
+    name: "Réseaux sociaux",
+    description: "Reels, stories et formats courts — organisés par rubrique.",
     position: 4,
   },
 ];
@@ -51,7 +51,7 @@ async function main() {
     });
     console.log(`[OK] Catégorie : ${cat.name}`);
   }
-  console.log("\nCatégories prêtes. Ajoutez des contenus via /monsite et assignez-les à ces catégories.");
+  console.log("\nCatégories prêtes. Ajoutez des rubriques via /monsite puis assignez les contenus.");
 }
 
 main()

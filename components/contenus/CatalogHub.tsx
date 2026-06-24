@@ -5,8 +5,13 @@ import type { Category } from "../../types/category";
 import type { Content } from "../../types/content";
 import type { Subcategory } from "../../types/subcategory";
 import { summarizeContentMix } from "../../lib/catalogContentCopy";
-import { categoryCatalogLede, categoryChipLabel } from "../../lib/categoryCopy";
-import { slugFromCategoryName, type CatalogCategorySlug } from "../../lib/fixedCategories";
+import { catalogHubIntro, categoryCatalogLede, categoryChipLabel } from "../../lib/categoryCopy";
+import {
+  markForCatalogSlug,
+  slugFromCategoryName,
+  toneForCatalogSlug,
+  type CatalogCategorySlug,
+} from "../../lib/fixedCategories";
 
 export type CatalogLevel = "categories" | "subcategories" | "contents";
 
@@ -27,17 +32,8 @@ type CatalogHubProps = {
   children?: ReactNode;
 };
 
-function toneForCategory(category: Category): number {
-  const slug = slugFromCategoryName(category.name);
-  if (slug === "webcontenus") return 0;
-  if (slug === "media") return 1;
-  if (slug === "animations") return 2;
-  if (slug === "elements") return 3;
-  return 0;
-}
-
 function slugForCategory(category: Category): CatalogCategorySlug {
-  return slugFromCategoryName(category.name) ?? "webcontenus";
+  return slugFromCategoryName(category.name) ?? "radio";
 }
 
 export function CatalogHub({
@@ -99,7 +95,7 @@ export function CatalogHub({
             selectedCategory,
             (itemsByCategory.get(selectedCategory.id) ?? []).length
           )
-        : "Vidéos, publications texte et audio — parcourez par catégorie puis par rubrique.";
+        : catalogHubIntro();
 
   return (
     <>
@@ -147,7 +143,8 @@ export function CatalogHub({
         <div className="catalog-tier catalog-tier--categories" role="list" aria-label="Catégories">
           {categories.map((category) => {
             const slug = slugForCategory(category);
-            const tone = toneForCategory(category);
+            const tone = toneForCatalogSlug(slug);
+            const mark = markForCatalogSlug(slug);
             const rubriqueCount = subcategoriesByCategory.get(category.id)?.length ?? 0;
             const categoryItems = itemsByCategory.get(category.id) ?? [];
             const contentMix = summarizeContentMix(categoryItems);
@@ -161,6 +158,11 @@ export function CatalogHub({
                 data-tone={tone}
                 onClick={() => onSelectCategory(category.id)}
               >
+                {mark ? (
+                  <span className="catalog-tierCard__mark" aria-hidden="true">
+                    {mark}
+                  </span>
+                ) : null}
                 <span className="catalog-tierCard__eyebrow">Catégorie</span>
                 <span className="catalog-tierCard__title">{categoryChipLabel(category)}</span>
                 <span className="catalog-tierCard__desc">
@@ -201,7 +203,7 @@ export function CatalogHub({
                 const subItems = itemsBySubcategory.get(sub.id) ?? [];
                 const subMix = summarizeContentMix(subItems);
                 const slug = slugForCategory(selectedCategory);
-                const tone = toneForCategory(selectedCategory);
+                const tone = toneForCatalogSlug(slug);
                 return (
                   <button
                     key={sub.id}

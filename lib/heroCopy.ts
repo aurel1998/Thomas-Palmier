@@ -2,9 +2,9 @@
  * Vidéo de fond du hero — `/public/src/video/fond.mp4`.
  * Le paramètre `?v=` force le rechargement navigateur après remplacement du fichier.
  */
-export const HERO_VIDEO_MP4_DEFAULT = "/src/video/fond.mp4?v=1";
+export const HERO_VIDEO_MP4_DEFAULT = "/src/video/fond.mp4?v=3";
 
-export const HERO_VIDEO_MP4_FALLBACK = "/src/video/fond.mp4?v=1";
+export const HERO_VIDEO_MP4_FALLBACK = "/src/video/fond.mp4?v=3";
 
 /** Nom fort pour branding personnel immédiat. */
 export const HERO_HEADLINE = "Thomas Palmier";

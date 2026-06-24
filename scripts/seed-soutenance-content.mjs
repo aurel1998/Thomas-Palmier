@@ -10,26 +10,26 @@ import pg from "pg";
 const CATEGORIES = [
   {
     id: "a0000001-0001-4001-8001-000000000001",
-    name: "Webcontenus",
-    description: "Articles, dossiers et formats pensés pour le web.",
+    name: "Radio",
+    description: "Chroniques, interviews et magazines — explorez par rubrique.",
     position: 1,
   },
   {
     id: "a0000001-0001-4001-8001-000000000002",
-    name: "Média",
-    description: "Vidéos, audio et formats broadcast au catalogue.",
+    name: "TV",
+    description: "Reportages, directs et formats télévisuels — classés par rubrique.",
     position: 2,
   },
   {
     id: "a0000001-0001-4001-8001-000000000003",
-    name: "Animations",
-    description: "Motion, séquences animées et formats courts dynamiques.",
+    name: "Presse écrite/web",
+    description: "Articles, enquêtes et publications numériques — par rubrique.",
     position: 3,
   },
   {
     id: "a0000001-0001-4001-8001-000000000004",
-    name: "Éléments",
-    description: "Modules, vignettes et fragments éditoriaux.",
+    name: "Réseaux sociaux",
+    description: "Reels, stories et formats courts — organisés par rubrique.",
     position: 4,
   },
 ];
@@ -43,7 +43,7 @@ const CONTENTS = [
       "Un récit en chapitres : ambiance, bascule tactique et séquences décisives. Pensé pour une lecture fluide sur écran.",
     imageUrl: "/src/stade/im1.jpg",
     tags: ["Dossier", "Terrain"],
-    categoryId: "a0000001-0001-4001-8001-000000000001",
+    categoryId: "a0000001-0001-4001-8001-000000000003",
     isFeatured: true,
     status: "published",
     createdAt: new Date("2026-06-01T10:00:00.000Z"),
@@ -55,7 +55,7 @@ const CONTENTS = [
     content: "Focus sur un joueur, un geste, une décision — le sport vu comme récit éditorial.",
     imageUrl: "/src/stade/im2.jpg",
     tags: ["Portrait"],
-    categoryId: "a0000001-0001-4001-8001-000000000001",
+    categoryId: "a0000001-0001-4001-8001-000000000003",
     isFeatured: false,
     status: "published",
     createdAt: new Date("2026-05-28T09:00:00.000Z"),
@@ -67,7 +67,7 @@ const CONTENTS = [
     content: "Carnet de bord court, entre observation et analyse légère.",
     imageUrl: "/src/stade/im3.jpg",
     tags: ["Terrain"],
-    categoryId: "a0000001-0001-4001-8001-000000000001",
+    categoryId: "a0000001-0001-4001-8001-000000000003",
     isFeatured: false,
     status: "published",
     createdAt: new Date("2026-05-25T08:00:00.000Z"),
@@ -103,12 +103,7 @@ const CONTENTS = [
     content: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
     imageUrl: "/src/joueurs/joueur10.webp",
     tags: ["Motion"],
-    categoryId: "a0000001-0001-4001-8001-000000000003",
-    isFeatured: false,
-    status: "published",
-    createdAt: new Date("2026-05-26T12:00:00.000Z"),
-  },
-];
+    categoryId: "a0000001-0001-4001-8001-000000000004",
 
 const EVENTS = [
   {

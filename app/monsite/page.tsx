@@ -1372,8 +1372,10 @@ export default function MonSitePage() {
     panel = (
       <div className="admin-reveal">
         <p className="admin-field__hint" style={{ marginBottom: 16 }}>
-          Les 4 catégories du catalogue sont fixes. Créez ici les <strong>rubriques</strong> (sous-catégories) dans
-          chaque catégorie avant de publier vidéos, publications texte ou audio dans l’onglet <strong>Publier</strong>.
+          Les 4 catégories du catalogue sont fixes : <strong>Radio</strong>, <strong>TV</strong>,{" "}
+          <strong>Presse écrite/web</strong> et <strong>Réseaux sociaux</strong>. Créez ici les{" "}
+          <strong>rubriques</strong> (sous-catégories) dans chaque catégorie avant de publier dans
+          l’onglet <strong>Publier</strong>.
         </p>
 
         <div className="admin-field">

@@ -1,5 +1,6 @@
 import type { Content } from "../types/content";
 import { FIXED_CATEGORY_IDS } from "./fixedCategories";
+import { DEMO_SUBCATEGORY_IDS } from "./demoSubcategories";
 
 type DemoContentInput = Omit<Content, "status">;
 
@@ -13,115 +14,126 @@ function asPublished(items: DemoContentInput[]): Content[] {
  */
 const DEMO_CATALOG_RAW: DemoContentInput[] = [
   {
-    id: "demo-wc-1",
+    id: "demo-pr-1",
     type: "article",
     title: "Dans les travées : le match vu depuis les tribunes",
     content:
       "Un récit en chapitres : ambiance, bascule tactique et séquences décisives. Pensé pour une lecture fluide sur écran.",
     image_url: "/src/stade/im1.jpg",
     tags: ["Dossier", "Terrain"],
-    category_id: FIXED_CATEGORY_IDS.webcontenus,
+    category_id: FIXED_CATEGORY_IDS.presse,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.presseArticles,
     is_featured: true,
     created_at: "2026-06-01T10:00:00.000Z",
   },
   {
-    id: "demo-wc-2",
+    id: "demo-pr-2",
     type: "article",
     title: "Portrait : l'instant qui bascule la rencontre",
     content: "Focus sur un joueur, un geste, une décision — le sport vu comme récit éditorial.",
     image_url: "/src/stade/im2.jpg",
     tags: ["Portrait"],
-    category_id: FIXED_CATEGORY_IDS.webcontenus,
+    category_id: FIXED_CATEGORY_IDS.presse,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.presseArticles,
     created_at: "2026-05-28T09:00:00.000Z",
   },
   {
-    id: "demo-wc-3",
+    id: "demo-pr-3",
     type: "article",
     title: "Notes de terrain : ambiance et rythme du groupe",
     content: "Carnet de bord court, entre observation et analyse légère.",
     image_url: "/src/stade/im3.jpg",
     tags: ["Terrain"],
-    category_id: FIXED_CATEGORY_IDS.webcontenus,
+    category_id: FIXED_CATEGORY_IDS.presse,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.presseEnquetes,
     created_at: "2026-05-25T08:00:00.000Z",
   },
   {
-    id: "demo-md-1",
+    id: "demo-tv-1",
     type: "video",
     title: "Plongée immersive au cœur du stade",
     content: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
     image_url: "/src/stade/im4.jpg",
     tags: ["Immersion"],
-    category_id: FIXED_CATEGORY_IDS.media,
+    category_id: FIXED_CATEGORY_IDS.tv,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.tvReportages,
     created_at: "2026-05-27T11:00:00.000Z",
   },
   {
-    id: "demo-md-2",
+    id: "demo-tv-2",
     type: "video",
     title: "Lecture du tempo en pleine intensité",
     content: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
     image_url: "/src/stade/im5.jpg",
     tags: ["Action"],
-    category_id: FIXED_CATEGORY_IDS.media,
+    category_id: FIXED_CATEGORY_IDS.tv,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.tvPlateaux,
     created_at: "2026-05-24T10:30:00.000Z",
   },
   {
-    id: "demo-md-3",
+    id: "demo-ra-1",
     type: "audio",
     title: "Chronique tribunes et émotion brute",
     content: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
     image_url: "/src/stade/stade1.webp",
     tags: ["Chronique"],
-    category_id: FIXED_CATEGORY_IDS.media,
+    category_id: FIXED_CATEGORY_IDS.radio,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.radioChroniques,
     created_at: "2026-05-22T09:45:00.000Z",
   },
   {
-    id: "demo-an-1",
+    id: "demo-rs-1",
     type: "video",
     title: "Séquence animée : trajectoire et impact",
     content: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
     image_url: "/src/joueurs/joueur10.webp",
-    tags: ["Motion"],
-    category_id: FIXED_CATEGORY_IDS.animations,
+    tags: ["Motion", "Reel"],
+    category_id: FIXED_CATEGORY_IDS.reseaux,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.reseauxReels,
     created_at: "2026-05-26T12:00:00.000Z",
   },
   {
-    id: "demo-an-2",
+    id: "demo-rs-2",
     type: "video",
     title: "Boucle graphique : rythme d'un contre rapide",
     content: "https://www.youtube.com/watch?v=ysz5S6PUM-U",
     image_url: "/src/stade/im3.jpg",
-    tags: ["Loop"],
-    category_id: FIXED_CATEGORY_IDS.animations,
+    tags: ["Loop", "Social"],
+    category_id: FIXED_CATEGORY_IDS.reseaux,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.reseauxReels,
     created_at: "2026-05-23T14:00:00.000Z",
   },
   {
-    id: "demo-el-1",
+    id: "demo-rs-3",
     type: "article",
     title: "Carte éditoriale : chiffre clé du match",
     content: "Un module court, une statistique, une lecture immédiate.",
     image_url: "/src/stade/im5.jpg",
-    tags: ["Data"],
-    category_id: FIXED_CATEGORY_IDS.elements,
+    tags: ["Data", "Social"],
+    category_id: FIXED_CATEGORY_IDS.reseaux,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.reseauxPosts,
     created_at: "2026-05-21T07:00:00.000Z",
   },
   {
-    id: "demo-el-2",
+    id: "demo-ra-2",
     type: "audio",
     title: "Ambiance avant coup d'envoi",
     content: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
     image_url: "/src/stade/im1.jpg",
     tags: ["Ambiance"],
-    category_id: FIXED_CATEGORY_IDS.elements,
+    category_id: FIXED_CATEGORY_IDS.radio,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.radioInterviews,
     created_at: "2026-05-19T08:00:00.000Z",
   },
   {
-    id: "demo-el-3",
+    id: "demo-rs-4",
     type: "article",
     title: "Citation du vestiaire",
     content: "Une phrase, un contexte — format minimal à fort impact.",
     image_url: "/src/joueurs/joueur9.webp",
-    tags: ["Citation"],
-    category_id: FIXED_CATEGORY_IDS.elements,
+    tags: ["Citation", "Story"],
+    category_id: FIXED_CATEGORY_IDS.reseaux,
+    subcategory_id: DEMO_SUBCATEGORY_IDS.reseauxPosts,
     created_at: "2026-05-17T06:00:00.000Z",
   },
 ];
@@ -145,7 +157,16 @@ export function getDemoCatalog(): Content[] {
 }
 
 /** Catalogue démo si la base est vide. */
-export function withDemoCatalogFallback(apiContents: Content[]): Content[] {
+export function withDemoCatalogFallback(
+  apiContents: Content[],
+  opts?: { subcategoryId?: string | null; siteUsesDemo?: boolean }
+): Content[] {
   if (apiContents.length > 0) return apiContents;
-  return getDemoCatalog();
+  if (!opts?.siteUsesDemo) return [];
+
+  const demo = getDemoCatalog();
+  if (opts?.subcategoryId) {
+    return demo.filter((item) => item.subcategory_id === opts.subcategoryId);
+  }
+  return demo;
 }

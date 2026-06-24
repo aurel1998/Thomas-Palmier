@@ -6,15 +6,16 @@ import { isReducedMotion } from "../../lib/gsapMotion";
 /**
  * Canvas Three.js pour le hero — particules avec shader GLSL custom.
  * Chargement dynamique (aucun impact sur le bundle principal).
- * Répond au mouvement souris via parallax de rotation doux.
+ * Réduit ou désactivé quand une vidéo de fond tourne (évite les conflits GPU).
  */
-export function HeroWebGL() {
+export function HeroWebGL({ videoActive = false }: { videoActive?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || typeof window === "undefined") return;
     if (isReducedMotion()) return;
+    if (videoActive) return;
 
     let disposed = false;
     let rafId = 0;
@@ -192,7 +193,9 @@ export function HeroWebGL() {
       const cleanup = (canvas as HTMLCanvasElement & { _threeCleanup?: () => void })._threeCleanup;
       if (cleanup) cleanup();
     };
-  }, []);
+  }, [videoActive]);
+
+  if (videoActive) return null;
 
   return <canvas ref={canvasRef} className="hero-webgl" aria-hidden="true" />;
 }

@@ -49,16 +49,25 @@ export function resolveContentCategoryId(
   }
 
   const tagKey = (item.tags ?? []).join(" ").toLowerCase();
-  if (tagKey.includes("motion") || tagKey.includes("loop") || tagKey.includes("anim")) {
-    return categories.find((c) => slugFromCategoryName(c.name) === "animations")?.id ?? null;
+  if (
+    tagKey.includes("reel") ||
+    tagKey.includes("story") ||
+    tagKey.includes("social") ||
+    tagKey.includes("motion") ||
+    tagKey.includes("loop")
+  ) {
+    return categories.find((c) => slugFromCategoryName(c.name) === "reseaux")?.id ?? null;
   }
-  if (item.type === "video" || item.type === "audio") {
-    return categories.find((c) => slugFromCategoryName(c.name) === "media")?.id ?? null;
+  if (item.type === "audio") {
+    return categories.find((c) => slugFromCategoryName(c.name) === "radio")?.id ?? null;
+  }
+  if (item.type === "video") {
+    return categories.find((c) => slugFromCategoryName(c.name) === "tv")?.id ?? null;
   }
   if (tagKey.includes("data") || tagKey.includes("citation") || tagKey.includes("ambiance")) {
-    return categories.find((c) => slugFromCategoryName(c.name) === "elements")?.id ?? null;
+    return categories.find((c) => slugFromCategoryName(c.name) === "reseaux")?.id ?? null;
   }
-  return categories.find((c) => slugFromCategoryName(c.name) === "webcontenus")?.id ?? null;
+  return categories.find((c) => slugFromCategoryName(c.name) === "presse")?.id ?? null;
 }
 
 /** Normalise category_id sur chaque contenu pour les filtres / rails. */
