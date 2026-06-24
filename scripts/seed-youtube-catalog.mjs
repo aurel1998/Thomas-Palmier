@@ -1,12 +1,18 @@
 /**
  * Importe les vidéos YouTube du portfolio dans le catalogue (catégories + rubriques).
  * Supprime aussi les anciens contenus de remplissage (seed démo).
+ * Données : scripts/youtube-catalog.data.json (généré via build-youtube-catalog-data.mjs)
  * Usage : node scripts/seed-youtube-catalog.mjs
  */
 import "dotenv/config";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const CATEGORY = {
   tv: "a0000001-0001-4001-8001-000000000002",
@@ -26,6 +32,20 @@ const SUBCATEGORIES = [
     name: "Reportages",
     description: "Sujets filmés, immersion terrain et formats TV longs.",
     position: 2,
+  },
+  {
+    id: "d0000001-0001-4001-8001-000000000003",
+    categoryId: CATEGORY.tv,
+    name: "Entretiens",
+    description: "Interviews, déclarations et portraits d'athlètes ou personnalités du sport.",
+    position: 3,
+  },
+  {
+    id: "d0000001-0001-4001-8001-000000000004",
+    categoryId: CATEGORY.tv,
+    name: "Résumés sportifs",
+    description: "Résumés commentés de rencontres et compétitions.",
+    position: 4,
   },
 ];
 
@@ -58,36 +78,9 @@ function buildYouTubeVideoDocument({ youtubeId, title, lede, body }) {
   return JSON.stringify({ blocks });
 }
 
-const YOUTUBE_VIDEOS = [
-  {
-    id: "e0000001-0001-4001-8001-000000000001",
-    subcategoryId: "d0000001-0001-4001-8001-000000000001",
-    youtubeId: "prDE5sRbynI",
-    title:
-      'Pierre Paturel après PSG-Chambéry (34-33) : "Une équipe qui bat les autres grâce à son rythme"',
-    lede: "9 mars 2024 · Stade Pierre de Coubertin · Handball · Liqui Moly Starligue · J20",
-    body: `Le capitaine chambérien explique à quel point il est difficile de battre le PSG. L'équipe entraînée par Raul Gonzalez impose un rythme d'enfer à ses adversaires, que n'a pas pu tenir Chambéry au début de la seconde période.
-
-Mais les Savoyards ont résisté et ont fait trembler le leader invaincu en fin de match. Réaction de Pierre Paturel.`,
-    tags: ["Handball", "Starligue", "PSG", "Chambéry", "Interview"],
-    publishedAt: new Date("2024-03-09T18:00:00.000Z"),
-    isFeatured: true,
-  },
-  {
-    id: "e0000001-0001-4001-8001-000000000002",
-    subcategoryId: "d0000001-0001-4001-8001-000000000001",
-    youtubeId: "GF_VZ15fKVc",
-    title:
-      'Gustavo RODRIQUEZ : "Se qualifier aux JO, c\'est vraiment important pour le hand au Brésil"',
-    lede: "9 mars 2024 · PSG-Chambéry (34-33) · J20 Liqui Moly Starligue · Handball",
-    body: `Le Brésilien de Chambéry évoque le TQO auquel il va participer avec sa sélection, avec l'objectif affirmé d'obtenir un billet pour les Jeux de Paris cet été.
-
-Interview réalisée après PSG-Chambéry (34-33), J20 de Liqui Moly Starligue.`,
-    tags: ["Handball", "Starligue", "Chambéry", "Brésil", "JO Paris 2024", "Interview"],
-    publishedAt: new Date("2024-03-09T18:30:00.000Z"),
-    isFeatured: false,
-  },
-];
+const { videos: YOUTUBE_VIDEOS } = JSON.parse(
+  readFileSync(join(__dirname, "youtube-catalog.data.json"), "utf8"),
+);
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
@@ -153,6 +146,8 @@ async function main() {
       body: video.body,
     });
 
+    const publishedAt = new Date(video.publishedAt);
+
     await prisma.content.upsert({
       where: { id: video.id },
       create: {
@@ -166,7 +161,7 @@ async function main() {
         subcategoryId: video.subcategoryId,
         isFeatured: video.isFeatured,
         status: "published",
-        createdAt: video.publishedAt,
+        createdAt: publishedAt,
       },
       update: {
         title: video.title,
@@ -178,7 +173,7 @@ async function main() {
         subcategoryId: video.subcategoryId,
         isFeatured: video.isFeatured,
         status: "published",
-        createdAt: video.publishedAt,
+        createdAt: publishedAt,
       },
     });
 

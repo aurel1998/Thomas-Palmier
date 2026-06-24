@@ -44,3 +44,7 @@ public/uploads/**/*
 backups/
 logs/*.log
 !logs/.gitkeep
+
+# métadonnées YouTube temporaires (yt-dlp)
+scripts/.youtube-*.jsonl
+scripts/.youtube-metadata.json

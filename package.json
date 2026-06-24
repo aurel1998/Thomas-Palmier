@@ -22,6 +22,8 @@
     "prisma:studio": "prisma studio",
     "seed:catalog": "node scripts/seed-catalog.mjs",
     "seed:youtube": "node scripts/seed-youtube-catalog.mjs",
+    "build:youtube-catalog": "node scripts/build-youtube-catalog-data.mjs",
+    "fetch:youtube-metadata": "node scripts/fetch-youtube-metadata.mjs",
     "seed:editorial": "tsx scripts/seed-editorial.ts",
     "seed:soutenance": "tsx scripts/seed-editorial.ts && node scripts/seed-soutenance-content.mjs",
     "deploy:vps": "bash scripts/vps-deploy.sh",
