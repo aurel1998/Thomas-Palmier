@@ -6,6 +6,9 @@ import type { Content } from "../../types/content";
 import type { Subcategory } from "../../types/subcategory";
 import { summarizeContentMix } from "../../lib/catalogContentCopy";
 import { catalogHubIntro, categoryCatalogLede, categoryChipLabel } from "../../lib/categoryCopy";
+import { FIXED_CATEGORY_IDS } from "../../lib/fixedCategories";
+import { CatalogLandingSpotlight } from "./CatalogLandingSpotlight";
+import { CatalogVideoThumb } from "./CatalogVideoThumb";
 import {
   markForCatalogSlug,
   slugFromCategoryName,
@@ -29,6 +32,7 @@ type CatalogHubProps = {
   onSelectSubcategory: (subcategoryId: string) => void;
   onBackToCategories: () => void;
   onBackToSubcategories: () => void;
+  onOpenContents: (categoryId: string, subcategoryId: string) => void;
   children?: ReactNode;
 };
 
@@ -50,6 +54,7 @@ export function CatalogHub({
   onSelectSubcategory,
   onBackToCategories,
   onBackToSubcategories,
+  onOpenContents,
   children,
 }: CatalogHubProps) {
   const subcategoriesByCategory = new Map<string, Subcategory[]>();
@@ -97,6 +102,26 @@ export function CatalogHub({
           )
         : catalogHubIntro();
 
+  const publishedVideos = items
+    .filter((item) => item.type === "video" && item.status === "published")
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  const landingFeatured =
+    publishedVideos.find((item) => item.is_featured) ?? publishedVideos[0] ?? null;
+
+  const tvSubcategories = (subcategoriesByCategory.get(FIXED_CATEGORY_IDS.tv) ?? []).sort(
+    (a, b) => a.position - b.position || a.name.localeCompare(b.name, "fr")
+  );
+
+  const isTvCategory = selectedCategoryId === FIXED_CATEGORY_IDS.tv;
+  const categoryVideos = isTvCategory
+    ? (itemsByCategory.get(FIXED_CATEGORY_IDS.tv) ?? [])
+        .filter((item) => item.type === "video")
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    : [];
+
+  const categoryVideoStrip = categoryVideos.slice(0, 6);
+
   return (
     <>
       <header className="mes-contenus-head mes-canal__top">
@@ -140,7 +165,18 @@ export function CatalogHub({
       </header>
 
       {level === "categories" ? (
-        <div className="catalog-tier catalog-tier--categories" role="list" aria-label="Catégories">
+        <>
+          <CatalogLandingSpotlight
+            featured={landingFeatured}
+            recentVideos={publishedVideos}
+            tvSubcategories={tvSubcategories}
+            isLoading={isLoading}
+            onOpenTvCategory={() => onSelectCategory(FIXED_CATEGORY_IDS.tv)}
+            onOpenRubrique={(subId) => onOpenContents(FIXED_CATEGORY_IDS.tv, subId)}
+          />
+
+          <h2 className="catalog-tierHeading">Explorer par catégorie</h2>
+          <div className="catalog-tier catalog-tier--categories" role="list" aria-label="Catégories">
           {categories.map((category) => {
             const slug = slugForCategory(category);
             const tone = toneForCatalogSlug(slug);
@@ -180,7 +216,8 @@ export function CatalogHub({
               </button>
             );
           })}
-        </div>
+          </div>
+        </>
       ) : null}
 
       {level === "subcategories" && selectedCategory ? (
@@ -191,6 +228,19 @@ export function CatalogHub({
         ) : subcategories.filter((s) => s.category_id === selectedCategoryId).length === 0 ? (
           <p className="contenus-empty muted">Aucune rubrique dans cette catégorie pour le moment.</p>
         ) : (
+          <>
+            {isTvCategory && categoryVideoStrip.length > 0 ? (
+              <section className="catalog-spotlight__recent catalog-spotlight__recent--category" aria-label="Vidéos TV récentes">
+                <h2 className="catalog-spotlight__heading">À regarder</h2>
+                <div className="catalog-spotlight__grid catalog-spotlight__grid--compact" role="list">
+                  {categoryVideoStrip.map((item) => (
+                    <div key={item.id} role="listitem">
+                      <CatalogVideoThumb item={item} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
           <div
             className="catalog-tier catalog-tier--subcategories"
             role="list"
@@ -204,6 +254,10 @@ export function CatalogHub({
                 const subMix = summarizeContentMix(subItems);
                 const slug = slugForCategory(selectedCategory);
                 const tone = toneForCatalogSlug(slug);
+                const previewItem = [...subItems]
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .find((item) => item.type === "video") ?? subItems[0];
+                const previewThumb = previewItem?.image_url;
                 return (
                   <button
                     key={sub.id}
@@ -214,6 +268,11 @@ export function CatalogHub({
                     data-tone={tone}
                     onClick={() => onSelectSubcategory(sub.id)}
                   >
+                    {previewThumb ? (
+                      <span className="catalog-tierCard__thumb" aria-hidden="true">
+                        <img src={previewThumb} alt="" loading="lazy" decoding="async" />
+                      </span>
+                    ) : null}
                     <span className="catalog-tierCard__eyebrow">Rubrique</span>
                     <span className="catalog-tierCard__title">{sub.name}</span>
                     {sub.description?.trim() ? (
@@ -229,6 +288,7 @@ export function CatalogHub({
                 );
               })}
           </div>
+          </>
         )
       ) : null}
 

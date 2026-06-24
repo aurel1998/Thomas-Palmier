@@ -89,7 +89,11 @@ export const FeatureContentCard = forwardRef<HTMLElement, FeatureContentCardProp
           {item.type === "article" && articleTeaser ? (
             <p className="contenus-feature__articleTeaser">{articleTeaser}</p>
           ) : null}
-          {item.type === "article" ? (
+          {item.type === "video" ? (
+            <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
+              Voir la vidéo
+            </Link>
+          ) : item.type === "article" ? (
             <Link href={`/mes-contenus/${item.id}`} className="contenus-feature__readLink">
               Lire l&apos;article
             </Link>

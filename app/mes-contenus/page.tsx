@@ -526,7 +526,7 @@ function MesContenusCatalog() {
           selectedSubcategoryId={selectedSubcategoryId}
           selectedCategory={selectedCategory}
           selectedSubcategory={selectedSubcategory}
-          isLoading={loadingSubcategories}
+          isLoading={catalogLevel === "categories" ? isLoading : loadingSubcategories}
           onSelectCategory={goToSubcategories}
           onSelectSubcategory={(subId) => {
             if (selectedCategoryId) goToContents(selectedCategoryId, subId);
@@ -535,6 +535,7 @@ function MesContenusCatalog() {
           onBackToSubcategories={() => {
             if (selectedCategoryId) goToSubcategories(selectedCategoryId);
           }}
+          onOpenContents={goToContents}
         >
           {showEmptyGlobal ? (
             <p className="contenus-empty muted">Les premiers contenus arrivent bientôt.</p>
