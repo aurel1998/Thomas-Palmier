@@ -14,6 +14,8 @@ type ContactPageClientProps = {
   socialLinks?: SocialLinkDto[];
 };
 
+type SubmitStatus = "idle" | "loading" | "success" | "error";
+
 export function ContactPageClient({
   displayName = "",
   contactRole = "",
@@ -25,7 +27,13 @@ export function ContactPageClient({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const canSubmit = name.trim().length > 1 && email.trim().length > 4 && message.trim().length > 8;
+  const [status, setStatus] = useState<SubmitStatus>("idle");
+  const [feedback, setFeedback] = useState("");
+  const canSubmit =
+    name.trim().length > 1 &&
+    email.trim().length > 4 &&
+    message.trim().length > 8 &&
+    status !== "loading";
 
   useEffect(() => {
     const root = pageRef.current;
@@ -63,23 +71,41 @@ export function ContactPageClient({
     };
   }, []);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!canSubmit) return;
-    const subject = encodeURIComponent(
-      requestType === "partenariat" ? "Demande de partenariat" : "Proposition de sujet"
-    );
-    const body = encodeURIComponent(
-      [
-        `Type de demande : ${requestType === "partenariat" ? "Partenariat" : "Sujet"}`,
-        `Nom : ${name.trim()}`,
-        `Email : ${email.trim()}`,
-        "",
-        "Message :",
-        message.trim(),
-      ].join("\n")
-    );
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+
+    setStatus("loading");
+    setFeedback("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestType,
+          name: name.trim(),
+          email: email.trim(),
+          message: message.trim(),
+        }),
+      });
+      const result = (await response.json()) as { message?: string; error?: string };
+
+      if (!response.ok) {
+        setStatus("error");
+        setFeedback(result.error ?? "Envoi impossible.");
+        return;
+      }
+
+      setStatus("success");
+      setFeedback(result.message ?? "Message envoyé. Merci !");
+      setName("");
+      setEmail("");
+      setMessage("");
+    } catch {
+      setStatus("error");
+      setFeedback("Erreur réseau. Réessayez dans un instant.");
+    }
   };
 
   return (
@@ -118,6 +144,7 @@ export function ContactPageClient({
                     value="partenariat"
                     checked={requestType === "partenariat"}
                     onChange={() => setRequestType("partenariat")}
+                    disabled={status === "loading"}
                   />
                   <span>Partenariat</span>
                 </label>
@@ -128,6 +155,7 @@ export function ContactPageClient({
                     value="sujet"
                     checked={requestType === "sujet"}
                     onChange={() => setRequestType("sujet")}
+                    disabled={status === "loading"}
                   />
                   <span>Sujet</span>
                 </label>
@@ -142,6 +170,8 @@ export function ContactPageClient({
                 placeholder="Votre nom"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={status === "loading"}
+                required
               />
             </div>
 
@@ -154,6 +184,8 @@ export function ContactPageClient({
                 placeholder="votre@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={status === "loading"}
+                required
               />
             </div>
 
@@ -172,8 +204,19 @@ export function ContactPageClient({
                 }
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                disabled={status === "loading"}
+                required
               />
             </div>
+
+            {feedback ? (
+              <p
+                className={`contact-feedback contact-reveal${status === "success" ? " is-success" : ""}${status === "error" ? " is-error" : ""}`}
+                role={status === "error" ? "alert" : "status"}
+              >
+                {feedback}
+              </p>
+            ) : null}
 
             <button
               id="contactSubmitBtn"
@@ -181,7 +224,7 @@ export function ContactPageClient({
               disabled={!canSubmit}
               className="contact-submit contact-reveal is-pressable"
             >
-              Envoyer la demande
+              {status === "loading" ? "Envoi en cours…" : "Envoyer la demande"}
             </button>
           </form>
         </article>

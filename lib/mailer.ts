@@ -20,6 +20,7 @@ export type MailMessage = {
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
 };
 
 let cachedTransporter: Transporter | null = null;
@@ -84,6 +85,7 @@ export async function sendMail(message: MailMessage): Promise<boolean> {
     await transporter.sendMail({
       from: getMailFrom(),
       to: message.to,
+      replyTo: message.replyTo,
       subject: message.subject,
       html: message.html,
       text: message.text ?? stripHtml(message.html),

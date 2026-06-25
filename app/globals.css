@@ -8621,6 +8621,20 @@ main li > a:not([class]):hover,
   filter: none;
 }
 
+.contact-feedback {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.contact-feedback.is-success {
+  color: #54c79a;
+}
+
+.contact-feedback.is-error {
+  color: #e2596b;
+}
+
 .home-hero__actions .btn {
   min-width: 170px;
 }
