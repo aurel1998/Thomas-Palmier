@@ -61,6 +61,8 @@ export function HeroSection({
   const hasPoster = Boolean(backdropSrc?.trim());
   const videoAllowed = mounted && !isReducedMotion() && !prefersSaveData();
   const showVideo = hasVideo && videoAllowed && !videoFailed;
+  /** Poster statique seulement si pas de vidéo ou si la vidéo a échoué (évite le portrait par-dessus). */
+  const showStaticPoster = hasPoster && (!showVideo || videoFailed);
 
   const handleVideoError = () => {
     /* Une seule source MP4 : en cas d’échec, poster statique (pas de bascule vers l’autre fichier). */
@@ -95,6 +97,10 @@ export function HeroSection({
       tryPlay();
     };
 
+    const onLoadedData = () => {
+      setVideoReady(true);
+    };
+
     const onWaiting = () => setVideoReady(false);
 
     const onVisibility = () => {
@@ -106,12 +112,14 @@ export function HeroSection({
     };
 
     tryPlay();
+    video.addEventListener("loadeddata", onLoadedData);
     video.addEventListener("canplay", onCanPlay);
     video.addEventListener("canplaythrough", onCanPlay);
     video.addEventListener("waiting", onWaiting);
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
+      video.removeEventListener("loadeddata", onLoadedData);
       video.removeEventListener("canplay", onCanPlay);
       video.removeEventListener("canplaythrough", onCanPlay);
       video.removeEventListener("waiting", onWaiting);
@@ -433,7 +441,7 @@ export function HeroSection({
   return (
     <section ref={sectionRef} className="home-hero" aria-label="Accueil — hero">
       <div ref={mediaRef} className="home-hero__media">
-        {hasPoster ? (
+        {showStaticPoster ? (
           <ContentImage
             key={posterSrc}
             src={posterSrc!}
@@ -442,16 +450,15 @@ export function HeroSection({
             priority
             quality={85}
             sizes="100vw"
-            className={`home-hero__video home-hero__video--static${showVideo && videoReady ? " is-hidden" : ""}`}
+            className="home-hero__video home-hero__video--static"
           />
         ) : null}
         {showVideo ? (
-          <div className={`home-hero__videoLayer${videoReady ? " is-ready" : ""}`}>
+          <div className={`home-hero__videoLayer${videoReady ? " is-ready" : " is-loading"}`}>
             <video
               ref={videoRef}
               key={currentVideoSrc}
               className="home-hero__video"
-              poster={posterSrc}
               muted
               loop
               playsInline

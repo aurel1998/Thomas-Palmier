@@ -97,6 +97,36 @@ export function AgendaAdminEventDialog({
         </header>
 
         <form className="admin-form admin-agenda-dialog__form" onSubmit={onSubmit}>
+          <fieldset className="admin-field admin-agenda-dialog__visibility">
+            <legend>Visibilité</legend>
+            <div className="admin-agenda-dialog__statusChoices">
+              <label className="admin-check admin-agenda-dialog__statusChoice">
+                <input
+                  type="radio"
+                  name="adminAgendaStatus"
+                  value="published"
+                  checked={eventStatus === "published"}
+                  onChange={() => onEventStatusChange("published")}
+                />
+                <span>
+                  <strong>Publié</strong> — visible sur l&apos;accueil et le calendrier public
+                </span>
+              </label>
+              <label className="admin-check admin-agenda-dialog__statusChoice">
+                <input
+                  type="radio"
+                  name="adminAgendaStatus"
+                  value="draft"
+                  checked={eventStatus === "draft"}
+                  onChange={() => onEventStatusChange("draft")}
+                />
+                <span>
+                  <strong>Brouillon</strong> — réservé à l&apos;admin, invisible pour les visiteurs
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
           <div className="admin-field">
             <label htmlFor="adminAgendaTitle">Titre</label>
             <input
@@ -155,79 +185,73 @@ export function AgendaAdminEventDialog({
           </div>
 
           <div className="admin-field">
-            <label htmlFor="adminAgendaStatus">Statut</label>
-            <select
-              id="adminAgendaStatus"
-              value={eventStatus}
-              onChange={(e) => onEventStatusChange(e.target.value as PublicationStatus)}
-            >
-              <option value="draft">Brouillon — invisible sur le calendrier public</option>
-              <option value="published">Publié — visible sur le calendrier public</option>
-            </select>
+            <label className="admin-check" htmlFor="adminAgendaNotify">
+              <input
+                id="adminAgendaNotify"
+                type="checkbox"
+                checked={notifySubscribers}
+                disabled={eventStatus !== "published"}
+                onChange={(e) => onNotifySubscribersChange(e.target.checked)}
+              />
+              <span>Informer les abonnés par e-mail</span>
+            </label>
+            <p className="admin-field__hint">
+              {eventStatus !== "published"
+                ? "Passez le rendez-vous en « Publié » pour envoyer une notification aux abonnés actifs."
+                : mode === "edit"
+                  ? "En modification, l'email part uniquement si la date a changé."
+                  : "Envoie un email aux abonnés actifs à l'enregistrement de ce rendez-vous."}
+            </p>
           </div>
 
-          {eventStatus === "published" ? (
-            <>
-              <div className="admin-field">
-                <label className="admin-check" htmlFor="adminAgendaFeatured">
-                  <input
-                    id="adminAgendaFeatured"
-                    type="checkbox"
-                    checked={isFeatured}
-                    onChange={(e) => onIsFeaturedChange(e.target.checked)}
-                  />
-                  <span>Mettre en avant</span>
-                </label>
-                <p className="admin-field__hint">
-                  Affiché en haut du calendrier admin et sur l&apos;accueil. Un seul événement à la fois.
-                </p>
-              </div>
-              <div className="admin-field">
-                <label className="admin-check" htmlFor="adminAgendaReminder">
-                  <input
-                    id="adminAgendaReminder"
-                    type="checkbox"
-                    checked={reminderEnabled}
-                    onChange={(e) => onReminderEnabledChange(e.target.checked)}
-                  />
-                  <span>Envoyer un rappel 24 h avant</span>
-                </label>
-                <p className="admin-field__hint">
-                  Email automatique aux abonnés actifs la veille du rendez-vous (cron horaire sur le
-                  serveur).
-                </p>
-                {reminderSentAt ? (
-                  <p className="admin-field__hint" style={{ marginTop: 6 }}>
-                    Rappel déjà envoyé le{" "}
-                    {new Intl.DateTimeFormat("fr-FR", {
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(new Date(reminderSentAt))}
-                    . Modifier la date pour reprogrammer.
-                  </p>
-                ) : null}
-              </div>
-              <div className="admin-field">
-                <label className="admin-check" htmlFor="adminAgendaNotify">
-                  <input
-                    id="adminAgendaNotify"
-                    type="checkbox"
-                    checked={notifySubscribers}
-                    onChange={(e) => onNotifySubscribersChange(e.target.checked)}
-                  />
-                  <span>Informer les abonnés</span>
-                </label>
-                <p className="admin-field__hint">
-                  {mode === "edit"
-                    ? "En modification, l'email part uniquement si la date a changé."
-                    : "Envoie un email aux abonnés actifs à l'enregistrement de ce rendez-vous."}
-                </p>
-              </div>
-            </>
-          ) : null}
+          <div className="admin-field">
+            <label className="admin-check" htmlFor="adminAgendaFeatured">
+              <input
+                id="adminAgendaFeatured"
+                type="checkbox"
+                checked={isFeatured}
+                disabled={eventStatus !== "published"}
+                onChange={(e) => onIsFeaturedChange(e.target.checked)}
+              />
+              <span>Mettre en avant</span>
+            </label>
+            <p className="admin-field__hint">
+              {eventStatus !== "published"
+                ? "Disponible une fois le rendez-vous publié."
+                : "Affiché en haut du calendrier admin et sur l'accueil. Un seul événement à la fois."}
+            </p>
+          </div>
+
+          <div className="admin-field">
+            <label className="admin-check" htmlFor="adminAgendaReminder">
+              <input
+                id="adminAgendaReminder"
+                type="checkbox"
+                checked={reminderEnabled}
+                disabled={eventStatus !== "published"}
+                onChange={(e) => onReminderEnabledChange(e.target.checked)}
+              />
+              <span>Envoyer un rappel 24 h avant</span>
+            </label>
+            <p className="admin-field__hint">
+              {eventStatus !== "published"
+                ? "Disponible une fois le rendez-vous publié."
+                : "Email automatique aux abonnés actifs la veille du rendez-vous (cron horaire sur le serveur)."}
+            </p>
+            {eventStatus === "published" && reminderSentAt ? (
+              <p className="admin-field__hint" style={{ marginTop: 6 }}>
+                Rappel déjà envoyé le{" "}
+                {new Intl.DateTimeFormat("fr-FR", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }).format(new Date(reminderSentAt))}
+                . Modifier la date pour reprogrammer.
+              </p>
+            ) : null}
+          </div>
 
           <div className="admin-agenda-dialog__actions">
             {mode === "edit" && onDelete ? (

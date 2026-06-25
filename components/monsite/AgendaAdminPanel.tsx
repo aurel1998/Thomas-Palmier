@@ -123,8 +123,8 @@ export function AgendaAdminPanel({ apiFetch, pushToast }: AgendaAdminPanelProps)
     setDialogMode("create");
     setEditingId(null);
     setForm(formFromDate(date));
-    setEventStatus("draft");
-    setNotifySubscribers(false);
+    setEventStatus("published");
+    setNotifySubscribers(true);
     setIsFeatured(false);
     setReminderEnabled(false);
     setReminderSentAt(null);
@@ -289,6 +289,8 @@ export function AgendaAdminPanel({ apiFetch, pushToast }: AgendaAdminPanelProps)
             setNotifySubscribers(false);
             setIsFeatured(false);
             setReminderEnabled(false);
+          } else if (next === "published" && dialogMode === "create") {
+            setNotifySubscribers(true);
           }
         }}
         notifySubscribers={notifySubscribers}
