@@ -1480,16 +1480,14 @@ main li > a:not([class]):hover,
   transform-style: preserve-3d;
 }
 
-/* Conteneur media : zoom leger au scroll (video ou poster lazy). */
+/* Conteneur media : pas de transform GSAP (sinon la vidéo se fige). */
 .home-hero__media {
   position: absolute;
   inset: 0;
   z-index: 0;
   width: 100%;
   height: 100%;
-  transform-origin: center center;
-  transform: scale(1);
-  will-change: transform;
+  transform: none;
   isolation: isolate;
 }
 
@@ -1498,18 +1496,8 @@ main li > a:not([class]):hover,
   inset: 0;
   z-index: 1;
   overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.55s ease;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.home-hero__videoLayer.is-loading {
   opacity: 1;
-}
-
-.home-hero__videoLayer.is-ready {
-  opacity: 1;
+  transform: none;
 }
 
 .home-hero__video--static.is-hidden {
@@ -1534,8 +1522,7 @@ main li > a:not([class]):hover,
   height: 100%;
   object-fit: cover;
   object-position: center 42%;
-  transform: translateZ(0);
-  backface-visibility: hidden;
+  transform: none;
   filter: saturate(1.04) contrast(1.03);
 }
 

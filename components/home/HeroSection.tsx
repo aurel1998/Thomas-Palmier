@@ -44,7 +44,6 @@ export function HeroSection({
 
   const [mounted, setMounted] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
   const [currentVideoSrc, setCurrentVideoSrc] = useState(videoSrc ?? "");
 
   useEffect(() => {
@@ -54,7 +53,6 @@ export function HeroSection({
   useEffect(() => {
     setCurrentVideoSrc(videoSrc ?? "");
     setVideoFailed(false);
-    setVideoReady(false);
   }, [videoSrc]);
 
   const hasVideo = Boolean(currentVideoSrc?.trim());
@@ -69,61 +67,116 @@ export function HeroSection({
     setVideoFailed(true);
   };
 
+  /** Lecture continue : les transforms GSAP sur le parent figent souvent la vidéo (Safari/Chrome). */
   useEffect(() => {
-    if (!showVideo) {
-      setVideoReady(false);
-      return;
-    }
+    if (!showVideo) return;
 
-    const video = videoRef.current;
-    if (!video) return;
+    let disposed = false;
+    let resumeTimer: ReturnType<typeof setTimeout> | null = null;
 
-    video.muted = true;
-    video.defaultMuted = true;
-    video.playsInline = true;
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-    video.disablePictureInPicture = true;
+    const getVideo = () => videoRef.current;
 
     const tryPlay = () => {
+      const video = getVideo();
+      if (!video || disposed || document.hidden) return;
+      video.muted = true;
       const playPromise = video.play();
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {});
       }
     };
 
-    const onCanPlay = () => {
-      setVideoReady(true);
+    const scheduleResume = () => {
+      if (resumeTimer) clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        resumeTimer = null;
+        const video = getVideo();
+        if (!video || disposed || document.hidden) return;
+        if (video.paused && !video.ended) tryPlay();
+      }, 120);
+    };
+
+    const bindVideo = (video: HTMLVideoElement) => {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+      video.setAttribute("playsinline", "");
+      video.setAttribute("webkit-playsinline", "");
+      video.disablePictureInPicture = true;
+      video.loop = true;
+
+      const onCanPlay = () => {
+        tryPlay();
+      };
+
+      const onLoadedData = () => {
+        tryPlay();
+      };
+
+      const onPause = () => {
+        if (disposed || document.hidden) return;
+        scheduleResume();
+      };
+
+      const onStalled = () => scheduleResume();
+      const onWaiting = () => scheduleResume();
+      const onEnded = () => {
+        video.currentTime = 0;
+        tryPlay();
+      };
+
+      const onVisibility = () => {
+        if (document.hidden) {
+          video.pause();
+          return;
+        }
+        tryPlay();
+      };
+
+      video.addEventListener("loadeddata", onLoadedData);
+      video.addEventListener("canplay", onCanPlay);
+      video.addEventListener("canplaythrough", onCanPlay);
+      video.addEventListener("pause", onPause);
+      video.addEventListener("stalled", onStalled);
+      video.addEventListener("waiting", onWaiting);
+      video.addEventListener("ended", onEnded);
+      document.addEventListener("visibilitychange", onVisibility);
+
       tryPlay();
+
+      return () => {
+        video.removeEventListener("loadeddata", onLoadedData);
+        video.removeEventListener("canplay", onCanPlay);
+        video.removeEventListener("canplaythrough", onCanPlay);
+        video.removeEventListener("pause", onPause);
+        video.removeEventListener("stalled", onStalled);
+        video.removeEventListener("waiting", onWaiting);
+        video.removeEventListener("ended", onEnded);
+        document.removeEventListener("visibilitychange", onVisibility);
+      };
     };
 
-    const onLoadedData = () => {
-      setVideoReady(true);
-    };
-
-    const onWaiting = () => setVideoReady(false);
-
-    const onVisibility = () => {
-      if (document.hidden) {
-        video.pause();
-        return;
-      }
-      tryPlay();
-    };
-
-    tryPlay();
-    video.addEventListener("loadeddata", onLoadedData);
-    video.addEventListener("canplay", onCanPlay);
-    video.addEventListener("canplaythrough", onCanPlay);
-    video.addEventListener("waiting", onWaiting);
-    document.addEventListener("visibilitychange", onVisibility);
+    const video = getVideo();
+    let unbind: (() => void) | undefined;
+    if (video) {
+      unbind = bindVideo(video);
+    } else {
+      const raf = requestAnimationFrame(() => {
+        const v = getVideo();
+        if (v && !disposed) unbind = bindVideo(v);
+      });
+      return () => {
+        disposed = true;
+        cancelAnimationFrame(raf);
+        if (resumeTimer) clearTimeout(resumeTimer);
+        unbind?.();
+      };
+    }
 
     return () => {
-      video.removeEventListener("loadeddata", onLoadedData);
-      video.removeEventListener("canplay", onCanPlay);
-      video.removeEventListener("canplaythrough", onCanPlay);
-      video.removeEventListener("waiting", onWaiting);
-      document.removeEventListener("visibilitychange", onVisibility);
+      disposed = true;
+      if (resumeTimer) clearTimeout(resumeTimer);
+      unbind?.();
     };
   }, [showVideo, currentVideoSrc]);
 
@@ -145,7 +198,7 @@ export function HeroSection({
 
     if (isReducedMotion()) {
       gsap.set(
-        [media, overlay, float, journal, rule, positioning, actions, scrollBlock, vignette, ...grain].filter(Boolean),
+        [overlay, float, journal, rule, positioning, actions, scrollBlock, vignette, ...grain].filter(Boolean),
         {
           clearProps: "all",
         }
@@ -158,10 +211,7 @@ export function HeroSection({
     let tl: gsap.core.Timeline | null = null;
     let cancelled = false;
 
-    gsap.set(media, {
-      scale: 1.14,
-      y: 56,
-    });
+    gsap.set(media, { clearProps: "transform" });
     gsap.set(overlay, { opacity: 0.42 });
     if (vignette) gsap.set(vignette, { opacity: 0.12, scale: 1.08 });
     if (grain.length) gsap.set(grain, { opacity: 0.001 });
@@ -205,17 +255,7 @@ export function HeroSection({
 
         tl = gsap.timeline({ defaults: { ease: motion.ease.out } });
 
-        tl.to(
-          media,
-          {
-            scale: 1,
-            y: 0,
-            duration: motionPresets.hero.reveal,
-            ease: motion.ease.outExpo,
-          },
-          0
-        )
-          .to(overlay, { opacity: 1, duration: 0.95, ease: motion.ease.inOutExpo }, 0)
+        tl.to(overlay, { opacity: 1, duration: 0.95, ease: motion.ease.inOutExpo }, 0)
           .to(vignette, { opacity: 1, scale: 1, duration: 1.05, ease: motion.ease.out }, 0.06)
           .to(grain, { opacity: 1, duration: 0.95, stagger: 0.06, ease: motion.ease.outSoft }, 0.12)
           .to(
@@ -293,7 +333,6 @@ export function HeroSection({
         gsap.set(headlineRef.current, { opacity: 1 });
         tl = gsap.timeline({ defaults: { ease: motion.ease.out } });
         tl.to(overlay, { opacity: 1, duration: 0.6 }, 0)
-          .to(media, { scale: 1, y: 0, duration: motion.duration.heroMedia, ease: motion.ease.outExpo }, 0)
           .to(journal, { y: 0, autoAlpha: 1, duration: motion.duration.revealFast }, 0.12)
           .to(
             headlineRef.current,
@@ -313,22 +352,19 @@ export function HeroSection({
   }, []);
 
   useEffect(() => {
-    if (isReducedMotion()) return;
+    if (isReducedMotion() || !showVideo) return;
     const section = sectionRef.current;
-    const media = mediaRef.current;
-    const overlay = overlayRef.current;
-    const float = floatRef.current;
-    if (!section || !media) return;
+    const video = videoRef.current;
+    if (!section || !video) return;
 
     ensureScrollTrigger();
 
     const ctx = gsap.context(() => {
       gsap.fromTo(
-        media,
-        { scale: 1, y: 0 },
+        video,
+        { objectPosition: "center 42%" },
         {
-          scale: 1.08,
-          y: -36,
+          objectPosition: "center 36%",
           ease: motion.ease.none,
           scrollTrigger: {
             trigger: section,
@@ -338,7 +374,21 @@ export function HeroSection({
           },
         }
       );
+    }, section);
 
+    return () => ctx.revert();
+  }, [showVideo, currentVideoSrc]);
+
+  useEffect(() => {
+    if (isReducedMotion()) return;
+    const section = sectionRef.current;
+    const overlay = overlayRef.current;
+    const float = floatRef.current;
+    if (!section) return;
+
+    ensureScrollTrigger();
+
+    const ctx = gsap.context(() => {
       if (float) {
         gsap.to(float, {
           y: -22,
@@ -454,7 +504,7 @@ export function HeroSection({
           />
         ) : null}
         {showVideo ? (
-          <div className={`home-hero__videoLayer${videoReady ? " is-ready" : " is-loading"}`}>
+          <div className="home-hero__videoLayer">
             <video
               ref={videoRef}
               key={currentVideoSrc}
